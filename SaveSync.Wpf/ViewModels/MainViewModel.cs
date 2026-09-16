@@ -12,7 +12,7 @@ public partial class MainViewModel : ObservableObject
     public GamesViewModel GamesVm { get; }
 
     [ObservableProperty]
-    private string _title = "SaveSync - Native Game Save Manager";
+    private string _title = "ludusavo";
 
     [ObservableProperty]
     private bool _isGitHubConnected;

@@ -7,54 +7,15 @@
         mc:Ignorable="d"
         d:DataContext="{d:DesignInstance vm:MainViewModel}"
         Title="{Binding Title}"
-        Icon="icon-512.ico"
+        Icon="icon.ico"
         Height="720" Width="1080"
         MinHeight="550" MinWidth="800"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource WindowBackgroundBrush}">
 
-    <DockPanel>
-        <!-- Top Status Bar: Title, Status -->
-        <Border DockPanel.Dock="Top"
-                Background="#FFFFFF"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="0,0,0,1"
-                Padding="20,12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <!-- Tiêu đề đã được ẩn theo yêu cầu -->
-                </StackPanel>
-
-                <!-- GitHub Connection Status Badge -->
-                <Border Grid.Column="2"
-                        Background="#F8FAFC"
-                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                        BorderThickness="1"
-                        CornerRadius="6"
-                        Padding="12,5"
-                        VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="8" Height="8"
-                                 Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
-                                 Margin="0,0,8,0" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding GitHubStatusText}"
-                                   FontSize="12"
-                                   FontWeight="Medium"
-                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Border>
-            </Grid>
-        </Border>
-
+    <Grid>
         <!-- Modern Flat TabControl -->
-        <TabControl x:Name="MainTabs">
+        <TabControl x:Name="MainTabs" Padding="0,10,0,0">
             <TabItem Header="Game trên máy" x:Name="TabGames">
                 <Frame x:Name="GamesFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
             </TabItem>
@@ -65,5 +26,26 @@
                 <Frame x:Name="SettingsFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
             </TabItem>
         </TabControl>
-    </DockPanel>
+
+        <!-- GitHub Connection Status Badge (Overlaid on the right side of the Tab Header row) -->
+        <Border HorizontalAlignment="Right" VerticalAlignment="Top"
+                Background="#FFFFFF"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="6"
+                Padding="12,5"
+                Margin="0,5,20,0"
+                Panel.ZIndex="1">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Width="8" Height="8"
+                         Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
+                         Margin="0,0,8,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding GitHubStatusText}"
+                           FontSize="12"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+    </Grid>
 </Window>
