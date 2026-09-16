@@ -7,9 +7,9 @@
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance vm:GamesViewModel}"
       Title="GamesPage"
-      Background="{DynamicResource WindowBackgroundBrush}">
+      Background="Transparent">
 
-    <Grid Margin="16">
+    <Grid Margin="20,0,20,16">
         <Grid.RowDefinitions>
             <!-- Toolbar: Search, Refresh, SyncAll -->
             <RowDefinition Height="Auto"/>
@@ -20,34 +20,52 @@
         </Grid.RowDefinitions>
 
         <!-- Top Controls Toolbar -->
-        <Grid Grid.Row="0" Margin="0,0,0,12">
+        <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Search Box with Icon -->
+            <!-- Search Box with Native Vector Path Icon -->
             <Grid Grid.Column="0" Margin="0,0,10,0">
                 <TextBox x:Name="SearchBox"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Height="32"
+                         Height="34"
                          VerticalContentAlignment="Center"
-                         Padding="30,0,8,0"/>
-                <TextBlock Text="🔍"
-                           VerticalAlignment="Center"
-                           HorizontalAlignment="Left"
-                           Margin="9,0,0,0"
-                           IsHitTestVisible="False"
-                           FontSize="12"
-                           Foreground="#888888"/>
+                         Padding="34,0,10,0"/>
+
+                <!-- Native Vector Search Icon (Lucide-style Path) with dynamic focus stroke -->
+                <Path Width="14" Height="14"
+                      Stretch="Uniform"
+                      HorizontalAlignment="Left"
+                      VerticalAlignment="Center"
+                      Margin="12,0,0,0"
+                      IsHitTestVisible="False"
+                      StrokeThickness="1.8"
+                      StrokeStartLineCap="Round"
+                      StrokeEndLineCap="Round"
+                      Data="M 21 21 L 16.65 16.65 M 19 11 A 8 8 0 1 1 3 11 A 8 8 0 1 1 19 11 Z">
+                    <Path.Style>
+                        <Style TargetType="Path">
+                            <Setter Property="Stroke" Value="{DynamicResource TextFillColorTertiaryBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsKeyboardFocusWithin, ElementName=SearchBox}" Value="True">
+                                    <Setter Property="Stroke" Value="{DynamicResource AccentTextFillColorPrimaryBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Path.Style>
+                </Path>
+
+                <!-- Placeholder text -->
                 <TextBlock Text="Tìm kiếm game..."
                            VerticalAlignment="Center"
                            HorizontalAlignment="Left"
-                           Margin="32,0,0,0"
+                           Margin="36,0,0,0"
                            IsHitTestVisible="False"
-                           FontSize="12"
-                           Foreground="#888888">
+                           FontSize="13"
+                           Foreground="{DynamicResource TextFillColorTertiaryBrush}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Visibility" Value="Collapsed"/>
@@ -65,16 +83,17 @@
                     Content="Quét lại"
                     Command="{Binding RefreshScanCommand}"
                     IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
-                    Height="32"
-                    Padding="14,0"
+                    Height="34"
+                    Padding="16,0"
                     Margin="0,0,10,0"/>
 
             <Button Grid.Column="2"
                     Content="Đồng bộ tất cả"
+                    Style="{StaticResource PrimaryButton}"
                     Command="{Binding SyncAllCommand}"
                     IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
-                    Height="32"
-                    Padding="14,0"/>
+                    Height="34"
+                    Padding="16,0"/>
         </Grid>
 
         <!-- Scanning Status Bar -->
@@ -83,8 +102,8 @@
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="4"
-                Padding="16,10"
+                CornerRadius="8"
+                Padding="16,12"
                 Margin="0,0,0,12">
             <Grid>
                 <Grid.RowDefinitions>
@@ -95,15 +114,15 @@
                            Text="{Binding ScanStatusText}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                           Margin="0,0,0,6"/>
+                           Margin="0,0,0,8"/>
                 <ProgressBar Grid.Row="1"
                              Value="{Binding ScanProgress}"
-                             Height="8"
+                             Height="6"
                              IsIndeterminate="{Binding ScanProgress, Converter={StaticResource ZeroToIndeterminateConverter}, FallbackValue=False}"/>
             </Grid>
         </Border>
 
-        <!-- Games List -->
+        <!-- Games List (Subtle floating cards on single background) -->
         <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled">
@@ -113,9 +132,9 @@
                         <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="4"
-                                Margin="0,0,0,8"
-                                Padding="12">
+                                CornerRadius="8"
+                                Margin="0,0,0,10"
+                                Padding="14">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -127,10 +146,10 @@
                                 <Border Grid.Column="0"
                                         Width="140"
                                         Height="65"
-                                        CornerRadius="4"
+                                        CornerRadius="6"
                                         ClipToBounds="True"
                                         Background="#E2E8F0"
-                                        Margin="0,0,14,0">
+                                        Margin="0,0,16,0">
                                     <Grid>
                                         <Image Source="{Binding SteamBannerUrl}"
                                                Stretch="UniformToFill"/>
@@ -148,7 +167,7 @@
 
                                 <!-- Game Details -->
                                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
                                         <TextBlock Text="{Binding Name}"
                                                    FontSize="15"
                                                    FontWeight="SemiBold"
@@ -158,7 +177,7 @@
                                         <!-- Status Badge -->
                                         <Border Background="{Binding StatusBadgeColor}"
                                                 CornerRadius="4"
-                                                Padding="6,2"
+                                                Padding="8,2"
                                                 Margin="10,0,0,0"
                                                 VerticalAlignment="Center">
                                             <TextBlock Text="{Binding StatusBadgeText}"
@@ -201,16 +220,16 @@
                                             Command="{Binding DataContext.OpenSaveFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
                                             Margin="0,0,8,0"
-                                            Padding="12,0"
-                                            Height="32"/>
+                                            Padding="14,0"
+                                            Height="34"/>
 
                                     <Button Content="Sao lưu lên GitHub"
                                             Style="{StaticResource PrimaryButton}"
                                             Command="{Binding DataContext.SyncGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
                                             IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
-                                            Padding="14,0"
-                                            Height="32"/>
+                                            Padding="16,0"
+                                            Height="34"/>
                                 </StackPanel>
                             </Grid>
                         </Border>

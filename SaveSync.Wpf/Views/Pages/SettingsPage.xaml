@@ -7,13 +7,13 @@
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
       Title="SettingsPage"
-      Background="{DynamicResource WindowBackgroundBrush}">
+      Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="16" HorizontalAlignment="Stretch">
+        <StackPanel Margin="20,0,20,20" HorizontalAlignment="Stretch">
 
             <TextBlock Text="Cài đặt hệ thống"
-                       FontSize="20"
+                       FontSize="18"
                        FontWeight="Bold"
                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                        Margin="0,0,0,16"/>
@@ -22,8 +22,8 @@
             <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
+                    CornerRadius="8"
+                    Padding="18"
                     Margin="0,0,0,14"
                     HorizontalAlignment="Stretch">
                 <StackPanel>
@@ -31,7 +31,7 @@
                                FontSize="15"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                               Margin="0,0,0,12"/>
+                               Margin="0,0,0,14"/>
 
                     <TextBlock Text="Personal Access Token (yêu cầu quyền repo):"
                                FontSize="13"
@@ -39,10 +39,10 @@
                                Margin="0,0,0,6"/>
                     <PasswordBox x:Name="TokenBox"
                                  PasswordChanged="TokenBox_PasswordChanged"
-                                 Margin="0,0,0,12"
-                                 Height="32"/>
+                                 Margin="0,0,0,14"
+                                 Height="34"/>
 
-                    <Grid Margin="0,0,0,14">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
@@ -54,7 +54,7 @@
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Margin="0,0,0,6"/>
                             <TextBox Text="{Binding GitHubOwner, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="32"/>
+                                     Height="34"/>
                         </StackPanel>
 
                         <StackPanel Grid.Column="1" Margin="8,0,0,0">
@@ -63,7 +63,7 @@
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Margin="0,0,0,6"/>
                             <TextBox Text="{Binding GitHubRepo, UpdateSourceTrigger=PropertyChanged}"
-                                     Height="32"/>
+                                     Height="34"/>
                         </StackPanel>
                     </Grid>
 
@@ -71,8 +71,8 @@
                         <Button Content="Kiểm tra kết nối"
                                 Command="{Binding TestConnectionCommand}"
                                 IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBooleanConverter}}"
-                                Padding="14,6"
-                                Height="32"/>
+                                Padding="16,0"
+                                Height="34"/>
 
                         <TextBlock Text="{Binding TestStatusMessage}"
                                    FontSize="13"
@@ -87,19 +87,19 @@
             <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                     BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                     BorderThickness="1"
-                    CornerRadius="4"
-                    Padding="16"
-                    Margin="0,0,0,16"
+                    CornerRadius="8"
+                    Padding="18"
+                    Margin="0,0,0,18"
                     HorizontalAlignment="Stretch">
                 <StackPanel>
                     <TextBlock Text="Tính năng tự động hóa"
                                FontSize="15"
                                FontWeight="SemiBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                               Margin="0,0,0,14"/>
+                               Margin="0,0,0,16"/>
 
                     <!-- Auto Sync on Game Exit -->
-                    <Grid Margin="0,0,0,14">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -111,13 +111,14 @@
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="Phát hiện khi bạn chơi xong và tự động đẩy bản save mới nhất lên GitHub."
                                        FontSize="12"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Margin="0,2,0,0"/>
                         </StackPanel>
                         <CheckBox Grid.Column="1" IsChecked="{Binding AutoSyncOnExit}" VerticalAlignment="Center"/>
                     </Grid>
 
                     <!-- Minimize to Tray -->
-                    <Grid Margin="0,0,0,14">
+                    <Grid Margin="0,0,0,16">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
@@ -129,7 +130,8 @@
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="Khi bấm nút X đóng cửa sổ, ứng dụng sẽ chạy ngầm dưới góc phải màn hình."
                                        FontSize="12"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Margin="0,2,0,0"/>
                         </StackPanel>
                         <CheckBox Grid.Column="1" IsChecked="{Binding MinimizeToTray}" VerticalAlignment="Center"/>
                     </Grid>
@@ -147,7 +149,8 @@
                                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
                             <TextBlock Text="Tự động khởi động ngầm cùng máy tính để bảo vệ file save của bạn liên tục."
                                        FontSize="12"
-                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                       Margin="0,2,0,0"/>
                         </StackPanel>
                         <CheckBox Grid.Column="1" IsChecked="{Binding StartWithWindows}" VerticalAlignment="Center"/>
                     </Grid>

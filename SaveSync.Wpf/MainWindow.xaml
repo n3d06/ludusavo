@@ -17,9 +17,9 @@
         <!-- Top Status Bar: Title, Status -->
         <Border DockPanel.Dock="Top"
                 Background="#FFFFFF"
-                BorderBrush="#D0D0D0"
+                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="0,0,0,1"
-                Padding="16,10">
+                Padding="20,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -28,55 +28,41 @@
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="SaveSync"
-                               FontSize="17" FontWeight="Bold"
-                               Foreground="#111111"
-                               VerticalAlignment="Center" Margin="0,0,12,0"/>
-                    <TextBlock Text="Đồng bộ Game Save lên GitHub"
-                               FontSize="12" Foreground="#666666"
-                               VerticalAlignment="Center"/>
+                    <!-- Tiêu đề đã được ẩn theo yêu cầu -->
                 </StackPanel>
 
                 <!-- GitHub Connection Status Badge -->
                 <Border Grid.Column="2"
-                        Background="#F5F5F5"
-                        BorderBrush="#D0D0D0"
+                        Background="#F8FAFC"
+                        BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                         BorderThickness="1"
-                        CornerRadius="4"
-                        Padding="10,4"
+                        CornerRadius="6"
+                        Padding="12,5"
                         VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="9" Height="9"
+                        <Ellipse Width="8" Height="8"
                                  Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
                                  Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding GitHubStatusText}"
                                    FontSize="12"
-                                   Foreground="#333333"
+                                   FontWeight="Medium"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    VerticalAlignment="Center"/>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
-        <!-- TabControl: Standard WPF TabControl with clear tabs (no icons) -->
-        <TabControl x:Name="MainTabs" Margin="8">
-            <TabControl.Resources>
-                <Style TargetType="TabItem">
-                    <Setter Property="FontSize" Value="14"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                    <Setter Property="Padding" Value="24,8"/>
-                    <Setter Property="Cursor" Value="Hand"/>
-                </Style>
-            </TabControl.Resources>
-
+        <!-- Modern Flat TabControl -->
+        <TabControl x:Name="MainTabs">
             <TabItem Header="Game trên máy" x:Name="TabGames">
-                <Frame x:Name="GamesFrame" NavigationUIVisibility="Hidden"/>
+                <Frame x:Name="GamesFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
             </TabItem>
             <TabItem Header="Sao lưu Cloud" x:Name="TabCloud">
-                <Frame x:Name="CloudFrame" NavigationUIVisibility="Hidden"/>
+                <Frame x:Name="CloudFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
             </TabItem>
             <TabItem Header="Cài đặt" x:Name="TabSettings">
-                <Frame x:Name="SettingsFrame" NavigationUIVisibility="Hidden"/>
+                <Frame x:Name="SettingsFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
             </TabItem>
         </TabControl>
     </DockPanel>

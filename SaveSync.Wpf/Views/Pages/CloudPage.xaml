@@ -7,9 +7,9 @@
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance vm:CloudViewModel}"
       Title="CloudPage"
-      Background="{DynamicResource WindowBackgroundBrush}">
+      Background="Transparent">
 
-    <Grid Margin="16">
+    <Grid Margin="20,0,20,16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,12">
+        <Grid Grid.Row="0" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -39,7 +39,7 @@
                     Command="{Binding RefreshCloudSavesCommand}"
                     IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
                     Padding="16,0"
-                    Height="32"/>
+                    Height="34"/>
         </Grid>
 
         <!-- Status / Notice -->
@@ -47,9 +47,9 @@
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
-                CornerRadius="4"
-                Padding="14,10"
-                Margin="0,0,0,12">
+                CornerRadius="8"
+                Padding="16,12"
+                Margin="0,0,0,14">
             <TextBlock Text="{Binding StatusText}"
                        FontSize="13"
                        Foreground="{DynamicResource TextFillColorPrimaryBrush}"/>
@@ -65,9 +65,9 @@
                         <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1"
-                                CornerRadius="4"
-                                Margin="0,0,0,8"
-                                Padding="12">
+                                CornerRadius="8"
+                                Margin="0,0,0,10"
+                                Padding="14">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -79,10 +79,10 @@
                                 <Border Grid.Column="0"
                                         Width="140"
                                         Height="65"
-                                        CornerRadius="4"
+                                        CornerRadius="6"
                                         ClipToBounds="True"
                                         Background="#E2E8F0"
-                                        Margin="0,0,14,0">
+                                        Margin="0,0,16,0">
                                     <Grid>
                                         <Image Source="{Binding SteamBannerUrl}"
                                                Stretch="UniformToFill"/>
@@ -104,7 +104,7 @@
                                                FontSize="15"
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                               Margin="0,0,0,4"/>
+                                               Margin="0,0,0,6"/>
 
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding FileCount, StringFormat='{}{0} files'}"
@@ -131,8 +131,8 @@
                                         Command="{Binding DataContext.DownloadAndRestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                         CommandParameter="{Binding}"
                                         VerticalAlignment="Center"
-                                        Padding="14,0"
-                                        Height="32"/>
+                                        Padding="16,0"
+                                        Height="34"/>
                             </Grid>
                         </Border>
                     </DataTemplate>
