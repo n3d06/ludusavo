@@ -68,11 +68,11 @@ jobs:
 
       - name: Publish Standalone (Self-Contained, không cần cài .NET)
         run: |
-          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o dist/standalone
+          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained true -o dist/standalone
 
       - name: Publish Portable (Framework-Dependent, siêu nhẹ)
         run: |
-          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o dist/portable
+          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -o dist/portable
 
       - name: Package ZIP Distributions
         shell: pwsh
@@ -83,7 +83,10 @@ jobs:
           # 1. Đóng gói Standalone Package (Chạy độc lập, không cần cài runtime)
           $standaloneDir = "package/ludusavo-Standalone"
           New-Item -ItemType Directory -Force -Path "$standaloneDir"
-          Copy-Item "dist/standalone/SaveSync.Wpf.exe" -Destination "$standaloneDir/ludusavo.exe"
+          Copy-Item "dist/standalone/*" -Destination "$standaloneDir/" -Recurse -Force
+          if (Test-Path "$standaloneDir/SaveSync.Wpf.exe") {
+              Rename-Item "$standaloneDir/SaveSync.Wpf.exe" -NewName "ludusavo.exe"
+          }
 
           if (Test-Path "data/cache/manifest_processed.json") {
               New-Item -ItemType Directory -Force -Path "$standaloneDir/data/cache"
@@ -104,7 +107,10 @@ jobs:
           # 2. Đóng gói Portable Package (Gọn nhẹ, yêu cầu .NET 8 Desktop Runtime)
           $portableDir = "package/ludusavo-Portable"
           New-Item -ItemType Directory -Force -Path "$portableDir"
-          Copy-Item "dist/portable/SaveSync.Wpf.exe" -Destination "$portableDir/ludusavo.exe"
+          Copy-Item "dist/portable/*" -Destination "$portableDir/" -Recurse -Force
+          if (Test-Path "$portableDir/SaveSync.Wpf.exe") {
+              Rename-Item "$portableDir/SaveSync.Wpf.exe" -NewName "ludusavo.exe"
+          }
 
           if (Test-Path "data/cache/manifest_processed.json") {
               New-Item -ItemType Directory -Force -Path "$portableDir/data/cache"
