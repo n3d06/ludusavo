@@ -113,11 +113,11 @@ public partial class SettingsViewModel : ObservableObject
             {
                 if (enable)
                 {
-                    key?.SetValue("SaveSync", $"\"{appPath}\" --minimized");
+                    key?.SetValue("ludusavo", $"\"{appPath}\" --minimized");
                 }
                 else
                 {
-                    key?.DeleteValue("SaveSync", false);
+                    key?.DeleteValue("ludusavo", false);
                 }
             }
         }

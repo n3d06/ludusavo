@@ -20,7 +20,7 @@ public class GitHubService : IGitHubService
         {
             BaseAddress = new Uri("https://api.github.com/")
         };
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "SaveSync-Desktop");
+        _httpClient.DefaultRequestHeaders.Add("User-Agent", "ludusavo-Desktop");
         _httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.github+json");
     }
 
@@ -181,6 +181,62 @@ public class GitHubService : IGitHubService
         return null;
     }
 
+    public async Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync()
+    {
+        var result = new Dictionary<string, RemoteGameMeta>(StringComparer.OrdinalIgnoreCase);
+        if (!IsConfigured) return result;
+
+        try
+        {
+            ApplyAuth();
+            var owner = _configService.Settings.GitHubOwner;
+            var repo = _configService.Settings.GitHubRepo;
+
+            var res = await _httpClient.GetAsync($"repos/{owner}/{repo}/contents/saves/catalog.json");
+            if (res.IsSuccessStatusCode)
+            {
+                var json = await res.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("content", out var contentProp))
+                {
+                    var base64 = contentProp.GetString()?.Replace("\n", "").Replace("\r", "");
+                    if (!string.IsNullOrEmpty(base64))
+                    {
+                        var bytes = Convert.FromBase64String(base64);
+                        var rawCatalog = Encoding.UTF8.GetString(bytes);
+                        var catalog = JsonSerializer.Deserialize<Dictionary<string, RemoteGameMeta>>(rawCatalog, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        if (catalog != null)
+                        {
+                            return new Dictionary<string, RemoteGameMeta>(catalog, StringComparer.OrdinalIgnoreCase);
+                        }
+                    }
+                }
+            }
+
+            // Fallback (Migration): Fetch individually if catalog doesn't exist
+            var gameIds = await ListRemoteGameIdsAsync();
+            if (gameIds.Count > 0)
+            {
+                var tasks = gameIds.Select(async id => 
+                {
+                    var meta = await GetRemoteMetaAsync(id);
+                    return (id, meta);
+                });
+                var results = await Task.WhenAll(tasks);
+                foreach (var r in results)
+                {
+                    if (r.meta != null)
+                    {
+                        result[r.id] = r.meta;
+                    }
+                }
+            }
+        }
+        catch { }
+
+        return result;
+    }
+
     private async Task<string?> GetFileShaAsync(string path)
     {
         try
@@ -276,6 +332,25 @@ public class GitHubService : IGitHubService
                 var rMeta = await UploadOrUpdateFileAsync($"saves/{gameId}/meta.json", metaBytes, $"Sync meta for {gameId}");
                 if (!rMeta.success) return rMeta;
             }
+
+            // Update catalog.json
+            try
+            {
+                var allMetas = await GetAllRemoteMetasAsync();
+                if (File.Exists(metaPath))
+                {
+                    var metaContent = await File.ReadAllTextAsync(metaPath);
+                    var newMeta = JsonSerializer.Deserialize<RemoteGameMeta>(metaContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (newMeta != null)
+                    {
+                        allMetas[gameId] = newMeta;
+                        var catalogJson = JsonSerializer.Serialize(allMetas, new JsonSerializerOptions { WriteIndented = true });
+                        var catalogBytes = Encoding.UTF8.GetBytes(catalogJson);
+                        await UploadOrUpdateFileAsync("saves/catalog.json", catalogBytes, $"Update catalog after syncing {gameId}");
+                    }
+                }
+            }
+            catch { }
 
             return (true, null);
         }

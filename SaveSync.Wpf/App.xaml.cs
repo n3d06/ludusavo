@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
 using SaveSync.Desktop.Services;
@@ -11,9 +12,20 @@ public partial class App : System.Windows.Application
 {
     private IServiceProvider? _serviceProvider;
     private System.Windows.Forms.NotifyIcon? _notifyIcon;
+    private static Mutex? _mutex;
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        const string appName = "ludusavo-SingleInstanceAppMutex";
+        _mutex = new Mutex(true, appName, out bool createdNew);
+
+        if (!createdNew)
+        {
+            MessageBox.Show("Ứng dụng ludusavo đã đang chạy (Vui lòng kiểm tra khay hệ thống / góc phải màn hình).", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            Application.Current.Shutdown();
+            return;
+        }
+
         base.OnStartup(e);
 
         var services = new ServiceCollection();
@@ -83,7 +95,7 @@ public partial class App : System.Windows.Application
 
             _notifyIcon = new System.Windows.Forms.NotifyIcon
             {
-                Text = "SaveSync - Game Save Manager",
+                Text = "ludusavo - Game Save Manager",
                 Icon = trayIcon ?? System.Drawing.SystemIcons.Application,
                 Visible = true
             };
@@ -96,7 +108,7 @@ public partial class App : System.Windows.Application
             };
 
             var contextMenu = new System.Windows.Forms.ContextMenuStrip();
-            contextMenu.Items.Add("Mở SaveSync", null, (s, e) =>
+            contextMenu.Items.Add("Mở ludusavo", null, (s, e) =>
             {
                 mainWindow.Show();
                 mainWindow.WindowState = WindowState.Normal;
