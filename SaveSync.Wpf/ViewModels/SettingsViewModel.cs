@@ -3,22 +3,29 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
 using SaveSync.Desktop.Models;
 using SaveSync.Desktop.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace SaveSync.Desktop.ViewModels;
 
-public partial class SettingsViewModel : ObservableObject
+public partial class SettingsViewModel : ObservableValidator
 {
     private readonly IConfigService _configService;
     private readonly IGitHubService _gitHubService;
     private readonly MainViewModel _mainViewModel;
 
     [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "GitHub Token không được để trống")]
     private string _gitHubToken = string.Empty;
 
     [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "GitHub Owner không được để trống")]
     private string _gitHubOwner = string.Empty;
 
     [ObservableProperty]
+    [NotifyDataErrorInfo]
+    [Required(ErrorMessage = "GitHub Repo không được để trống")]
     private string _gitHubRepo = string.Empty;
 
     [ObservableProperty]

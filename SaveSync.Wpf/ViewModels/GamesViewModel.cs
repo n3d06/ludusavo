@@ -47,7 +47,7 @@ public partial class GamesViewModel : ObservableObject
 
         _gameWatcher.OnGameExitedAndSynced += game =>
         {
-            App.Current?.Dispatcher?.Invoke(() =>
+            System.Windows.Application.Current?.Dispatcher?.InvokeAsync(() =>
             {
                 ScanStatusText = $"Tự động đồng bộ {game.Name} thành công!";
             });
