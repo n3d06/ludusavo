@@ -21,8 +21,8 @@ public partial class App : System.Windows.Application
 
         if (!createdNew)
         {
-            MessageBox.Show("Ứng dụng ludusavo đã đang chạy (Vui lòng kiểm tra khay hệ thống / góc phải màn hình).", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
-            Application.Current.Shutdown();
+            System.Windows.MessageBox.Show("Ứng dụng ludusavo đã đang chạy (Vui lòng kiểm tra khay hệ thống / góc phải màn hình).", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.Application.Current.Shutdown();
             return;
         }
 
