@@ -49,22 +49,19 @@ public partial class CloudViewModel : ObservableObject
 
         try
         {
-            var gameIds = await _gitHubService.ListRemoteGameIdsAsync();
+            var allMetas = await _gitHubService.GetAllRemoteMetasAsync();
             RemoteSaves.Clear();
 
-            foreach (var id in gameIds)
+            foreach (var kvp in allMetas)
             {
-                var meta = await _gitHubService.GetRemoteMetaAsync(id);
-                if (meta != null)
+                var meta = kvp.Value;
+                var gameEntry = _manifestService.GetGameById(meta.GameId);
+                if (gameEntry != null)
                 {
-                    var gameEntry = _manifestService.GetGameById(id);
-                    if (gameEntry != null)
-                    {
-                        meta.SteamId = gameEntry.GetSteamAppId();
-                        meta.CustomBannerUrl = gameEntry.CustomBannerUrl;
-                    }
-                    RemoteSaves.Add(meta);
+                    meta.SteamId = gameEntry.GetSteamAppId();
+                    meta.CustomBannerUrl = gameEntry.CustomBannerUrl;
                 }
+                RemoteSaves.Add(meta);
             }
 
             var rate = await _gitHubService.GetRateLimitAsync();
