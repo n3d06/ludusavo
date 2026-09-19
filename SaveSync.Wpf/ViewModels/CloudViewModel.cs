@@ -25,6 +25,9 @@ public partial class CloudViewModel : ObservableObject
     [ObservableProperty]
     private string _rateLimitInfo = string.Empty;
 
+    [ObservableProperty]
+    private bool _isCompactMode;
+
     public CloudViewModel(
         IGitHubService gitHubService,
         IRestoreService restoreService,

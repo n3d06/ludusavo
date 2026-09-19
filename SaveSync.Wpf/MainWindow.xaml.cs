@@ -35,6 +35,7 @@ public partial class MainWindow : FluentWindow
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         RootNavigation.SetServiceProvider(_serviceProvider);
+        RootNavigation.Navigate(typeof(GamesPage));
 
         // Disable any internal ScrollViewers inside NavigationView's content area
         // so that page-level ScrollViewers can receive mouse wheel events

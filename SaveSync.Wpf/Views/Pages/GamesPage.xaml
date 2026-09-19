@@ -71,7 +71,7 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
-            <ItemsControl ItemsSource="{Binding Games}">
+            <ItemsControl ItemsSource="{Binding Games}" Margin="0,0,16,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ui:Card Margin="0,0,0,10" Padding="14">
@@ -148,33 +148,77 @@
                                             Orientation="Horizontal"
                                             VerticalAlignment="Center">
 
-                                    <ui:Button Content="Mở thư mục"
-                                               Command="{Binding DataContext.OpenSaveFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    <ui:Button Command="{Binding DataContext.OpenSaveFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                CommandParameter="{Binding}"
                                                Margin="0,0,8,0"
-                                               Icon="{ui:SymbolIcon Folder24}"/>
+                                               Icon="{ui:SymbolIcon Folder24}">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Mở thư mục"/>
+                                                <Setter Property="ToolTip" Value="Mở thư mục"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
 
-                                    <ui:Button Content="Sửa"
-                                               Command="{Binding DataContext.EditCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    <ui:Button Command="{Binding DataContext.EditCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                CommandParameter="{Binding}"
                                                Visibility="{Binding IsCustomGame, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                Margin="0,0,8,0"
-                                               Icon="{ui:SymbolIcon Edit24}"/>
+                                               Icon="{ui:SymbolIcon Edit24}">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Sửa"/>
+                                                <Setter Property="ToolTip" Value="Sửa"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
 
-                                    <ui:Button Content="Xóa"
-                                               Command="{Binding DataContext.DeleteCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                    <ui:Button Command="{Binding DataContext.DeleteCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                CommandParameter="{Binding}"
                                                Visibility="{Binding IsCustomGame, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                Appearance="Danger"
                                                Margin="0,0,8,0"
-                                               Icon="{ui:SymbolIcon Delete24}"/>
+                                               Icon="{ui:SymbolIcon Delete24}">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Xóa"/>
+                                                <Setter Property="ToolTip" Value="Xóa"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
 
-                                    <ui:Button Content="Sao lưu lên GitHub"
-                                               Appearance="Primary"
+                                    <ui:Button Appearance="Primary"
                                                Command="{Binding DataContext.SyncGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                CommandParameter="{Binding}"
                                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBooleanConverter}}"
-                                               Icon="{ui:SymbolIcon CloudArrowUp24}"/>
+                                               Icon="{ui:SymbolIcon CloudArrowUp24}">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Sao lưu lên GitHub"/>
+                                                <Setter Property="ToolTip" Value="Sao lưu lên GitHub"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
                                 </StackPanel>
                             </Grid>
                         </ui:Card>

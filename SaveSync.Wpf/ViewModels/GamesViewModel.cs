@@ -34,6 +34,9 @@ public partial class GamesViewModel : ObservableObject
     [ObservableProperty]
     private DetectedGame? _selectedGame;
 
+    [ObservableProperty]
+    private bool _isCompactMode;
+
     public GamesViewModel(
         IManifestService manifestService,
         IScannerService scannerService,

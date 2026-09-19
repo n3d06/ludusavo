@@ -47,7 +47,7 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
-            <ItemsControl ItemsSource="{Binding RemoteSaves}">
+            <ItemsControl ItemsSource="{Binding RemoteSaves}" Margin="0,0,16,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ui:Card Margin="0,0,0,10" Padding="14">
@@ -104,12 +104,23 @@
 
                                 <!-- Actions -->
                                 <ui:Button Grid.Column="2"
-                                           Content="Khôi phục về máy"
                                            Appearance="Primary"
                                            Command="{Binding DataContext.DownloadAndRestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                            CommandParameter="{Binding}"
                                            VerticalAlignment="Center"
-                                           Icon="{ui:SymbolIcon ArrowDownload24}"/>
+                                           Icon="{ui:SymbolIcon ArrowDownload24}">
+                                    <ui:Button.Style>
+                                        <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                            <Setter Property="Content" Value="Khôi phục về máy"/>
+                                            <Setter Property="ToolTip" Value="Khôi phục về máy"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                    <Setter Property="Content" Value="{x:Null}"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ui:Button.Style>
+                                </ui:Button>
                             </Grid>
                         </ui:Card>
                     </DataTemplate>

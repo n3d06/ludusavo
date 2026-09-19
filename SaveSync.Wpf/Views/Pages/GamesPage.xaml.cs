@@ -17,6 +17,12 @@ public partial class GamesPage : Page
         {
             await ViewModel.InitializeAsync();
         };
+
+        SizeChanged += (s, e) =>
+        {
+            // Hide button text and show only icons when page width is narrow
+            ViewModel.IsCompactMode = ActualWidth < 900;
+        };
     }
 
     private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)

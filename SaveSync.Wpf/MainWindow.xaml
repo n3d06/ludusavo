@@ -23,6 +23,9 @@
         <ui:NavigationView Grid.Row="1"
                            x:Name="RootNavigation"
                            PaneDisplayMode="Left"
+                           IsPaneToggleVisible="False"
+                           IsPaneOpen="True"
+                           OpenPaneLength="220"
                            IsBackButtonVisible="Collapsed"
                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
                            ScrollViewer.CanContentScroll="False">
@@ -31,29 +34,23 @@
                 <ui:NavigationViewItem Content="Sao lưu Cloud" Icon="{ui:SymbolIcon Cloud24}" TargetPageType="{x:Type pages:CloudPage}" />
             </ui:NavigationView.MenuItems>
             <ui:NavigationView.FooterMenuItems>
+                <!-- GitHub Connection Status -->
+                <ui:NavigationViewItem IsEnabled="False" Icon="{ui:SymbolIcon PlugConnected24}">
+                    <ui:NavigationViewItem.Content>
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="8" Height="8"
+                                     Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
+                                     Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="{Binding GitHubStatusText}"
+                                       FontSize="12"
+                                       FontWeight="Medium"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </ui:NavigationViewItem.Content>
+                </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="Cài đặt" Icon="{ui:SymbolIcon Settings24}" TargetPageType="{x:Type pages:SettingsPage}" />
             </ui:NavigationView.FooterMenuItems>
         </ui:NavigationView>
-
-        <!-- GitHub Connection Status Badge -->
-        <Border Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
-                BorderThickness="1"
-                CornerRadius="6"
-                Padding="12,5"
-                Margin="0,0,20,20"
-                Panel.ZIndex="1">
-            <StackPanel Orientation="Horizontal">
-                <Ellipse Width="8" Height="8"
-                         Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
-                         Margin="0,0,8,0" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding GitHubStatusText}"
-                           FontSize="12"
-                           FontWeight="Medium"
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                           VerticalAlignment="Center"/>
-            </StackPanel>
-        </Border>
     </Grid>
 </ui:FluentWindow>

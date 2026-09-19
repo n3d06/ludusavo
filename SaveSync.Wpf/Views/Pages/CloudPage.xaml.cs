@@ -20,6 +20,11 @@ public partial class CloudPage : Page
                 await ViewModel.RefreshCloudSavesCommand.ExecuteAsync(null);
             }
         };
+
+        SizeChanged += (s, e) =>
+        {
+            ViewModel.IsCompactMode = ActualWidth < 900;
+        };
     }
 
     private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
