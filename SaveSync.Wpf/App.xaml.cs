@@ -115,16 +115,7 @@ public partial class App : System.Windows.Application
                 mainWindow.Activate();
             });
 
-            contextMenu.Items.Add("Đồng bộ tất cả", null, async (s, e) =>
-            {
-                var gamesVm = _serviceProvider?.GetService<GamesViewModel>();
-                if (gamesVm != null)
-                {
-                    await gamesVm.SyncAllCommand.ExecuteAsync(null);
-                }
-            });
 
-            contextMenu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
 
             contextMenu.Items.Add("Thoát", null, (s, e) =>
             {

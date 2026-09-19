@@ -8,9 +8,13 @@ public partial class DetectedGame : ObservableObject
     public string Name { get; set; } = string.Empty;
     public int? SteamId { get; set; }
 
-    public string? SteamBannerUrl => SteamId.HasValue 
-        ? $"https://cdn.cloudflare.steamstatic.com/steam/apps/{SteamId.Value}/header.jpg" 
-        : null;
+    public bool IsCustomGame => Id.StartsWith("custom_", StringComparison.OrdinalIgnoreCase);
+
+    public string? CustomBannerUrl { get; set; }
+
+    public string? BannerUrl => !string.IsNullOrEmpty(CustomBannerUrl) 
+        ? CustomBannerUrl
+        : (SteamId.HasValue ? $"https://cdn.cloudflare.steamstatic.com/steam/apps/{SteamId.Value}/header.jpg" : null);
 
     [ObservableProperty]
     private int _fileCount;

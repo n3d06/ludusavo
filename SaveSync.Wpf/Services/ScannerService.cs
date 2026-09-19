@@ -423,6 +423,7 @@ public class ScannerService : IScannerService
                 Id = game.Id,
                 Name = game.Name,
                 SteamId = steamAppId,
+                CustomBannerUrl = game.CustomBannerUrl,
                 FileCount = fileDetails.Count,
                 TotalSizeBytes = totalSize,
                 LastModified = latestTime,

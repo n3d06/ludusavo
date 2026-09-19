@@ -78,6 +78,10 @@ public partial class GamesViewModel : ObservableObject
         {
             if (!_manifestService.IsLoaded)
             {
+                // Download custom manifest from cloud first if configured
+                ScanStatusText = "Đang tải custom_manifest.json từ Cloud (nếu có)...";
+                await _syncService.DownloadCustomManifestAsync();
+
                 var loaded = await _manifestService.LoadManifestAsync();
                 if (!loaded)
                 {
@@ -144,25 +148,6 @@ public partial class GamesViewModel : ObservableObject
         await _syncService.RestoreGameFromCloudAsync(game);
     }
 
-    [RelayCommand]
-    public async Task SyncAllAsync()
-    {
-        if (IsScanning || Games.Count == 0) return;
-
-        IsScanning = true;
-        ScanStatusText = "Đang đồng bộ tất cả game lên Cloud...";
-
-        int success = 0;
-        foreach (var game in Games)
-        {
-            ScanStatusText = $"Đang sao lưu & đồng bộ {game.Name}...";
-            var res = await _syncService.SyncGameToCloudAsync(game);
-            if (res.success) success++;
-        }
-
-        ScanStatusText = $"Đã đồng bộ xong {success}/{Games.Count} game.";
-        IsScanning = false;
-    }
 
     [RelayCommand]
     public void OpenSaveFolder(DetectedGame? game)
@@ -181,6 +166,189 @@ public partial class GamesViewModel : ObservableObject
                 });
             }
         }
+    }
+
+    [RelayCommand]
+    public async Task AddCustomGameAsync()
+    {
+        // 1. Pick Folder
+        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = "Chọn thư mục lưu save game",
+            UseDescriptionForTitle = true
+        };
+
+        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+            return;
+
+        var folderPath = dialog.SelectedPath;
+
+        // 2. Input Name & Banner
+        string gameName = "";
+        string bannerUrl = "";
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var window = new System.Windows.Window
+            {
+                Title = "Thêm Game Custom",
+                Width = 350,
+                Height = 220,
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen,
+                ResizeMode = System.Windows.ResizeMode.NoResize
+            };
+            var tbName = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10) };
+            var tbBanner = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10) };
+            var btn = new System.Windows.Controls.Button { Content = "OK", Margin = new System.Windows.Thickness(10), IsDefault = true };
+            btn.Click += (s, e) => window.DialogResult = true;
+            
+            var stack = new System.Windows.Controls.StackPanel();
+            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Nhập tên game:", Margin = new System.Windows.Thickness(10,10,10,0) });
+            stack.Children.Add(tbName);
+            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Link ảnh Banner (Tùy chọn):", Margin = new System.Windows.Thickness(10,10,10,0) });
+            stack.Children.Add(tbBanner);
+            stack.Children.Add(btn);
+            window.Content = stack;
+
+            if (window.ShowDialog() == true)
+            {
+                gameName = tbName.Text.Trim();
+                bannerUrl = tbBanner.Text.Trim();
+            }
+        });
+
+        if (string.IsNullOrEmpty(gameName)) return;
+
+        // Convert absolute path to a placeholder path (e.g. <appdata>/...) for cross-PC compatibility
+        var portablePath = _scannerService.ToPlaceholderPath(folderPath);
+
+        var newGame = new GameEntry
+        {
+            Id = "custom_" + Guid.NewGuid().ToString("N").Substring(0, 8),
+            Name = gameName,
+            CustomBannerUrl = string.IsNullOrEmpty(bannerUrl) ? null : bannerUrl,
+            SavePaths = new List<SavePathEntry>
+            {
+                new SavePathEntry { Path = portablePath }
+            }
+        };
+
+        ScanStatusText = $"Đang thêm game {gameName}...";
+        await _manifestService.AddCustomGameAsync(newGame);
+        
+        ScanStatusText = "Đang đồng bộ custom_manifest.json lên Cloud...";
+        await _syncService.UploadCustomManifestAsync();
+
+        ScanStatusText = "Thêm thành công! Đang tải lại danh sách...";
+        // Reload games list
+        await LoadAndScanGamesAsync(forceRescan: true);
+    }
+
+    [RelayCommand]
+    public async Task EditCustomGameAsync(DetectedGame? game)
+    {
+        if (game == null || !game.IsCustomGame) return;
+
+        var existingMeta = _manifestService.GetGameById(game.Id);
+        if (existingMeta == null) return;
+
+        string currentPath = existingMeta.SavePaths.FirstOrDefault()?.Path ?? "";
+
+        // 1. Pick Folder
+        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        {
+            Description = "Chọn thư mục lưu save game",
+            UseDescriptionForTitle = true
+        };
+
+        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+            return;
+
+        var folderPath = dialog.SelectedPath;
+
+        // 2. Input Name & Banner
+        string gameName = "";
+        string bannerUrl = "";
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var window = new System.Windows.Window
+            {
+                Title = "Sửa Game Custom",
+                Width = 350,
+                Height = 220,
+                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen,
+                ResizeMode = System.Windows.ResizeMode.NoResize
+            };
+            var tbName = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10), Text = game.Name };
+            var tbBanner = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10), Text = game.CustomBannerUrl };
+            var btn = new System.Windows.Controls.Button { Content = "Lưu", Margin = new System.Windows.Thickness(10), IsDefault = true };
+            btn.Click += (s, e) => window.DialogResult = true;
+            
+            var stack = new System.Windows.Controls.StackPanel();
+            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Sửa tên game:", Margin = new System.Windows.Thickness(10,10,10,0) });
+            stack.Children.Add(tbName);
+            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Link ảnh Banner (Tùy chọn):", Margin = new System.Windows.Thickness(10,10,10,0) });
+            stack.Children.Add(tbBanner);
+            stack.Children.Add(btn);
+            window.Content = stack;
+
+            if (window.ShowDialog() == true)
+            {
+                gameName = tbName.Text.Trim();
+                bannerUrl = tbBanner.Text.Trim();
+            }
+        });
+
+        if (string.IsNullOrEmpty(gameName)) return;
+
+        var portablePath = _scannerService.ToPlaceholderPath(folderPath);
+
+        var updatedGame = new GameEntry
+        {
+            Id = game.Id,
+            Name = gameName,
+            CustomBannerUrl = string.IsNullOrEmpty(bannerUrl) ? null : bannerUrl,
+            SavePaths = new List<SavePathEntry>
+            {
+                new SavePathEntry { Path = portablePath }
+            }
+        };
+
+        ScanStatusText = $"Đang cập nhật game {gameName}...";
+        await _manifestService.AddCustomGameAsync(updatedGame);
+        
+        ScanStatusText = "Đang đồng bộ custom_manifest.json lên Cloud...";
+        await _syncService.UploadCustomManifestAsync();
+
+        ScanStatusText = "Cập nhật thành công! Đang tải lại danh sách...";
+        await LoadAndScanGamesAsync(forceRescan: true);
+    }
+
+    [RelayCommand]
+    public async Task DeleteCustomGameAsync(DetectedGame? game)
+    {
+        if (game == null || !game.IsCustomGame) return;
+
+        bool confirm = false;
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var result = System.Windows.MessageBox.Show(
+                $"Bạn có chắc muốn xóa game {game.Name} khỏi danh sách Custom không?\n(Lưu ý: Không xóa file save của bạn)",
+                "Xác nhận xóa",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Question);
+            confirm = result == System.Windows.MessageBoxResult.Yes;
+        });
+
+        if (!confirm) return;
+
+        ScanStatusText = $"Đang xóa game {game.Name}...";
+        await _manifestService.RemoveCustomGameAsync(game.Id);
+        
+        ScanStatusText = "Đang đồng bộ custom_manifest.json lên Cloud...";
+        await _syncService.UploadCustomManifestAsync();
+
+        ScanStatusText = "Xóa thành công! Đang tải lại danh sách...";
+        await LoadAndScanGamesAsync(forceRescan: true);
     }
 
     partial void OnSearchTextChanged(string value)

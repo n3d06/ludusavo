@@ -61,6 +61,7 @@ public partial class CloudViewModel : ObservableObject
                     if (gameEntry != null)
                     {
                         meta.SteamId = gameEntry.GetSteamAppId();
+                        meta.CustomBannerUrl = gameEntry.CustomBannerUrl;
                     }
                     RemoteSaves.Add(meta);
                 }

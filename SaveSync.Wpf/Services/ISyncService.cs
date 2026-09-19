@@ -8,4 +8,6 @@ public interface ISyncService
     Task CheckAllSyncStatusesAsync(IEnumerable<DetectedGame> games);
     Task<(bool success, string? message)> SyncGameToCloudAsync(DetectedGame game);
     Task<(bool success, string? message)> RestoreGameFromCloudAsync(DetectedGame game);
+    Task<(bool success, string? message)> UploadCustomManifestAsync();
+    Task<(bool success, string? message)> DownloadCustomManifestAsync();
 }

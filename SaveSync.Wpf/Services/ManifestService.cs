@@ -61,6 +61,10 @@ public class ManifestService : IManifestService
                 }
 
                 IsLoaded = true;
+                
+                // Load custom manifest
+                await LoadCustomManifestAsync();
+                
                 return true;
             }
         }
@@ -96,5 +100,122 @@ public class ManifestService : IManifestService
         return _gamesList.Where(g =>
             g.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
             g.Id.Contains(q, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task LoadCustomManifestAsync()
+    {
+        var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
+        if (!File.Exists(customPath)) return;
+
+        try
+        {
+            await using var stream = File.OpenRead(customPath);
+            var loaded = await JsonSerializer.DeserializeAsync<List<GameEntry>>(stream);
+            if (loaded != null)
+            {
+                foreach (var g in loaded)
+                {
+                    // Update or Add
+                    var existing = _gamesList.FirstOrDefault(x => x.Id == g.Id);
+                    if (existing != null)
+                    {
+                        _gamesList.Remove(existing);
+                    }
+                    _gamesList.Add(g);
+                    
+                    _gamesById[g.Id] = g;
+                    var sid = g.GetSteamAppId();
+                    if (sid.HasValue)
+                    {
+                        _gamesBySteamId[sid.Value] = g;
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[ManifestService] Error loading custom manifest: {ex.Message}");
+        }
+    }
+
+    public async Task AddCustomGameAsync(GameEntry game)
+    {
+        var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
+        List<GameEntry> customGames = new();
+
+        if (File.Exists(customPath))
+        {
+            try
+            {
+                await using var stream = File.OpenRead(customPath);
+                var loaded = await JsonSerializer.DeserializeAsync<List<GameEntry>>(stream);
+                if (loaded != null)
+                {
+                    customGames = loaded;
+                }
+            }
+            catch { }
+        }
+
+        var existingIdx = customGames.FindIndex(g => g.Id == game.Id);
+        if (existingIdx >= 0)
+        {
+            customGames[existingIdx] = game;
+        }
+        else
+        {
+            customGames.Add(game);
+        }
+
+        // Save back
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var json = JsonSerializer.Serialize(customGames, options);
+        await File.WriteAllTextAsync(customPath, json);
+
+        // Update in-memory state
+        var existingListIdx = _gamesList.FindIndex(g => g.Id == game.Id);
+        if (existingListIdx >= 0)
+        {
+            _gamesList.RemoveAt(existingListIdx);
+        }
+        _gamesList.Add(game);
+        _gamesById[game.Id] = game;
+    }
+
+    public async Task RemoveCustomGameAsync(string gameId)
+    {
+        var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
+        List<GameEntry> customGames = new();
+
+        if (File.Exists(customPath))
+        {
+            try
+            {
+                await using var stream = File.OpenRead(customPath);
+                var loaded = await JsonSerializer.DeserializeAsync<List<GameEntry>>(stream);
+                if (loaded != null)
+                {
+                    customGames = loaded;
+                }
+            }
+            catch { }
+        }
+
+        var existingIdx = customGames.FindIndex(g => g.Id == gameId);
+        if (existingIdx >= 0)
+        {
+            customGames.RemoveAt(existingIdx);
+            var options = new JsonSerializerOptions { WriteIndented = true };
+            var json = JsonSerializer.Serialize(customGames, options);
+            await File.WriteAllTextAsync(customPath, json);
+        }
+
+        // Update in-memory state
+        var existingListIdx = _gamesList.FindIndex(g => g.Id == gameId);
+        if (existingListIdx >= 0)
+        {
+            _gamesList.RemoveAt(existingListIdx);
+        }
+        _gamesById.Remove(gameId);
     }
 }

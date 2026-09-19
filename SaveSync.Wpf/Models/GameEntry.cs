@@ -16,6 +16,9 @@ public class GameEntry
     [JsonPropertyName("steamId")]
     public object? SteamId { get; set; }
 
+    [JsonPropertyName("customBannerUrl")]
+    public string? CustomBannerUrl { get; set; }
+
     public int? GetSteamAppId()
     {
         if (SteamId is int id) return id;

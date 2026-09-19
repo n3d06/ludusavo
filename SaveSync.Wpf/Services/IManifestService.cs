@@ -11,4 +11,6 @@ public interface IManifestService
     GameEntry? GetGameById(string id);
     GameEntry? GetGameBySteamId(int steamId);
     IEnumerable<GameEntry> SearchGames(string query);
+    Task AddCustomGameAsync(GameEntry game);
+    Task RemoveCustomGameAsync(string gameId);
 }

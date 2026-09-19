@@ -80,17 +80,16 @@
             </Grid>
 
             <Button Grid.Column="1"
-                    Content="Quét lại"
-                    Command="{Binding RefreshScanCommand}"
+                    Content="Thêm Game Custom"
+                    Command="{Binding AddCustomGameCommand}"
                     IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
                     Height="34"
                     Padding="16,0"
                     Margin="0,0,10,0"/>
 
             <Button Grid.Column="2"
-                    Content="Đồng bộ tất cả"
-                    Style="{StaticResource PrimaryButton}"
-                    Command="{Binding SyncAllCommand}"
+                    Content="Quét lại"
+                    Command="{Binding RefreshScanCommand}"
                     IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
                     Height="34"
                     Padding="16,0"/>
@@ -151,10 +150,10 @@
                                         Background="#E2E8F0"
                                         Margin="0,0,16,0">
                                     <Grid>
-                                        <Image Source="{Binding SteamBannerUrl}"
+                                        <Image Source="{Binding BannerUrl}"
                                                Stretch="UniformToFill"/>
                                         <TextBlock Text="{Binding Name}"
-                                                   Visibility="{Binding SteamBannerUrl, Converter={StaticResource NullToVisibilityConverter}}"
+                                                   Visibility="{Binding BannerUrl, Converter={StaticResource NullToVisibilityConverter}}"
                                                    Foreground="#64748B"
                                                    FontSize="11"
                                                    TextWrapping="Wrap"
@@ -219,6 +218,24 @@
                                     <Button Content="Mở thư mục"
                                             Command="{Binding DataContext.OpenSaveFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                             CommandParameter="{Binding}"
+                                            Margin="0,0,8,0"
+                                            Padding="14,0"
+                                            Height="34"/>
+
+                                    <Button Content="Sửa"
+                                            Command="{Binding DataContext.EditCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding IsCustomGame, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            Margin="0,0,8,0"
+                                            Padding="14,0"
+                                            Height="34"/>
+
+                                    <Button Content="Xóa"
+                                            Command="{Binding DataContext.DeleteCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                            CommandParameter="{Binding}"
+                                            Visibility="{Binding IsCustomGame, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            Background="#FEE2E2"
+                                            Foreground="#B91C1C"
                                             Margin="0,0,8,0"
                                             Padding="14,0"
                                             Height="34"/>

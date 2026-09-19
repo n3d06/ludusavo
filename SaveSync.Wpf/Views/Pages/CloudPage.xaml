@@ -84,10 +84,10 @@
                                         Background="#E2E8F0"
                                         Margin="0,0,16,0">
                                     <Grid>
-                                        <Image Source="{Binding SteamBannerUrl}"
+                                        <Image Source="{Binding BannerUrl}"
                                                Stretch="UniformToFill"/>
                                         <TextBlock Text="{Binding GameName}"
-                                                   Visibility="{Binding SteamBannerUrl, Converter={StaticResource NullToVisibilityConverter}}"
+                                                   Visibility="{Binding BannerUrl, Converter={StaticResource NullToVisibilityConverter}}"
                                                    Foreground="#64748B"
                                                    FontSize="11"
                                                    TextWrapping="Wrap"

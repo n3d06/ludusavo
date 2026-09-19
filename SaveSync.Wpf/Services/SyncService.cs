@@ -214,4 +214,20 @@ public class SyncService : ISyncService
             return (false, ex.Message);
         }
     }
+
+    public async Task<(bool success, string? message)> UploadCustomManifestAsync()
+    {
+        if (!_gitHubService.IsConfigured) return (false, "GitHub chưa được cấu hình");
+        var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
+        if (!File.Exists(customPath)) return (true, null);
+
+        return await _gitHubService.UploadFileAsync("saves/custom_manifest.json", customPath, "Update custom_manifest.json");
+    }
+
+    public async Task<(bool success, string? message)> DownloadCustomManifestAsync()
+    {
+        if (!_gitHubService.IsConfigured) return (false, "GitHub chưa được cấu hình");
+        var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
+        return await _gitHubService.DownloadFileAsync("saves/custom_manifest.json", customPath);
+    }
 }

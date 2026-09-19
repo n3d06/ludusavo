@@ -154,7 +154,9 @@ public class GitHubService : IGitHubService
                         GameName = root.TryGetProperty("gameName", out var gn) ? gn.GetString() ?? gameId : gameId,
                         ArchiveHash = archiveHash,
                         FileCount = root.TryGetProperty("fileCount", out var fc) && fc.TryGetInt32(out var fcVal) ? fcVal : 0,
-                        TotalSize = totalSize
+                        TotalSize = totalSize,
+                        SteamId = root.TryGetProperty("steamId", out var sid) && sid.ValueKind == JsonValueKind.Number && sid.TryGetInt32(out var sidVal) ? sidVal : null,
+                        CustomBannerUrl = root.TryGetProperty("customBannerUrl", out var cb) && cb.ValueKind == JsonValueKind.String ? cb.GetString() : null
                     };
 
                     DateTime dt = DateTime.MinValue;
@@ -415,6 +417,84 @@ public class GitHubService : IGitHubService
             }
 
             return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
+    public async Task<(bool success, string? error)> UploadFileAsync(string repoPath, string localPath, string commitMessage)
+    {
+        if (!IsConfigured)
+            return (false, "GitHub chưa được cấu hình");
+            
+        if (!File.Exists(localPath))
+            return (false, $"File {localPath} không tồn tại.");
+            
+        try
+        {
+            var fileBytes = await File.ReadAllBytesAsync(localPath);
+            return await UploadOrUpdateFileAsync(repoPath, fileBytes, commitMessage);
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
+    public async Task<(bool success, string? error)> DownloadFileAsync(string repoPath, string localPath)
+    {
+        if (!IsConfigured)
+            return (false, "GitHub chưa được cấu hình");
+
+        try
+        {
+            ApplyAuth();
+            var owner = _configService.Settings.GitHubOwner;
+            var repo = _configService.Settings.GitHubRepo;
+
+            var res = await _httpClient.GetAsync($"repos/{owner}/{repo}/contents/{repoPath}");
+            if (!res.IsSuccessStatusCode)
+            {
+                return (false, $"Không tải được {repoPath}: {res.StatusCode}");
+            }
+
+            var json = await res.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+
+            // Ensure directory exists
+            var dir = Path.GetDirectoryName(localPath);
+            if (!string.IsNullOrEmpty(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            if (root.TryGetProperty("download_url", out var dlUrlProp) && !string.IsNullOrEmpty(dlUrlProp.GetString()))
+            {
+                var dlUrl = dlUrlProp.GetString()!;
+                using var dlRes = await _httpClient.GetAsync(dlUrl);
+                if (dlRes.IsSuccessStatusCode)
+                {
+                    await using var fs = File.Create(localPath);
+                    await dlRes.Content.CopyToAsync(fs);
+                    return (true, null);
+                }
+            }
+
+            if (root.TryGetProperty("content", out var cProp))
+            {
+                var b64 = cProp.GetString()?.Replace("\n", "").Replace("\r", "");
+                if (!string.IsNullOrEmpty(b64))
+                {
+                    var bytes = Convert.FromBase64String(b64);
+                    await File.WriteAllBytesAsync(localPath, bytes);
+                    return (true, null);
+                }
+            }
+            
+            return (false, "Không lấy được nội dung file");
         }
         catch (Exception ex)
         {

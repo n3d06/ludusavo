@@ -9,10 +9,11 @@ public class RemoteGameMeta
     public long TotalSize { get; set; }
     public string ArchiveHash { get; set; } = string.Empty;
     public int? SteamId { get; set; }
+    public string? CustomBannerUrl { get; set; }
 
-    public string? SteamBannerUrl => SteamId.HasValue
-        ? $"https://cdn.cloudflare.steamstatic.com/steam/apps/{SteamId.Value}/header.jpg"
-        : null;
+    public string? BannerUrl => !string.IsNullOrEmpty(CustomBannerUrl)
+        ? CustomBannerUrl
+        : (SteamId.HasValue ? $"https://cdn.cloudflare.steamstatic.com/steam/apps/{SteamId.Value}/header.jpg" : null);
 
     public string FormattedSize
     {
@@ -39,5 +40,7 @@ public interface IGitHubService
     Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync();
     Task<(bool success, string? error)> UploadGameSaveAsync(string gameId, string zipPath, string metaPath, string mappingPath);
     Task<(bool success, string? error)> DownloadGameSaveAsync(string gameId, string targetDir);
+    Task<(bool success, string? error)> UploadFileAsync(string repoPath, string localPath, string commitMessage);
+    Task<(bool success, string? error)> DownloadFileAsync(string repoPath, string localPath);
     Task<(int remaining, int limit, int resetMinutes)> GetRateLimitAsync();
 }

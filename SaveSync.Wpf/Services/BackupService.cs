@@ -130,6 +130,8 @@ public class BackupService : IBackupService
                     size = archiveSize,
                     archiveHash = archiveHash,
                     sha256 = archiveHash,
+                    steamId = game.SteamId,
+                    customBannerUrl = game.CustomBannerUrl,
                     files = fileList
                 };
 
