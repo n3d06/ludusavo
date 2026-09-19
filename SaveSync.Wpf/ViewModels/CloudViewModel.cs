@@ -49,6 +49,11 @@ public partial class CloudViewModel : ObservableObject
 
         try
         {
+            if (!_manifestService.IsLoaded)
+            {
+                await _manifestService.LoadManifestAsync();
+            }
+
             var allMetas = await _gitHubService.GetAllRemoteMetasAsync();
             RemoteSaves.Clear();
 

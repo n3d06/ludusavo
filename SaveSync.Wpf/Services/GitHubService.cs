@@ -209,7 +209,13 @@ public class GitHubService : IGitHubService
                         var catalog = JsonSerializer.Deserialize<Dictionary<string, RemoteGameMeta>>(rawCatalog, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
                         if (catalog != null)
                         {
-                            return new Dictionary<string, RemoteGameMeta>(catalog, StringComparer.OrdinalIgnoreCase);
+                            var resultDict = new Dictionary<string, RemoteGameMeta>(StringComparer.OrdinalIgnoreCase);
+                            foreach (var kvp in catalog)
+                            {
+                                kvp.Value.GameId = kvp.Key;
+                                resultDict[kvp.Key] = kvp.Value;
+                            }
+                            return resultDict;
                         }
                     }
                 }

@@ -18,4 +18,13 @@ public partial class GamesPage : Page
             await ViewModel.InitializeAsync();
         };
     }
+
+    private void ScrollViewer_PreviewMouseWheel(object sender, System.Windows.Input.MouseWheelEventArgs e)
+    {
+        if (sender is ScrollViewer sv)
+        {
+            sv.ScrollToVerticalOffset(sv.VerticalOffset - e.Delta);
+            e.Handled = true;
+        }
+    }
 }

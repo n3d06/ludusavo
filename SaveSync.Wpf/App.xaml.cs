@@ -28,6 +28,20 @@ public partial class App : System.Windows.Application
 
         base.OnStartup(e);
 
+        // Global exception handlers for crash logging
+        DispatcherUnhandledException += (s, ex) =>
+        {
+            LogCrash(ex.Exception);
+            ex.Handled = true; // prevent crash, show message instead
+            System.Windows.MessageBox.Show(
+                $"Đã xảy ra lỗi:\n{ex.Exception.Message}\n\nChi tiết đã lưu vào crash_log.txt",
+                "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+        };
+        AppDomain.CurrentDomain.UnhandledException += (s, ex) =>
+        {
+            if (ex.ExceptionObject is Exception e2) LogCrash(e2);
+        };
+
         var services = new ServiceCollection();
         ConfigureServices(services);
         _serviceProvider = services.BuildServiceProvider();
@@ -145,5 +159,16 @@ public partial class App : System.Windows.Application
         watcher?.Stop();
 
         base.OnExit(e);
+    }
+
+    private static void LogCrash(Exception ex)
+    {
+        try
+        {
+            var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash_log.txt");
+            var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n{ex}\n\n";
+            File.AppendAllText(logPath, entry);
+        }
+        catch { }
     }
 }

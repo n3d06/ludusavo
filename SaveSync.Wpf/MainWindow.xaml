@@ -1,40 +1,48 @@
-<Window x:Class="SaveSync.Desktop.MainWindow"
+<ui:FluentWindow x:Class="SaveSync.Desktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
         xmlns:vm="clr-namespace:SaveSync.Desktop.ViewModels"
-        mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance vm:MainViewModel}"
+        xmlns:pages="clr-namespace:SaveSync.Desktop.Views.Pages"
         Title="{Binding Title}"
         Icon="icon.ico"
         Height="720" Width="1080"
         MinHeight="550" MinWidth="800"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource WindowBackgroundBrush}">
+        WindowBackdropType="Mica"
+        ExtendsContentIntoTitleBar="True">
 
     <Grid>
-        <!-- Modern Flat TabControl -->
-        <TabControl x:Name="MainTabs" Padding="0,10,0,0">
-            <TabItem Header="Game trên máy" x:Name="TabGames">
-                <Frame x:Name="GamesFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
-            </TabItem>
-            <TabItem Header="Sao lưu Cloud" x:Name="TabCloud">
-                <Frame x:Name="CloudFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
-            </TabItem>
-            <TabItem Header="Cài đặt" x:Name="TabSettings">
-                <Frame x:Name="SettingsFrame" NavigationUIVisibility="Hidden" Background="Transparent"/>
-            </TabItem>
-        </TabControl>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <!-- GitHub Connection Status Badge (Overlaid on the right side of the Tab Header row) -->
-        <Border HorizontalAlignment="Right" VerticalAlignment="Top"
-                Background="#FFFFFF"
+        <ui:TitleBar Grid.Row="0" Title="{Binding Title}" />
+
+        <ui:NavigationView Grid.Row="1"
+                           x:Name="RootNavigation"
+                           PaneDisplayMode="Left"
+                           IsBackButtonVisible="Collapsed"
+                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                           ScrollViewer.CanContentScroll="False">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="Game trên máy" Icon="{ui:SymbolIcon Library24}" TargetPageType="{x:Type pages:GamesPage}" />
+                <ui:NavigationViewItem Content="Sao lưu Cloud" Icon="{ui:SymbolIcon Cloud24}" TargetPageType="{x:Type pages:CloudPage}" />
+            </ui:NavigationView.MenuItems>
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem Content="Cài đặt" Icon="{ui:SymbolIcon Settings24}" TargetPageType="{x:Type pages:SettingsPage}" />
+            </ui:NavigationView.FooterMenuItems>
+        </ui:NavigationView>
+
+        <!-- GitHub Connection Status Badge -->
+        <Border Grid.Row="1" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
                 BorderBrush="{DynamicResource CardStrokeColorDefaultBrush}"
                 BorderThickness="1"
                 CornerRadius="6"
                 Padding="12,5"
-                Margin="0,5,20,0"
+                Margin="0,0,20,20"
                 Panel.ZIndex="1">
             <StackPanel Orientation="Horizontal">
                 <Ellipse Width="8" Height="8"
@@ -48,4 +56,4 @@
             </StackPanel>
         </Border>
     </Grid>
-</Window>
+</ui:FluentWindow>
