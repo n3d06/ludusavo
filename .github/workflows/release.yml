@@ -41,6 +41,14 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Determine Version Tag & Title
         id: version
         shell: pwsh
@@ -72,7 +80,7 @@ jobs:
 
       - name: Publish Portable (Framework-Dependent, siêu nhẹ)
         run: |
-          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -p:EnableCompressionInSingleFile=false -o dist/portable
+          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -p:PublishReadyToRun=false -o dist/portable
 
       - name: Package ZIP Distributions
         shell: pwsh
