@@ -72,7 +72,7 @@ jobs:
 
       - name: Publish Portable (Framework-Dependent, siêu nhẹ)
         run: |
-          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -o dist/portable
+          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -p:EnableCompressionInSingleFile=false -o dist/portable
 
       - name: Package ZIP Distributions
         shell: pwsh

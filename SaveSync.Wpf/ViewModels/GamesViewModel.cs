@@ -296,8 +296,8 @@ public partial class GamesViewModel : ObservableObject
 
             if (window.ShowDialog() == true)
             {
-                gameName = tbName.Text.Trim();
-                bannerUrl = tbBanner.Text.Trim();
+                gameName = tbName.Text?.Trim() ?? string.Empty;
+                bannerUrl = tbBanner.Text?.Trim() ?? string.Empty;
             }
         });
 
