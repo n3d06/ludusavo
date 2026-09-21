@@ -71,7 +71,15 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
-            <ItemsControl ItemsSource="{Binding Games}" Margin="0,0,16,0">
+            <ItemsControl ItemsSource="{Binding Games}" Margin="0,0,16,0"
+                          VirtualizingPanel.IsVirtualizing="True"
+                          VirtualizingPanel.VirtualizationMode="Recycling"
+                          ScrollViewer.CanContentScroll="True">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ui:Card Margin="0,0,0,10" Padding="14">
@@ -91,7 +99,8 @@
                                         Background="{DynamicResource ControlFillColorDefaultBrush}"
                                         Margin="0,0,16,0">
                                     <Grid>
-                                        <Image Source="{Binding BannerUrl}"
+                                        <Image Source="{Binding BannerUrl, IsAsync=True}"
+                                               RenderOptions.BitmapScalingMode="HighQuality"
                                                Stretch="UniformToFill"/>
                                         <TextBlock Text="{Binding Name}"
                                                    Visibility="{Binding BannerUrl, Converter={StaticResource NullToVisibilityConverter}}"
