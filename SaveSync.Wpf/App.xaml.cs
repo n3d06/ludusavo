@@ -78,9 +78,9 @@ public partial class App : System.Windows.Application
 
         // Views & Pages
         services.AddSingleton<MainWindow>();
-        services.AddTransient<GamesPage>();
-        services.AddTransient<CloudPage>();
-        services.AddTransient<SettingsPage>();
+        services.AddSingleton<GamesPage>();
+        services.AddSingleton<CloudPage>();
+        services.AddSingleton<SettingsPage>();
     }
 
     private void SetupTrayIcon(MainWindow mainWindow)

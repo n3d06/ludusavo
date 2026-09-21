@@ -354,27 +354,41 @@ public partial class GamesViewModel : ObservableObject
         await LoadAndScanGamesAsync(forceRescan: true);
     }
 
+    private System.Threading.CancellationTokenSource? _searchCts;
+
     partial void OnSearchTextChanged(string value)
     {
-        var view = CollectionViewSource.GetDefaultView(Games);
-        if (view == null) return;
+        _searchCts?.Cancel();
+        _searchCts = new System.Threading.CancellationTokenSource();
+        var token = _searchCts.Token;
 
-        if (string.IsNullOrWhiteSpace(value))
+        _ = System.Threading.Tasks.Task.Delay(300, token).ContinueWith(t =>
         {
-            view.Filter = null;
-        }
-        else
-        {
-            var q = value.Trim();
-            view.Filter = obj =>
+            if (t.IsCanceled) return;
+
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
-                if (obj is DetectedGame g)
+                var view = CollectionViewSource.GetDefaultView(Games);
+                if (view == null) return;
+
+                if (string.IsNullOrWhiteSpace(value))
                 {
-                    return g.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
-                           g.Id.Contains(q, StringComparison.OrdinalIgnoreCase);
+                    view.Filter = null;
                 }
-                return false;
-            };
-        }
+                else
+                {
+                    var q = value.Trim();
+                    view.Filter = obj =>
+                    {
+                        if (obj is DetectedGame g)
+                        {
+                            return g.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                                   g.Id.Contains(q, StringComparison.OrdinalIgnoreCase);
+                        }
+                        return false;
+                    };
+                }
+            });
+        }, System.Threading.Tasks.TaskScheduler.Default);
     }
 }

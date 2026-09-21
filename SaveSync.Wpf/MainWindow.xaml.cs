@@ -34,6 +34,9 @@ public partial class MainWindow : FluentWindow
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
+        // Watch for system theme and accent color changes (syncs the blue color to system accent)
+        Wpf.Ui.Appearance.SystemThemeWatcher.Watch(this);
+
         RootNavigation.SetServiceProvider(_serviceProvider);
         RootNavigation.Navigate(typeof(GamesPage));
 

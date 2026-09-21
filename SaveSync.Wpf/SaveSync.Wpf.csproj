@@ -9,6 +9,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>SaveSync.Desktop</RootNamespace>
     <ApplicationIcon>..\assets\icon.ico</ApplicationIcon>
+    
+    <!-- Publishing Optimizations -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
   </PropertyGroup>
 
   <ItemGroup>

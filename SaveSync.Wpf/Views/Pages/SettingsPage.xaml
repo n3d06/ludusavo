@@ -52,7 +52,8 @@
                         <ui:Button Content="Kiểm tra kết nối"
                                    Command="{Binding TestConnectionCommand}"
                                    IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBooleanConverter}}"
-                                   Appearance="Info"/>
+                                   Appearance="Primary"
+                                   Icon="{ui:SymbolIcon PlugConnected24}"/>
 
                         <ui:TextBlock Text="{Binding TestStatusMessage}"
                                       VerticalAlignment="Center"

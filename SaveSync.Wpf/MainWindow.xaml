@@ -13,12 +13,73 @@
         ExtendsContentIntoTitleBar="True">
 
     <Grid>
+        <Grid.Resources>
+            <Style x:Key="AnimatedSidebarIcon" TargetType="ui:SymbolIcon">
+                <Setter Property="FontSize" Value="22" />
+                <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                <Setter Property="CacheMode">
+                    <Setter.Value>
+                        <BitmapCache RenderAtScale="2" />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="RenderTransform">
+                    <Setter.Value>
+                        <ScaleTransform ScaleX="1" ScaleY="1" />
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=ui:NavigationViewItem}}" Value="True">
+                        <Setter Property="Filled" Value="True" />
+                        <DataTrigger.EnterActions>
+                            <BeginStoryboard>
+                                <Storyboard Timeline.DesiredFrameRate="60">
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" From="0.7" To="1" Duration="0:0:0.3">
+                                        <DoubleAnimation.EasingFunction>
+                                            <BackEase EasingMode="EaseOut" Amplitude="0.8"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" From="0.7" To="1" Duration="0:0:0.3">
+                                        <DoubleAnimation.EasingFunction>
+                                            <BackEase EasingMode="EaseOut" Amplitude="0.8"/>
+                                        </DoubleAnimation.EasingFunction>
+                                    </DoubleAnimation>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </DataTrigger.EnterActions>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Grid.Resources>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Title="{Binding Title}" />
+        <Grid Grid.Row="0">
+            <ui:TitleBar Title="" />
+            
+            <!-- Custom Title and Status (Overlaid to guarantee exact spacing) -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0" IsHitTestVisible="False">
+                <!-- App Icon -->
+                <Image Source="pack://application:,,,/icon.ico" Width="16" Height="16" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                
+                <!-- App Title -->
+                <TextBlock Text="{Binding Title}" 
+                           FontSize="12" 
+                           VerticalAlignment="Center" 
+                           Margin="0,0,12,0"/>
+                
+                <!-- GitHub Status (No Plug Icon, just dot and text) -->
+                <Ellipse Width="8" Height="8"
+                         Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
+                         Margin="0,0,6,0" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding GitHubStatusText}"
+                           FontSize="12"
+                           FontWeight="Medium"
+                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
 
         <ui:NavigationView Grid.Row="1"
                            x:Name="RootNavigation"
@@ -30,26 +91,23 @@
                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
                            ScrollViewer.CanContentScroll="False">
             <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="Game trên máy" Icon="{ui:SymbolIcon Library24}" TargetPageType="{x:Type pages:GamesPage}" />
-                <ui:NavigationViewItem Content="Sao lưu Cloud" Icon="{ui:SymbolIcon Cloud24}" TargetPageType="{x:Type pages:CloudPage}" />
+                <ui:NavigationViewItem Content="Game trên máy" FontSize="15" TargetPageType="{x:Type pages:GamesPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="XboxController24" Style="{StaticResource AnimatedSidebarIcon}" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
+                <ui:NavigationViewItem Content="Sao lưu Cloud" FontSize="15" TargetPageType="{x:Type pages:CloudPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Cloud24" Style="{StaticResource AnimatedSidebarIcon}" />
+                    </ui:NavigationViewItem.Icon>
+                </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
             <ui:NavigationView.FooterMenuItems>
-                <!-- GitHub Connection Status -->
-                <ui:NavigationViewItem IsEnabled="False" Icon="{ui:SymbolIcon PlugConnected24}">
-                    <ui:NavigationViewItem.Content>
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="8" Height="8"
-                                     Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
-                                     Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock Text="{Binding GitHubStatusText}"
-                                       FontSize="12"
-                                       FontWeight="Medium"
-                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </ui:NavigationViewItem.Content>
+                <ui:NavigationViewItem Content="Cài đặt" FontSize="15" TargetPageType="{x:Type pages:SettingsPage}">
+                    <ui:NavigationViewItem.Icon>
+                        <ui:SymbolIcon Symbol="Settings24" Style="{StaticResource AnimatedSidebarIcon}" />
+                    </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="Cài đặt" Icon="{ui:SymbolIcon Settings24}" TargetPageType="{x:Type pages:SettingsPage}" />
             </ui:NavigationView.FooterMenuItems>
         </ui:NavigationView>
     </Grid>
