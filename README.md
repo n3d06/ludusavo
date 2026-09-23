@@ -1,90 +1,89 @@
-# ludusavo Desktop (WPF / .NET 8)
+# ludusavo
 
-> Ứng dụng Desktop hiện đại (C# / .NET 8 WPF) quản lý và tự động đồng bộ save game lên kho lưu trữ cá nhân (private) GitHub dựa trên dữ liệu manifest từ **Ludusavi**.
-
----
-
-## 🌟 Tính năng nổi bật
-
-- **Giao diện hiện đại Windows 11 Fluent**: Sử dụng thư viện WPF-UI, hỗ trợ Mica Backdrop, Dark Mode và các hiệu ứng động mượt mà.
-- **Khay hệ thống (System Tray)**:
-  - Ứng dụng chạy nền trên Taskbar Notification Area với icon đẹp.
-  - Thu nhỏ xuống khay khi đóng hoặc khởi động ẩn với cờ `--minimized`.
-  - Context menu thao tác nhanh: Mở giao diện, Đồng bộ tất cả (Sync All), Thoát hoàn toàn (Exit).
-- **Nhận diện Save Game thông minh (Ludusavi Manifest)**:
-  - Tự động nhận diện đường dẫn save của hàng nghìn tựa game trên Windows (`%APPDATA%`, `%LOCALAPPDATA%`, `Saved Games`, Documents, v.v.).
-  - Tích hợp thông tin Steam App ID và Poster hình ảnh game.
-- **Lưu trữ bảo mật trên GitHub riêng tư (Private Repo)**:
-  - Sử dụng GitHub REST API trực tiếp từ C#.
-  - Token được lưu cục bộ trên máy (`.env` hoặc `appsettings.json`), không qua bất kỳ máy chủ trung gian nào.
-- **Đóng gói ZIP & Toàn vẹn dữ liệu (SHA-256)**:
-  - Nén save game thành file ZIP kèm metadata ánh xạ đường dẫn tương đối.
-  - So khớp checksum SHA-256 để xác định chính xác trạng thái: `Synced`, `LocalNewer`, `RemoteNewer`, `LocalOnly`, `RemoteOnly`.
-- **Tự động đồng bộ khi đóng game (GameWatcherService)**:
-  - Tự động phát hiện khi game kết thúc để đồng bộ save mới nhất lên đám mây.
+> A modern Windows desktop app (C# / .NET 8 WPF) that automatically backs up and syncs game saves to your private GitHub repository, powered by [Ludusavi](https://github.com/mtkennerly/ludusavi) manifest data.
 
 ---
 
-## 🚀 Khởi chạy & Sử dụng
+## ✨ Features
 
-### 1. Khởi chạy nhanh
-Chỉ cần nhấp đúp vào:
+- **Windows 11 Fluent UI** — Built with WPF-UI, featuring Mica Backdrop, Dark Mode, and smooth animations.
+- **System Tray Integration**
+  - Runs silently in the notification area.
+  - Minimize to tray on close or launch hidden with `--minimized`.
+  - Quick-access context menu: Open, Sync All, Exit.
+- **Smart Save Detection (Ludusavi Manifest)**
+  - Auto-detects save paths for thousands of games on Windows (`%APPDATA%`, `%LOCALAPPDATA%`, `Saved Games`, Documents, etc.).
+  - Includes Steam App ID and game poster art.
+- **Secure Cloud Storage via Private GitHub Repo**
+  - Communicates directly with the GitHub REST API from C#.
+  - Token stored locally (`.env` or `appsettings.json`) — no third-party servers involved.
+- **ZIP Packaging & Data Integrity (SHA-256)**
+  - Compresses saves into ZIP archives with relative path metadata.
+  - SHA-256 checksum comparison to determine sync status: `Synced`, `LocalNewer`, `RemoteNewer`, `LocalOnly`, `RemoteOnly`.
+- **Auto-Sync on Game Exit**
+  - Detects when a game process ends and automatically uploads the latest saves.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Quick Launch
+Double-click the launcher:
 ```
 Run-ludusavo.bat
 ```
-File này sẽ tự động tìm bản build sẵn (Publish / Release / Debug) hoặc khởi chạy bằng `dotnet run`.
+It will automatically find an existing build (Publish / Release / Debug) or fall back to `dotnet run`.
 
-### 2. Cấu hình GitHub Token
-Mở tab **Cài đặt** (Settings) trong ứng dụng hoặc tạo file `.env` tại thư mục gốc:
+### 2. Configure GitHub Token
+Open the **Settings** tab in the app, or create a `.env` file in the project root:
 
 ```env
 GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxx
-GITHUB_OWNER=username_cua_ban
-GITHUB_REPO=ten_repo_chua_save
+GITHUB_OWNER=your_username
+GITHUB_REPO=your_save_repo
 ```
 
 ---
 
-## 🛠️ Hướng dẫn Biên dịch (Build & Publish)
+## 🛠️ Build & Publish
 
-### Yêu cầu
+### Prerequisites
 - Windows 10/11
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) hoặc mới hơn
-- Visual Studio 2022 / Rider / VS Code (tùy chọn)
+- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+- Visual Studio 2022 / Rider / VS Code (optional)
 
-### 1. Mở dự án trong Visual Studio
-Mở file `ludusavo.sln` hoặc `ludusavo.slnx` ở thư mục gốc.
+### 1. Open in Visual Studio
+Open `ludusavo.sln` or `ludusavo.slnx` from the project root.
 
-### 2. Build dự án từ dòng lệnh
+### 2. Build from Command Line
 ```powershell
-# Biên dịch chế độ Release
 dotnet build ludusavo.sln -c Release
 ```
 
-### 3. Xuất bản thành file EXE duy nhất (Single-file Executable)
+### 3. Publish as Single-File Executable
 ```powershell
 dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
 ```
-File thực thi độc lập sẽ được tạo tại `publish/ludusavo.exe`.
+The standalone executable will be created at `publish/ludusavo.exe`.
 
 ---
 
-## 📂 Cấu trúc mã nguồn
+## 📂 Project Structure
 
 ```
-├── ludusavo.sln             # Solution Visual Studio
-├── ludusavo.slnx            # Solution định dạng hiện đại
-├── Run-ludusavo.bat        # Launcher khởi động nhanh
-├── .env                    # Cấu hình GitHub credentials (cục bộ)
-├── assets/                 # Icon và hình ảnh ứng dụng
+├── ludusavo.sln              # Visual Studio solution
+├── ludusavo.slnx             # Modern solution format
+├── Run-ludusavo.bat          # Quick launcher
+├── .env                      # GitHub credentials (local only)
+├── assets/                   # App icons and images
 ├── data/
-│   ├── cache/              # Cache manifest Ludusavi và poster games
-│   └── manifest/           # Dữ liệu gốc Ludusavi
-├── publish/                # File thực thi đã xuất bản
-└── ludusavo/               # Toàn bộ mã nguồn WPF Desktop (.NET 8)
-    ├── Models/             # Mô hình dữ liệu (GameEntry, AppSettings, v.v.)
-    ├── Services/           # Xử lý Logic (GitHub, Backup, Restore, Scanner, Watcher, Manifest)
-    ├── ViewModels/         # MVVM ViewModels (CommunityToolkit.Mvvm)
-    ├── Views/              # Giao diện XAML (MainWindow, Pages, Dialogs)
-    └── Converters/         # XAML Value Converters
+│   ├── cache/                # Ludusavi manifest & game poster cache
+│   └── manifest/             # Raw Ludusavi data
+├── publish/                  # Published executables
+└── ludusavo/                 # WPF Desktop source code (.NET 8)
+    ├── Models/               # Data models (GameEntry, AppSettings, etc.)
+    ├── Services/             # Business logic (GitHub, Backup, Restore, Scanner, Watcher, Manifest)
+    ├── ViewModels/           # MVVM ViewModels (CommunityToolkit.Mvvm)
+    ├── Views/                # XAML UI (MainWindow, Pages, Dialogs)
+    └── Converters/           # XAML Value Converters
 ```
