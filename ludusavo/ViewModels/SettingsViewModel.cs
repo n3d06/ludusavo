@@ -1,11 +1,11 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Win32;
-using SaveSync.Desktop.Models;
-using SaveSync.Desktop.Services;
+using ludusavo.Models;
+using ludusavo.Services;
 using System.ComponentModel.DataAnnotations;
 
-namespace SaveSync.Desktop.ViewModels;
+namespace ludusavo.ViewModels;
 
 public partial class SettingsViewModel : ObservableValidator
 {
@@ -29,10 +29,10 @@ public partial class SettingsViewModel : ObservableValidator
     private string _gitHubRepo = string.Empty;
 
     [ObservableProperty]
-    private bool _autoSyncOnExit = true;
+    private bool _autoSyncOnExit = false;
 
     [ObservableProperty]
-    private bool _minimizeToTray = true;
+    private bool _minimizeToTray = false;
 
     [ObservableProperty]
     private bool _startWithWindows = false;

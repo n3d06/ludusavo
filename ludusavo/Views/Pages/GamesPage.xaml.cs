@@ -1,7 +1,7 @@
 using System.Windows.Controls;
-using SaveSync.Desktop.ViewModels;
+using ludusavo.ViewModels;
 
-namespace SaveSync.Desktop.Views.Pages;
+namespace ludusavo.Views.Pages;
 
 public partial class GamesPage : Page
 {

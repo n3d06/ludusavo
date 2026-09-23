@@ -1,7 +1,7 @@
 using System.IO;
-using SaveSync.Desktop.Models;
+using ludusavo.Models;
 
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class SyncService : ISyncService
 {

@@ -4,7 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class GitHubService : IGitHubService
 {

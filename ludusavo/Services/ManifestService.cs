@@ -1,8 +1,8 @@
 using System.IO;
 using System.Text.Json;
-using SaveSync.Desktop.Models;
+using ludusavo.Models;
 
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class ManifestService : IManifestService
 {

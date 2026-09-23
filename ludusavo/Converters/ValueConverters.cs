@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Data;
 
-namespace SaveSync.Desktop.Converters;
+namespace ludusavo.Converters;
 
 public class InverseBooleanConverter : IValueConverter
 {

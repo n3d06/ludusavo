@@ -2,9 +2,9 @@ using System.IO;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Win32;
-using SaveSync.Desktop.Models;
+using ludusavo.Models;
 
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class ScannerService : IScannerService
 {

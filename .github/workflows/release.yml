@@ -72,15 +72,15 @@ jobs:
           echo "TITLE=$title" >> $env:GITHUB_OUTPUT
 
       - name: Restore dependencies
-        run: dotnet restore SaveSync.Wpf/SaveSync.Wpf.csproj
+        run: dotnet restore ludusavo/ludusavo.csproj
 
       - name: Publish Standalone (Self-Contained, không cần cài .NET)
         run: |
-          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained true -o dist/standalone
+          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained true -o dist/standalone
 
       - name: Publish Portable (Framework-Dependent, siêu nhẹ)
         run: |
-          dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -p:PublishReadyToRun=false -o dist/portable
+          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -p:PublishReadyToRun=false -o dist/portable
 
       - name: Package ZIP Distributions
         shell: pwsh
@@ -92,9 +92,6 @@ jobs:
           $standaloneDir = "package/ludusavo-Standalone"
           New-Item -ItemType Directory -Force -Path "$standaloneDir"
           Copy-Item "dist/standalone/*" -Destination "$standaloneDir/" -Recurse -Force
-          if (Test-Path "$standaloneDir/SaveSync.Wpf.exe") {
-              Rename-Item "$standaloneDir/SaveSync.Wpf.exe" -NewName "ludusavo.exe"
-          }
 
           if (Test-Path "data/cache/manifest_processed.json") {
               New-Item -ItemType Directory -Force -Path "$standaloneDir/data/cache"
@@ -103,8 +100,8 @@ jobs:
           if (Test-Path "assets") {
               Copy-Item "assets" -Destination "$standaloneDir/" -Recurse
           }
-          if (Test-Path "Run-SaveSync.bat") {
-              Copy-Item "Run-SaveSync.bat" -Destination "$standaloneDir/"
+          if (Test-Path "Run-ludusavo.bat") {
+              Copy-Item "Run-ludusavo.bat" -Destination "$standaloneDir/"
           }
           if (Test-Path "README.md") {
               Copy-Item "README.md" -Destination "$standaloneDir/"
@@ -116,9 +113,6 @@ jobs:
           $portableDir = "package/ludusavo-Portable"
           New-Item -ItemType Directory -Force -Path "$portableDir"
           Copy-Item "dist/portable/*" -Destination "$portableDir/" -Recurse -Force
-          if (Test-Path "$portableDir/SaveSync.Wpf.exe") {
-              Rename-Item "$portableDir/SaveSync.Wpf.exe" -NewName "ludusavo.exe"
-          }
 
           if (Test-Path "data/cache/manifest_processed.json") {
               New-Item -ItemType Directory -Force -Path "$portableDir/data/cache"
@@ -127,8 +121,8 @@ jobs:
           if (Test-Path "assets") {
               Copy-Item "assets" -Destination "$portableDir/" -Recurse
           }
-          if (Test-Path "Run-SaveSync.bat") {
-              Copy-Item "Run-SaveSync.bat" -Destination "$portableDir/"
+          if (Test-Path "Run-ludusavo.bat") {
+              Copy-Item "Run-ludusavo.bat" -Destination "$portableDir/"
           }
           if (Test-Path "README.md") {
               Copy-Item "README.md" -Destination "$portableDir/"

@@ -1,8 +1,8 @@
 using System.IO;
 using System.Text.Json;
-using SaveSync.Desktop.Models;
+using ludusavo.Models;
 
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class ConfigService : IConfigService
 {
@@ -24,8 +24,8 @@ public class ConfigService : IConfigService
 
         while (!string.IsNullOrEmpty(candidate))
         {
-            if (File.Exists(Path.Combine(candidate, "SaveSync.sln")) ||
-                File.Exists(Path.Combine(candidate, "SaveSync.slnx")) ||
+            if (File.Exists(Path.Combine(candidate, "ludusavo.sln")) ||
+                File.Exists(Path.Combine(candidate, "ludusavo.slnx")) ||
                 Directory.Exists(Path.Combine(candidate, "data", "cache")))
             {
                 resolvedRoot = candidate;
@@ -40,8 +40,8 @@ public class ConfigService : IConfigService
             candidate = Directory.GetCurrentDirectory();
             while (!string.IsNullOrEmpty(candidate))
             {
-                if (File.Exists(Path.Combine(candidate, "SaveSync.sln")) ||
-                    File.Exists(Path.Combine(candidate, "SaveSync.slnx")) ||
+                if (File.Exists(Path.Combine(candidate, "ludusavo.sln")) ||
+                    File.Exists(Path.Combine(candidate, "ludusavo.slnx")) ||
                     Directory.Exists(Path.Combine(candidate, "data", "cache")))
                 {
                     resolvedRoot = candidate;

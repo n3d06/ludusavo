@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace SaveSync.Desktop.Models;
+namespace ludusavo.Models;
 
 public partial class DetectedGame : ObservableObject
 {

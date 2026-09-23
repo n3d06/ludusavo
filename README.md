@@ -1,4 +1,4 @@
-# SaveSync Desktop (WPF / .NET 8)
+# ludusavo Desktop (WPF / .NET 8)
 
 > Ứng dụng Desktop hiện đại (C# / .NET 8 WPF) quản lý và tự động đồng bộ save game lên kho lưu trữ cá nhân (private) GitHub dựa trên dữ liệu manifest từ **Ludusavi**.
 
@@ -30,7 +30,7 @@
 ### 1. Khởi chạy nhanh
 Chỉ cần nhấp đúp vào:
 ```
-Run-SaveSync.bat
+Run-ludusavo.bat
 ```
 File này sẽ tự động tìm bản build sẵn (Publish / Release / Debug) hoặc khởi chạy bằng `dotnet run`.
 
@@ -53,35 +53,35 @@ GITHUB_REPO=ten_repo_chua_save
 - Visual Studio 2022 / Rider / VS Code (tùy chọn)
 
 ### 1. Mở dự án trong Visual Studio
-Mở file `SaveSync.sln` hoặc `SaveSync.slnx` ở thư mục gốc.
+Mở file `ludusavo.sln` hoặc `ludusavo.slnx` ở thư mục gốc.
 
 ### 2. Build dự án từ dòng lệnh
 ```powershell
 # Biên dịch chế độ Release
-dotnet build SaveSync.sln -c Release
+dotnet build ludusavo.sln -c Release
 ```
 
 ### 3. Xuất bản thành file EXE duy nhất (Single-file Executable)
 ```powershell
-dotnet publish SaveSync.Wpf/SaveSync.Wpf.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
+dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
 ```
-File thực thi độc lập sẽ được tạo tại `publish/SaveSync.Wpf.exe`.
+File thực thi độc lập sẽ được tạo tại `publish/ludusavo.exe`.
 
 ---
 
 ## 📂 Cấu trúc mã nguồn
 
 ```
-├── SaveSync.sln            # Solution Visual Studio
-├── SaveSync.slnx           # Solution định dạng hiện đại
-├── Run-SaveSync.bat        # Launcher khởi động nhanh
+├── ludusavo.sln             # Solution Visual Studio
+├── ludusavo.slnx            # Solution định dạng hiện đại
+├── Run-ludusavo.bat        # Launcher khởi động nhanh
 ├── .env                    # Cấu hình GitHub credentials (cục bộ)
 ├── assets/                 # Icon và hình ảnh ứng dụng
 ├── data/
 │   ├── cache/              # Cache manifest Ludusavi và poster games
 │   └── manifest/           # Dữ liệu gốc Ludusavi
 ├── publish/                # File thực thi đã xuất bản
-└── SaveSync.Wpf/           # Toàn bộ mã nguồn WPF Desktop (.NET 8)
+└── ludusavo/               # Toàn bộ mã nguồn WPF Desktop (.NET 8)
     ├── Models/             # Mô hình dữ liệu (GameEntry, AppSettings, v.v.)
     ├── Services/           # Xử lý Logic (GitHub, Backup, Restore, Scanner, Watcher, Manifest)
     ├── ViewModels/         # MVVM ViewModels (CommunityToolkit.Mvvm)

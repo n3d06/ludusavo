@@ -1,14 +1,14 @@
 using System.ComponentModel;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using SaveSync.Desktop.Services;
-using SaveSync.Desktop.ViewModels;
-using SaveSync.Desktop.Views.Pages;
+using ludusavo.Services;
+using ludusavo.ViewModels;
+using ludusavo.Views.Pages;
 
 using Wpf.Ui;
 using Wpf.Ui.Controls;
 
-namespace SaveSync.Desktop;
+namespace ludusavo;
 
 public partial class MainWindow : FluentWindow
 {

@@ -1,8 +1,8 @@
-<Application x:Class="SaveSync.Desktop.App"
+<Application x:Class="ludusavo.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-             xmlns:conv="clr-namespace:SaveSync.Desktop.Converters">
+             xmlns:conv="clr-namespace:ludusavo.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>

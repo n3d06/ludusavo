@@ -2,10 +2,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SaveSync.Desktop.Models;
-using SaveSync.Desktop.Services;
+using ludusavo.Models;
+using ludusavo.Services;
 
-namespace SaveSync.Desktop.ViewModels;
+namespace ludusavo.ViewModels;
 
 public partial class CloudViewModel : ObservableObject
 {

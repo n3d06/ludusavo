@@ -2,10 +2,10 @@ using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
-using SaveSync.Desktop.Models;
+using ludusavo.Models;
 using YamlDotNet.Serialization;
 
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class BackupService : IBackupService
 {

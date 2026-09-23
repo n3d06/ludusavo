@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SaveSync.Desktop.Models;
+namespace ludusavo.Models;
 
 public class GameEntry
 {

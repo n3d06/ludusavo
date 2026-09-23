@@ -2,11 +2,11 @@ using System.IO;
 using System.Threading;
 using System.Windows;
 using Microsoft.Extensions.DependencyInjection;
-using SaveSync.Desktop.Services;
-using SaveSync.Desktop.ViewModels;
-using SaveSync.Desktop.Views.Pages;
+using ludusavo.Services;
+using ludusavo.ViewModels;
+using ludusavo.Views.Pages;
 
-namespace SaveSync.Desktop;
+namespace ludusavo;
 
 public partial class App : System.Windows.Application
 {

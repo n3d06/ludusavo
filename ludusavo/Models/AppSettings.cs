@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SaveSync.Desktop.Models;
+namespace ludusavo.Models;
 
 public class AppSettings
 {
@@ -14,10 +14,10 @@ public class AppSettings
     public string GitHubRepo { get; set; } = string.Empty;
 
     [JsonPropertyName("autoSyncOnExit")]
-    public bool AutoSyncOnExit { get; set; } = true;
+    public bool AutoSyncOnExit { get; set; } = false;
 
     [JsonPropertyName("minimizeToTray")]
-    public bool MinimizeToTray { get; set; } = true;
+    public bool MinimizeToTray { get; set; } = false;
 
     [JsonPropertyName("startWithWindows")]
     public bool StartWithWindows { get; set; } = false;

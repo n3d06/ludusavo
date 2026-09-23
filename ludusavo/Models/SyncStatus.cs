@@ -1,4 +1,4 @@
-namespace SaveSync.Desktop.Models;
+namespace ludusavo.Models;
 
 public enum SyncStatus
 {

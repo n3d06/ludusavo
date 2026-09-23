@@ -1,4 +1,4 @@
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class RemoteGameMeta
 {

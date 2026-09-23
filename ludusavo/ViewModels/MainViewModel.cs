@@ -1,8 +1,8 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using SaveSync.Desktop.Services;
+using ludusavo.Services;
 
-namespace SaveSync.Desktop.ViewModels;
+namespace ludusavo.ViewModels;
 
 public partial class MainViewModel : ObservableObject
 {

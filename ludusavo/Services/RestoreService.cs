@@ -2,7 +2,7 @@ using System.IO;
 using System.IO.Compression;
 using YamlDotNet.Serialization;
 
-namespace SaveSync.Desktop.Services;
+namespace ludusavo.Services;
 
 public class RestoreService : IRestoreService
 {
