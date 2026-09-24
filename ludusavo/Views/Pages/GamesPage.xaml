@@ -120,6 +120,13 @@
                                         <ui:TextBlock Text="{Binding Name}"
                                                       FontTypography="BodyStrong"
                                                       VerticalAlignment="Center"/>
+                                        <!-- Pin Indicator -->
+                                        <ui:SymbolIcon Symbol="Pin24" FontSize="14"
+                                                       Foreground="{DynamicResource SystemFillColorCautionBrush}"
+                                                       Margin="6,0,0,0"
+                                                       VerticalAlignment="Center"
+                                                       Visibility="{Binding IsPinned, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                       ToolTip="Đã ghim"/>
                                         <!-- Status Badge -->
                                         <Border Background="{Binding StatusBadgeColor}"
                                                 CornerRadius="4"
@@ -157,23 +164,6 @@
                                             Orientation="Horizontal"
                                             VerticalAlignment="Center">
 
-                                    <ui:Button Command="{Binding DataContext.OpenSaveFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                               CommandParameter="{Binding}"
-                                               Margin="0,0,8,0"
-                                               Icon="{ui:SymbolIcon Folder24}">
-                                        <ui:Button.Style>
-                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                                <Setter Property="Content" Value="Mở thư mục"/>
-                                                <Setter Property="ToolTip" Value="Mở thư mục"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
-                                                        <Setter Property="Content" Value="{x:Null}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ui:Button.Style>
-                                    </ui:Button>
-
                                     <ui:Button Command="{Binding DataContext.EditCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                CommandParameter="{Binding}"
                                                Visibility="{Binding IsCustomGame, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -195,13 +185,60 @@
                                     <ui:Button Command="{Binding DataContext.DeleteCustomGameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                                                CommandParameter="{Binding}"
                                                Visibility="{Binding IsCustomGame, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                               Appearance="Danger"
                                                Margin="0,0,8,0"
                                                Icon="{ui:SymbolIcon Delete24}">
                                         <ui:Button.Style>
                                             <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
                                                 <Setter Property="Content" Value="Xóa"/>
                                                 <Setter Property="ToolTip" Value="Xóa"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
+
+                                    <!-- Pin/Unpin Button -->
+                                    <ui:Button Command="{Binding DataContext.TogglePinCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}"
+                                               Margin="0,0,8,0">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Ghim"/>
+                                                <Setter Property="ToolTip" Value="Ghim game này lên đầu"/>
+                                                <Setter Property="Icon">
+                                                    <Setter.Value>
+                                                        <ui:SymbolIcon Symbol="Pin24"/>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                                        <Setter Property="Content" Value="Bỏ ghim"/>
+                                                        <Setter Property="ToolTip" Value="Bỏ ghim game này"/>
+                                                        <Setter Property="Icon">
+                                                            <Setter.Value>
+                                                                <ui:SymbolIcon Symbol="PinOff24"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
+
+                                    <ui:Button Command="{Binding DataContext.OpenSaveFolderCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}"
+                                               Margin="0,0,8,0"
+                                               Icon="{ui:SymbolIcon Folder24}">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Mở thư mục"/>
+                                                <Setter Property="ToolTip" Value="Mở thư mục"/>
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
                                                         <Setter Property="Content" Value="{x:Null}"/>

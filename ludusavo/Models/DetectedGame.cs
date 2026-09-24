@@ -37,6 +37,8 @@ public partial class DetectedGame : ObservableObject
     [ObservableProperty]
     private string _statusMessage = string.Empty;
 
+    [ObservableProperty]
+    private bool _isPinned;
     public List<SaveFileDetail> Files { get; set; } = new();
 
     public string TotalSizeFormatted

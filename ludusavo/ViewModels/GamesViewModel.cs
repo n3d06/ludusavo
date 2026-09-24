@@ -15,6 +15,7 @@ public partial class GamesViewModel : ObservableObject
     private readonly IScannerService _scannerService;
     private readonly ISyncService _syncService;
     private readonly IGameWatcherService _gameWatcher;
+    private readonly IConfigService _configService;
 
     [ObservableProperty]
     private ObservableCollection<DetectedGame> _games = new();
@@ -41,12 +42,14 @@ public partial class GamesViewModel : ObservableObject
         IManifestService manifestService,
         IScannerService scannerService,
         ISyncService syncService,
-        IGameWatcherService gameWatcher)
+        IGameWatcherService gameWatcher,
+        IConfigService configService)
     {
         _manifestService = manifestService;
         _scannerService = scannerService;
         _syncService = syncService;
         _gameWatcher = gameWatcher;
+        _configService = configService;
 
         _gameWatcher.OnGameExitedAndSynced += game =>
         {
@@ -110,8 +113,16 @@ public partial class GamesViewModel : ObservableObject
                 forceRescan: forceRescan,
                 progress: progress);
 
+            // Apply pinned state from local settings
+            var pinnedIds = _configService.Settings.PinnedGameIds ?? new List<string>();
+            foreach (var g in detected)
+            {
+                g.IsPinned = pinnedIds.Contains(g.Id);
+            }
+
             Games.Clear();
-            foreach (var g in detected.OrderBy(d => d.Name))
+            // Pinned games first, then alphabetical
+            foreach (var g in detected.OrderByDescending(d => d.IsPinned).ThenBy(d => d.Name))
             {
                 Games.Add(g);
             }
@@ -168,6 +179,36 @@ public partial class GamesViewModel : ObservableObject
                     UseShellExecute = true
                 });
             }
+        }
+    }
+
+    [RelayCommand]
+    public void TogglePin(DetectedGame? game)
+    {
+        if (game == null) return;
+
+        game.IsPinned = !game.IsPinned;
+
+        // Update local settings
+        var pinnedIds = _configService.Settings.PinnedGameIds ?? new List<string>();
+        if (game.IsPinned)
+        {
+            if (!pinnedIds.Contains(game.Id))
+                pinnedIds.Add(game.Id);
+        }
+        else
+        {
+            pinnedIds.Remove(game.Id);
+        }
+        _configService.Settings.PinnedGameIds = pinnedIds;
+        _configService.SaveSettings(_configService.Settings);
+
+        // Re-sort the list: pinned first, then alphabetical
+        var sorted = Games.OrderByDescending(g => g.IsPinned).ThenBy(g => g.Name).ToList();
+        Games.Clear();
+        foreach (var g in sorted)
+        {
+            Games.Add(g);
         }
     }
 
