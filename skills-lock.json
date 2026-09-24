@@ -1,0 +1,581 @@
+{
+  "version": 1,
+  "skills": {
+    "syncfusion-wpf-3d-chart": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-3d-chart/SKILL.md",
+      "computedHash": "d3c36c29aaf431025a9498ec191dd3c35b63dd00be19874e823f39f25e8c0395"
+    },
+    "syncfusion-wpf-accordion": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-accordion/SKILL.md",
+      "computedHash": "5836a5eb27721d766d47c00fda98a8a61c7b86c0db55f87635f7ea437ff65998"
+    },
+    "syncfusion-wpf-ai-assistview": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-ai-assistview/SKILL.md",
+      "computedHash": "df6aaf7ca53d3c594706fb4a499504209eea4e7859e7f555b24550cef17885bd"
+    },
+    "syncfusion-wpf-autocomplete": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-autocomplete/SKILL.md",
+      "computedHash": "de32d874b61c64490e6e8fc446d02247ec4fec68257e006cea0dc6a679d23951"
+    },
+    "syncfusion-wpf-avatar-view": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-avatar-view/SKILL.md",
+      "computedHash": "c6629a635800416c34c33cfb2b0b14477800c7addcdb306745c5faf15479a3cb"
+    },
+    "syncfusion-wpf-badge": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-badge/SKILL.md",
+      "computedHash": "9d2cc0112130c3468a70c3dc7f99419ca4aa179997935823236389e6e1c01893"
+    },
+    "syncfusion-wpf-breadcrumb": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-breadcrumb/SKILL.md",
+      "computedHash": "e390b9f7d8dd4a2705a90ecf2f8c976578f2aaa79380d078b270f07f227ed72e"
+    },
+    "syncfusion-wpf-bullet-graph": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-bullet-graph/SKILL.md",
+      "computedHash": "90afd09d0a1eda54c3377dec9e1af3725b481bd024e1cef5f9de86995521b7d4"
+    },
+    "syncfusion-wpf-busy-indicator": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-busy-indicator/SKILL.md",
+      "computedHash": "3952402deffdb04017fe36273ceb5476d5540fed0b098af735875356a7abfca9"
+    },
+    "syncfusion-wpf-button": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-button/SKILL.md",
+      "computedHash": "b5a1c2c0f42a2d72fd1de978a6d1897f633245a638ac1273855b136cde412b00"
+    },
+    "syncfusion-wpf-calculator": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-calculator/SKILL.md",
+      "computedHash": "af02bf43a4753921d5ab32b2408869094d5c8d66bd57f76b355111acd6e8a169"
+    },
+    "syncfusion-wpf-calendar": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-calendar/SKILL.md",
+      "computedHash": "9f8149b1b9b073330208c6704f4878a6fe15da77ab984654287a323e391b0485"
+    },
+    "syncfusion-wpf-card-view": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-card-view/SKILL.md",
+      "computedHash": "dac6f81b8eb5ccc07c04f840d7c72f9b53821423a938c477c6bf488691dbcf7e"
+    },
+    "syncfusion-wpf-carousel": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-carousel/SKILL.md",
+      "computedHash": "e4e2ba75d4b846281636d4c050e704e98dc93eb4928de5599a1833cfd60ced9c"
+    },
+    "syncfusion-wpf-charts": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-charts/SKILL.md",
+      "computedHash": "579ff23a679a43cd5816f2b45c5a7b3c80847d7b0c127a98ba16cdb36db484ea"
+    },
+    "syncfusion-wpf-checkedlistbox": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-checkedlistbox/SKILL.md",
+      "computedHash": "af8c136cfdba42adb0bae87c6116bb96d66430c8fee284e536919e38524a255c"
+    },
+    "syncfusion-wpf-chromeless-window": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-chromeless-window/SKILL.md",
+      "computedHash": "906059102ce1e9163c4a3bff99bd3348c299c03c678c045039028dba8aec7e18"
+    },
+    "syncfusion-wpf-circular-progressbar": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-circular-progressbar/SKILL.md",
+      "computedHash": "1d1562d83fd1adffa13092e5e8633b5a250958c5684e95cb877a88772c2823ea"
+    },
+    "syncfusion-wpf-color-palette": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-color-palette/SKILL.md",
+      "computedHash": "31c9e3833bdcf8b12052c00c2f7d07d4f541886b7aa4d14107554030249782c6"
+    },
+    "syncfusion-wpf-color-picker-palette": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-color-picker-palette/SKILL.md",
+      "computedHash": "03fec9556c17977999da9b6965cba39074db5df176bbb2509d18dd03ffbed3f4"
+    },
+    "syncfusion-wpf-colorpicker": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-colorpicker/SKILL.md",
+      "computedHash": "b6b024ac01d2ecb6c27603b37dcc8f2271507c9b87ce7108679528c18a34880a"
+    },
+    "syncfusion-wpf-combobox": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-combobox/SKILL.md",
+      "computedHash": "3788a5ce91d89c2b0416a04ead116ea15572fc48e9d57f69a2d42d6512cf2ea8"
+    },
+    "syncfusion-wpf-currency-textbox": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-currency-textbox/SKILL.md",
+      "computedHash": "469d54bb29489c7d684363cc711d7f1bd792c245668f8a5bb3862c426d929237"
+    },
+    "syncfusion-wpf-datagrid": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-datagrid/SKILL.md",
+      "computedHash": "d22ae0a392568bfab1c17547d5464d565ddb0362fee5e395f8cf52b13421de54"
+    },
+    "syncfusion-wpf-datapager": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-datapager/SKILL.md",
+      "computedHash": "74c1df8d6b44f4ee100ea35b5d5242d4163237bce07cfe8ff071513b9e77f3bd"
+    },
+    "syncfusion-wpf-datepicker": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-datepicker/SKILL.md",
+      "computedHash": "5a81d4c054b6a7888a94a0dcf5c28e61b64a453a8b6b70290a5d422089455c96"
+    },
+    "syncfusion-wpf-datetimepicker": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-datetimepicker/SKILL.md",
+      "computedHash": "a353a2dfdbfc3ff8c2b67a1ea28bdb57d4476c38dc8cee5c1b779fc44b7b64c1"
+    },
+    "syncfusion-wpf-diagram": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-diagram/SKILL.md",
+      "computedHash": "1e4dab8a1e62684b8cbd588962e7a6661597e7b806f00a8c8e6530b6e399a3cc"
+    },
+    "syncfusion-wpf-digital-gauge": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-digital-gauge/SKILL.md",
+      "computedHash": "56dc5da91d4309775c4839cf3993fbfaef8d9b77e5a5879f0075e799d4c23d6f"
+    },
+    "syncfusion-wpf-docking": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-docking/SKILL.md",
+      "computedHash": "8992934c7786b93107e1e391fd8538ed22c04f2e4645254f932465ceebf5d4d4"
+    },
+    "syncfusion-wpf-domain-updown": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-domain-updown/SKILL.md",
+      "computedHash": "900de6cbfedee126b411c2225830644ff22418d9d9b214a2c23368da432dfcad"
+    },
+    "syncfusion-wpf-double-textbox": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-double-textbox/SKILL.md",
+      "computedHash": "eeaf9cd673929b86f7e0e73bf00cef16739976c659f067dc1388a94234c5526c"
+    },
+    "syncfusion-wpf-dropdownbuttonadv": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-dropdownbuttonadv/SKILL.md",
+      "computedHash": "1321d116d0bbea52a62a8c5cea6420cbcbcdd0321f214e4d26990af26b9c32b8"
+    },
+    "syncfusion-wpf-excel-like-grid": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-excel-like-grid/SKILL.md",
+      "computedHash": "169e72d2a72848321a5e1e57a2dbef75d9d81ecd60cb7777145a92cb88ec3080"
+    },
+    "syncfusion-wpf-gantt": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-gantt/SKILL.md",
+      "computedHash": "88fdbffa954a8eff1259a567d64388390e65acc21cea195770be0954f433b7c7"
+    },
+    "syncfusion-wpf-getting-started": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-getting-started/SKILL.md",
+      "computedHash": "b475bd50d6c7f98b9ca5f2bbb954482716a216ada51df1ed901af55b7c3a5874"
+    },
+    "syncfusion-wpf-gridsplitter": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-gridsplitter/SKILL.md",
+      "computedHash": "c7ecd7fba4c90367d5ca157a4f7bdcabb660e4daf6d51b4cd8eac2b684e09d84"
+    },
+    "syncfusion-wpf-grouping": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-grouping/SKILL.md",
+      "computedHash": "846056b96b863d66d889bcf0748abdb195350b84480c76156ac1842185eed7fd"
+    },
+    "syncfusion-wpf-heatmap": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-heatmap/SKILL.md",
+      "computedHash": "fa53909497de318ea4f70ccbdedf8ffaf8ff8eb5946deadb073cb4e9812607fd"
+    },
+    "syncfusion-wpf-hub-tile": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-hub-tile/SKILL.md",
+      "computedHash": "195fbe3b9309e10c5609eae92f601457d4a5ddf4b8b285b4d22a50b1f4b9efdf"
+    },
+    "syncfusion-wpf-image-editor": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-image-editor/SKILL.md",
+      "computedHash": "cc54798c02b3b9efe8b95aa034cbc398fbb3b9e8147cb033d7ff43ffcdaf1bfa"
+    },
+    "syncfusion-wpf-integer-textbox": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-integer-textbox/SKILL.md",
+      "computedHash": "41b05c53200edf1047890dd4d30e6674b9955495c92777478cfd38065a5929a0"
+    },
+    "syncfusion-wpf-kanban-board": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-kanban-board/SKILL.md",
+      "computedHash": "d7339d1e0659db2f0037d93807a27a109ace96ad71ad9bf80ad7d9fbf04f7ad3"
+    },
+    "syncfusion-wpf-licensing": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-licensing/SKILL.md",
+      "computedHash": "ed355bad8e3d8b6b513181d8c5e8fd81733edc9c25005fd44d1820cb7f4662c7"
+    },
+    "syncfusion-wpf-linear-gauge": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-linear-gauge/SKILL.md",
+      "computedHash": "b4d35afed8efda907a8398307729c464672a36f69742eec995942ce939d59d06"
+    },
+    "syncfusion-wpf-linear-progressbar": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-linear-progressbar/SKILL.md",
+      "computedHash": "b7d9d9fe15a8a34f714f5fc299c0bd22fcac937021ee77ab27317bf733202526"
+    },
+    "syncfusion-wpf-map": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-map/SKILL.md",
+      "computedHash": "2b698770e80b017df4bde622073b846193280b1701b97221df9adea89fad32d6"
+    },
+    "syncfusion-wpf-markdown-viewer": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-markdown-viewer/SKILL.md",
+      "computedHash": "9e31a418c6781c98afe4003268ef667ac74c83fc880e16a2019078187c6dfe74"
+    },
+    "syncfusion-wpf-maskedtextbox": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-maskedtextbox/SKILL.md",
+      "computedHash": "fe49ab8cc07e881a4cd629ee582d167964aba7a6953c60cedeea0da69368634e"
+    },
+    "syncfusion-wpf-menu": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-menu/SKILL.md",
+      "computedHash": "dbebb63a73b1c8e713b3c728d4e550c566ab3bb01df50a6e14d4996dc33f2131"
+    },
+    "syncfusion-wpf-multi-column-dropdown": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-multi-column-dropdown/SKILL.md",
+      "computedHash": "8d22726a77cbae3c3a0ad23bad678c53ad311f482b6ba99cb8efde2d095ccc5b"
+    },
+    "syncfusion-wpf-navigation-drawer": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-navigation-drawer/SKILL.md",
+      "computedHash": "5ab8ae09991a845cce5a5d85731be23b0a5b3c5f28d6a15a8146b0f73b8ae7f1"
+    },
+    "syncfusion-wpf-navigation-pane": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-navigation-pane/SKILL.md",
+      "computedHash": "15a83d9cab5583e6f7ff2f41fdd9829be3ff31a19861fbc7c9dc19582e1b1cc2"
+    },
+    "syncfusion-wpf-numericupdown": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-numericupdown/SKILL.md",
+      "computedHash": "67291e0d0401b207bd3cd3d25c869089ba32d8761ae4896b2c24c42efea6f441"
+    },
+    "syncfusion-wpf-olap-client": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-olap-client/SKILL.md",
+      "computedHash": "2cfadf44c174403727b6ac89d501fdd0f9576cb9aa9d32995bec4d472f07c624"
+    },
+    "syncfusion-wpf-olap-gauge": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-olap-gauge/SKILL.md",
+      "computedHash": "aa950662fd30273be8c552b28eb74ce4a2e496b3884d62696b03adcf85d387c8"
+    },
+    "syncfusion-wpf-olap-grid": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-olap-grid/SKILL.md",
+      "computedHash": "b682ffbfb1a6bc6e6779fe8bb5b11ff89f140a0f68456ec1a4d885aafa6e777d"
+    },
+    "syncfusion-wpf-percent-textbox": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-percent-textbox/SKILL.md",
+      "computedHash": "b75f93f3756f24440900057068fe8a83f53eb01a27573a7282235323f3cd580b"
+    },
+    "syncfusion-wpf-pivot-grid": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-pivot-grid/SKILL.md",
+      "computedHash": "52e0584ab60495fb0e3f1ef9c521e21f048f00aa507ff913d78232cbec848ef2"
+    },
+    "syncfusion-wpf-propertygrid": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-propertygrid/SKILL.md",
+      "computedHash": "ac8ef7d3928ab4a0f87dbbb64192b395dbefce151cc4f28d45c4fdf15c2669d4"
+    },
+    "syncfusion-wpf-radial-gauge": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-radial-gauge/SKILL.md",
+      "computedHash": "949307fc2163f7666f102e5dcf2567cce5358696b44bc4c9661b471a079c73e4"
+    },
+    "syncfusion-wpf-radial-menu": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-radial-menu/SKILL.md",
+      "computedHash": "2a359d639b6aeced9e1b24b03bf1a71d8b7b140a5fcea5ce569f33aecf6c6d69"
+    },
+    "syncfusion-wpf-radial-slider": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-radial-slider/SKILL.md",
+      "computedHash": "e2132226387f2028c734ab177d288314081aecdff2ffa58bf78d9753f686c2e8"
+    },
+    "syncfusion-wpf-range-selector": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-range-selector/SKILL.md",
+      "computedHash": "cf6c89110af54e9ddf67c0503a5209528a74b30d945883d82737ae3e630ab888"
+    },
+    "syncfusion-wpf-range-slider": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-range-slider/SKILL.md",
+      "computedHash": "598f21a446a1a5d09e484329af6964f38226b7023bb61fd758e628da4c862ddf"
+    },
+    "syncfusion-wpf-rating": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-rating/SKILL.md",
+      "computedHash": "765a82f1de4fa528edf4b76b442566721d9e3c8534b57a1f3187f48dfe56b471"
+    },
+    "syncfusion-wpf-ribbon": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-ribbon/SKILL.md",
+      "computedHash": "dcec2f9ea5ca1cabb7698f3a4ed58fbbeac22da96af4d5517e089f821cdb779a"
+    },
+    "syncfusion-wpf-scheduler": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-scheduler/SKILL.md",
+      "computedHash": "44e53e202c21d31ea71fa1605ccc544dbdca00c17b662ca5fc6ed9d2427036e7"
+    },
+    "syncfusion-wpf-smart-datagrid": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-smart-datagrid/SKILL.md",
+      "computedHash": "c3329fc2ac50c9bc0dfbb018fb4944a07a92cfe8dac156489bf2639312bd5fcc"
+    },
+    "syncfusion-wpf-smart-text-editor": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-smart-text-editor/SKILL.md",
+      "computedHash": "5f791e86580810153c243f748b4c6b6726cb3187dbee9b7f80b1c3e45cfc0f10"
+    },
+    "syncfusion-wpf-smith-chart": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-smith-chart/SKILL.md",
+      "computedHash": "55f8d1b8a8c27be9defcd9864868b86fc24c63cc8fed5908e84396bf3b336c94"
+    },
+    "syncfusion-wpf-sparkline": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-sparkline/SKILL.md",
+      "computedHash": "bad2ed662dab92ee6eb1747d4f6ed1826b69c0289d5adc4a30384cb033b98bc3"
+    },
+    "syncfusion-wpf-spellchecker": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-spellchecker/SKILL.md",
+      "computedHash": "78c82d52c9ea5cb5f880dd651d8f8407c3a63766f9ab0b5765a07df5efefcf77"
+    },
+    "syncfusion-wpf-splitbutton": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-splitbutton/SKILL.md",
+      "computedHash": "3e1a927ac4bfa81e15a2fbb553d7de0b31205a77924a5d1e9faaa2db40c8d3af"
+    },
+    "syncfusion-wpf-step-progressbar": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-step-progressbar/SKILL.md",
+      "computedHash": "3769f13ee334ca54c33c8683bc49a6fed05c55f3fa394ee76a13d2bf9144e1d1"
+    },
+    "syncfusion-wpf-sunburst-chart": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-sunburst-chart/SKILL.md",
+      "computedHash": "d8a2a981dc3fa50eb2b8366bc7c639e01482c90f072dcc626750f8bd9228962b"
+    },
+    "syncfusion-wpf-surface-chart": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-surface-chart/SKILL.md",
+      "computedHash": "8d806f4ec3c9ee2b3bdd1305c74e8e1df594ef3b0a2eba4e75e3ab7185d41916"
+    },
+    "syncfusion-wpf-syntax-editor": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-syntax-editor/SKILL.md",
+      "computedHash": "1ee070bec611a4fdd77cc4efa4aff27059c84e916027a8f9aa791695629d4c61"
+    },
+    "syncfusion-wpf-tab-navigation": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-tab-navigation/SKILL.md",
+      "computedHash": "e944e9b3a7143d9637606ef7bc34b2922372ac09e406f0f921bea1ca9130b40e"
+    },
+    "syncfusion-wpf-tab-splitter": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-tab-splitter/SKILL.md",
+      "computedHash": "db19c3d982a613d0a63634f3cbd10ee7edd7bea7fb1ce362b5fae679e18ce884"
+    },
+    "syncfusion-wpf-tabbed-mdi-form": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-tabbed-mdi-form/SKILL.md",
+      "computedHash": "755f490a5c975f36ca8ede14722f792ee561db9af732797050947ed03cf27921"
+    },
+    "syncfusion-wpf-tabbedwindow": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-tabbedwindow/SKILL.md",
+      "computedHash": "017cde93a729746b145e01a5b33a87ab3cd480c2827151658d8f6f4ed0002d89"
+    },
+    "syncfusion-wpf-tabcontrol": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-tabcontrol/SKILL.md",
+      "computedHash": "09cd88ede18984d9fea30a5be31dda3fdd5c378e3e1da2a504b8f8cdc89b2984"
+    },
+    "syncfusion-wpf-taskbar": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-taskbar/SKILL.md",
+      "computedHash": "5ab764b28a2be0f5e8d55652c481db1111ba86e57ec87f362e408ff75e44422c"
+    },
+    "syncfusion-wpf-text-input-layout": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-text-input-layout/SKILL.md",
+      "computedHash": "ccd4fc830b6d459c8bd3456751fe288f18b5e6bf1cbe5baa3398f1840cc6785b"
+    },
+    "syncfusion-wpf-theming": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-theming/SKILL.md",
+      "computedHash": "7a67d8aa44edf81d5e0bcd7db453f2efc9c43c307be868ada150153ab36d0cf0"
+    },
+    "syncfusion-wpf-tile-view": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-tile-view/SKILL.md",
+      "computedHash": "fd723b9c07aa965ed8a7f4336b5805ac41a073c58949714716521a36d1907ab3"
+    },
+    "syncfusion-wpf-timepicker": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-timepicker/SKILL.md",
+      "computedHash": "eb1f77ef798334d47bb3f636da2b30966acf05edf758ae37d86c74553813e8d9"
+    },
+    "syncfusion-wpf-timespan-editor": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-timespan-editor/SKILL.md",
+      "computedHash": "94fd21327e473aac2656614fd6d71351b8995281768a4027c81742a24634fbf4"
+    },
+    "syncfusion-wpf-toast-notification": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-toast-notification/SKILL.md",
+      "computedHash": "45f495fa1af6d509af01e118c577c42d3bbdb933c1d797c563a2b427a81b2a9b"
+    },
+    "syncfusion-wpf-toolbar": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-toolbar/SKILL.md",
+      "computedHash": "29f67d6c25e0d4ab3cb3d9f98709e1cd083934c984b9529fdf30747e1f567423"
+    },
+    "syncfusion-wpf-tree-navigator": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-tree-navigator/SKILL.md",
+      "computedHash": "a305147aaf39b3bad08f1edda72a93d15b9d60444cfe4edae563f4424201bf67"
+    },
+    "syncfusion-wpf-treegrid": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-treegrid/SKILL.md",
+      "computedHash": "1fb48f0d87f924ce1320c8a2a3292e96bda45f1ebdd87292abde979882dc7a15"
+    },
+    "syncfusion-wpf-treemap": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-treemap/SKILL.md",
+      "computedHash": "790d5e88a857ddee029fba8dfd888b376a217a698020052f3c06366aae2f317e"
+    },
+    "syncfusion-wpf-treeview": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-treeview/SKILL.md",
+      "computedHash": "fa708317283baf6fb905f104be91a6a46c86c3ed42abffd7b6c1c2b48db154b8"
+    },
+    "syncfusion-wpf-wizard-control": {
+      "source": "syncfusion/wpf-ui-components-skills",
+      "sourceType": "github",
+      "skillPath": "skills/syncfusion-wpf-wizard-control/SKILL.md",
+      "computedHash": "6052e367356f61452f70ce3efa4b51cfc8da7bbe820594d2f24ef1aa066b581b"
+    }
+  }
+}

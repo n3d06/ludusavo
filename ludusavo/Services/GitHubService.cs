@@ -183,8 +183,20 @@ public class GitHubService : IGitHubService
         return null;
     }
 
-    public async Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync()
+    private Dictionary<string, RemoteGameMeta>? _cachedRemoteMetas;
+
+    public void InvalidateCatalogCache()
     {
+        _cachedRemoteMetas = null;
+    }
+
+    public async Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync(bool forceRefresh = false)
+    {
+        if (!forceRefresh && _cachedRemoteMetas != null)
+        {
+            return _cachedRemoteMetas;
+        }
+
         var result = new Dictionary<string, RemoteGameMeta>(StringComparer.OrdinalIgnoreCase);
         if (!IsConfigured) return result;
 
@@ -215,6 +227,7 @@ public class GitHubService : IGitHubService
                                 kvp.Value.GameId = kvp.Key;
                                 resultDict[kvp.Key] = kvp.Value;
                             }
+                            _cachedRemoteMetas = resultDict;
                             return resultDict;
                         }
                     }
@@ -242,6 +255,7 @@ public class GitHubService : IGitHubService
         }
         catch { }
 
+        _cachedRemoteMetas = result;
         return result;
     }
 
@@ -352,6 +366,7 @@ public class GitHubService : IGitHubService
                     if (newMeta != null)
                     {
                         allMetas[gameId] = newMeta;
+                        _cachedRemoteMetas = allMetas;
                         var catalogJson = JsonSerializer.Serialize(allMetas, new JsonSerializerOptions { WriteIndented = true });
                         var catalogBytes = Encoding.UTF8.GetBytes(catalogJson);
                         await UploadOrUpdateFileAsync("saves/catalog.json", catalogBytes, $"Update catalog after syncing {gameId}");
@@ -501,6 +516,130 @@ public class GitHubService : IGitHubService
             }
             
             return (false, "Không lấy được nội dung file");
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
+    private async Task<(bool success, string? error)> DeleteSingleFileAsync(string repoPath, string? sha, string commitMessage)
+    {
+        try
+        {
+            ApplyAuth();
+            var owner = _configService.Settings.GitHubOwner;
+            var repo = _configService.Settings.GitHubRepo;
+
+            if (string.IsNullOrEmpty(sha))
+            {
+                sha = await GetFileShaAsync(repoPath);
+            }
+
+            if (string.IsNullOrEmpty(sha))
+            {
+                return (true, null); // File does not exist
+            }
+
+            var payload = new Dictionary<string, object>
+            {
+                { "message", commitMessage },
+                { "sha", sha }
+            };
+
+            var json = JsonSerializer.Serialize(payload);
+            var encodedPath = string.Join("/", repoPath.Split('/', StringSplitOptions.RemoveEmptyEntries).Select(Uri.EscapeDataString));
+            using var request = new HttpRequestMessage(HttpMethod.Delete, $"repos/{owner}/{repo}/contents/{encodedPath}")
+            {
+                Content = new StringContent(json, Encoding.UTF8, "application/json")
+            };
+
+            var res = await _httpClient.SendAsync(request);
+            if (res.IsSuccessStatusCode || res.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return (true, null);
+            }
+
+            var err = await res.Content.ReadAsStringAsync();
+            return (false, $"Lỗi xóa {repoPath}: {res.StatusCode} - {err}");
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
+    public async Task<(bool success, string? error)> DeleteGameSaveAsync(string gameId)
+    {
+        if (!IsConfigured)
+            return (false, "GitHub chưa được cấu hình");
+
+        try
+        {
+            ApplyAuth();
+            var owner = _configService.Settings.GitHubOwner;
+            var repo = _configService.Settings.GitHubRepo;
+
+            var encodedGameId = Uri.EscapeDataString(gameId);
+            var res = await _httpClient.GetAsync($"repos/{owner}/{repo}/contents/saves/{encodedGameId}");
+            if (res.IsSuccessStatusCode)
+            {
+                var json = await res.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var item in doc.RootElement.EnumerateArray())
+                    {
+                        var filePath = item.TryGetProperty("path", out var p) ? p.GetString() : null;
+                        var sha = item.TryGetProperty("sha", out var s) ? s.GetString() : null;
+                        var fileName = item.TryGetProperty("name", out var n) ? n.GetString() : "file";
+
+                        if (!string.IsNullOrEmpty(filePath) && !string.IsNullOrEmpty(sha))
+                        {
+                            var delResult = await DeleteSingleFileAsync(filePath, sha, $"Delete {fileName} for {gameId}");
+                            if (!delResult.success)
+                            {
+                                return delResult;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Fallback: Try deleting known save files directly
+                var standardFiles = new[] { "latest.zip", "meta.json", "mapping.yaml" };
+                foreach (var fileName in standardFiles)
+                {
+                    var filePath = $"saves/{gameId}/{fileName}";
+                    var sha = await GetFileShaAsync(filePath);
+                    if (!string.IsNullOrEmpty(sha))
+                    {
+                        var delResult = await DeleteSingleFileAsync(filePath, sha, $"Delete {fileName} for {gameId}");
+                        if (!delResult.success)
+                        {
+                            return delResult;
+                        }
+                    }
+                }
+            }
+
+            // Remove gameId from saves/catalog.json
+            try
+            {
+                var allMetas = await GetAllRemoteMetasAsync();
+                if (allMetas.ContainsKey(gameId))
+                {
+                    allMetas.Remove(gameId);
+                    _cachedRemoteMetas = allMetas;
+                    var catalogJson = JsonSerializer.Serialize(allMetas, new JsonSerializerOptions { WriteIndented = true });
+                    var catalogBytes = Encoding.UTF8.GetBytes(catalogJson);
+                    await UploadOrUpdateFileAsync("saves/catalog.json", catalogBytes, $"Remove {gameId} from catalog");
+                }
+            }
+            catch { }
+
+            return (true, null);
         }
         catch (Exception ex)
         {

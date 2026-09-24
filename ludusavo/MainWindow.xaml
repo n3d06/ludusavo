@@ -14,38 +14,11 @@
 
     <Grid>
         <Grid.Resources>
-            <Style x:Key="AnimatedSidebarIcon" TargetType="ui:SymbolIcon">
+            <Style x:Key="SidebarIcon" TargetType="ui:SymbolIcon">
                 <Setter Property="FontSize" Value="22" />
-                <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
-                <Setter Property="CacheMode">
-                    <Setter.Value>
-                        <BitmapCache RenderAtScale="2" />
-                    </Setter.Value>
-                </Setter>
-                <Setter Property="RenderTransform">
-                    <Setter.Value>
-                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                    </Setter.Value>
-                </Setter>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=ui:NavigationViewItem}}" Value="True">
                         <Setter Property="Filled" Value="True" />
-                        <DataTrigger.EnterActions>
-                            <BeginStoryboard>
-                                <Storyboard Timeline.DesiredFrameRate="60">
-                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleX" From="0.7" To="1" Duration="0:0:0.3">
-                                        <DoubleAnimation.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.8"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                    <DoubleAnimation Storyboard.TargetProperty="RenderTransform.ScaleY" From="0.7" To="1" Duration="0:0:0.3">
-                                        <DoubleAnimation.EasingFunction>
-                                            <BackEase EasingMode="EaseOut" Amplitude="0.8"/>
-                                        </DoubleAnimation.EasingFunction>
-                                    </DoubleAnimation>
-                                </Storyboard>
-                            </BeginStoryboard>
-                        </DataTrigger.EnterActions>
                     </DataTrigger>
                 </Style.Triggers>
             </Style>
@@ -89,23 +62,25 @@
                            OpenPaneLength="220"
                            IsBackButtonVisible="Collapsed"
                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                           ScrollViewer.CanContentScroll="False">
+                           ScrollViewer.CanContentScroll="False"
+                           Transition="None"
+                           TransitionDuration="0">
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="Game trên máy" FontSize="15" TargetPageType="{x:Type pages:GamesPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="XboxController24" Style="{StaticResource AnimatedSidebarIcon}" />
+                        <ui:SymbolIcon Symbol="XboxController24" Style="{StaticResource SidebarIcon}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
                 <ui:NavigationViewItem Content="Sao lưu Cloud" FontSize="15" TargetPageType="{x:Type pages:CloudPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Cloud24" Style="{StaticResource AnimatedSidebarIcon}" />
+                        <ui:SymbolIcon Symbol="Cloud24" Style="{StaticResource SidebarIcon}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.MenuItems>
             <ui:NavigationView.FooterMenuItems>
                 <ui:NavigationViewItem Content="Cài đặt" FontSize="15" TargetPageType="{x:Type pages:SettingsPage}">
                     <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Settings24" Style="{StaticResource AnimatedSidebarIcon}" />
+                        <ui:SymbolIcon Symbol="Settings24" Style="{StaticResource SidebarIcon}" />
                     </ui:NavigationViewItem.Icon>
                 </ui:NavigationViewItem>
             </ui:NavigationView.FooterMenuItems>

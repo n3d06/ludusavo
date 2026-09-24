@@ -28,6 +28,9 @@ public partial class CloudViewModel : ObservableObject
     [ObservableProperty]
     private bool _isCompactMode;
 
+    [ObservableProperty]
+    private bool _isInitialized;
+
     public CloudViewModel(
         IGitHubService gitHubService,
         IRestoreService restoreService,
@@ -38,8 +41,19 @@ public partial class CloudViewModel : ObservableObject
         _manifestService = manifestService;
     }
 
+    public async Task InitializeAsync(bool forceRefresh = false)
+    {
+        if (IsInitialized && !forceRefresh) return;
+        await RefreshCloudSavesInternalAsync(forceRefresh);
+    }
+
     [RelayCommand]
     public async Task RefreshCloudSavesAsync()
+    {
+        await RefreshCloudSavesInternalAsync(forceRefresh: true);
+    }
+
+    public async Task RefreshCloudSavesInternalAsync(bool forceRefresh = false)
     {
         if (!_gitHubService.IsConfigured)
         {
@@ -57,7 +71,25 @@ public partial class CloudViewModel : ObservableObject
                 await _manifestService.LoadManifestAsync();
             }
 
-            var allMetas = await _gitHubService.GetAllRemoteMetasAsync();
+            var allMetas = await _gitHubService.GetAllRemoteMetasAsync(forceRefresh);
+            await PopulateFromMetasAsync(allMetas);
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Lỗi: {ex.Message}";
+            IsLoading = false;
+        }
+    }
+
+    public async Task PopulateFromMetasAsync(Dictionary<string, RemoteGameMeta> allMetas)
+    {
+        try
+        {
+            if (!_manifestService.IsLoaded)
+            {
+                await _manifestService.LoadManifestAsync();
+            }
+
             RemoteSaves.Clear();
 
             foreach (var kvp in allMetas)
@@ -76,6 +108,7 @@ public partial class CloudViewModel : ObservableObject
             RateLimitInfo = $"GitHub API: {rate.remaining}/{rate.limit} requests còn lại (reset sau {rate.resetMinutes}p)";
 
             StatusText = $"Tìm thấy {RemoteSaves.Count} bản sao lưu trên GitHub.";
+            IsInitialized = true;
         }
         catch (Exception ex)
         {
@@ -121,6 +154,59 @@ public partial class CloudViewModel : ObservableObject
         catch (Exception ex)
         {
             StatusText = $"Lỗi: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task DeleteCloudSaveAsync(RemoteGameMeta? meta)
+    {
+        if (meta == null) return;
+
+        if (!_gitHubService.IsConfigured)
+        {
+            StatusText = "Chưa cấu hình GitHub trong Cài đặt.";
+            return;
+        }
+
+        bool confirm = false;
+        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
+        {
+            var result = System.Windows.MessageBox.Show(
+                $"Bạn có chắc chắn muốn xóa bản sao lưu của \"{meta.GameName}\" trên Cloud GitHub không?\n\n(Lưu ý: Không ảnh hưởng đến file save trên máy tính của bạn, nhưng file trên GitHub sẽ bị xóa vĩnh viễn)",
+                "Xác nhận xóa sao lưu Cloud",
+                System.Windows.MessageBoxButton.YesNo,
+                System.Windows.MessageBoxImage.Warning);
+            confirm = result == System.Windows.MessageBoxResult.Yes;
+        });
+
+        if (!confirm) return;
+
+        IsLoading = true;
+        StatusText = $"Đang xóa bản sao lưu của {meta.GameName} trên GitHub...";
+
+        try
+        {
+            var del = await _gitHubService.DeleteGameSaveAsync(meta.GameId);
+            if (del.success)
+            {
+                RemoteSaves.Remove(meta);
+                StatusText = $"Đã xóa thành công bản sao lưu của {meta.GameName} trên Cloud!";
+
+                var rate = await _gitHubService.GetRateLimitAsync();
+                RateLimitInfo = $"GitHub API: {rate.remaining}/{rate.limit} requests còn lại (reset sau {rate.resetMinutes}p)";
+            }
+            else
+            {
+                StatusText = $"Xóa thất bại: {del.error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusText = $"Lỗi khi xóa: {ex.Message}";
         }
         finally
         {

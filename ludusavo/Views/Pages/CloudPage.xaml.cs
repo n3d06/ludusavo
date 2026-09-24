@@ -15,9 +15,9 @@ public partial class CloudPage : Page
 
         Loaded += async (s, e) =>
         {
-            if (ViewModel.RemoteSaves.Count == 0)
+            if (!ViewModel.IsInitialized)
             {
-                await ViewModel.RefreshCloudSavesCommand.ExecuteAsync(null);
+                await ViewModel.InitializeAsync();
             }
         };
 

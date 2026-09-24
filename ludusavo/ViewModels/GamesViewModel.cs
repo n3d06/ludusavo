@@ -16,6 +16,8 @@ public partial class GamesViewModel : ObservableObject
     private readonly ISyncService _syncService;
     private readonly IGameWatcherService _gameWatcher;
     private readonly IConfigService _configService;
+    private readonly CloudViewModel _cloudViewModel;
+    private readonly IGitHubService _gitHubService;
 
     [ObservableProperty]
     private ObservableCollection<DetectedGame> _games = new();
@@ -43,13 +45,17 @@ public partial class GamesViewModel : ObservableObject
         IScannerService scannerService,
         ISyncService syncService,
         IGameWatcherService gameWatcher,
-        IConfigService configService)
+        IConfigService configService,
+        CloudViewModel cloudViewModel,
+        IGitHubService gitHubService)
     {
         _manifestService = manifestService;
         _scannerService = scannerService;
         _syncService = syncService;
         _gameWatcher = gameWatcher;
         _configService = configService;
+        _cloudViewModel = cloudViewModel;
+        _gitHubService = gitHubService;
 
         _gameWatcher.OnGameExitedAndSynced += game =>
         {
@@ -82,19 +88,34 @@ public partial class GamesViewModel : ObservableObject
 
         try
         {
-            if (!_manifestService.IsLoaded)
+            if (!_manifestService.IsLoaded || forceRescan)
             {
-                // Download custom manifest from cloud first if configured
-                ScanStatusText = "Đang tải custom_manifest.json từ Cloud (nếu có)...";
-                await _syncService.DownloadCustomManifestAsync();
+                ScanStatusText = "Đang đồng bộ manifest và đọc danh sách save trên Cloud...";
 
-                var loaded = await _manifestService.LoadManifestAsync();
-                if (!loaded)
+                // Gọi GitHub API đọc manifest và đọc danh sách save trên Cloud 1 lần duy nhất ngay lúc mở app
+                var downloadManifestTask = _syncService.DownloadCustomManifestAsync();
+                var getRemoteMetasTask = _gitHubService.GetAllRemoteMetasAsync(forceRefresh: forceRescan);
+
+                await Task.WhenAll(downloadManifestTask, getRemoteMetasTask);
+
+                if (!_manifestService.IsLoaded)
                 {
-                    ScanStatusText = "Không tìm thấy dữ liệu manifest_processed.json!";
-                    IsScanning = false;
-                    return;
+                    var loaded = await _manifestService.LoadManifestAsync();
+                    if (!loaded)
+                    {
+                        ScanStatusText = "Không tìm thấy dữ liệu manifest_processed.json!";
+                        IsScanning = false;
+                        return;
+                    }
                 }
+
+                // Cập nhật danh sách save Cloud vào CloudViewModel để sẵn sàng ngay lập tức
+                var remoteMetas = await getRemoteMetasTask;
+                _ = _cloudViewModel.PopulateFromMetasAsync(remoteMetas);
+            }
+            else if (!_cloudViewModel.IsInitialized)
+            {
+                _ = _cloudViewModel.InitializeAsync();
             }
 
             ScanStatusText = $"Đang quét hệ thống ({_manifestService.GameCount:N0} games)...";

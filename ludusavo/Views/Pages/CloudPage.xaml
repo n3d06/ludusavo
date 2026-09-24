@@ -112,24 +112,45 @@
                                 </StackPanel>
 
                                 <!-- Actions -->
-                                <ui:Button Grid.Column="2"
-                                           Appearance="Primary"
-                                           Command="{Binding DataContext.DownloadAndRestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                           CommandParameter="{Binding}"
-                                           VerticalAlignment="Center"
-                                           Icon="{ui:SymbolIcon ArrowDownload24}">
-                                    <ui:Button.Style>
-                                        <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                            <Setter Property="Content" Value="Khôi phục về máy"/>
-                                            <Setter Property="ToolTip" Value="Khôi phục về máy"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
-                                                    <Setter Property="Content" Value="{x:Null}"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ui:Button.Style>
-                                </ui:Button>
+                                <StackPanel Grid.Column="2"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                    <ui:Button Command="{Binding DataContext.DeleteCloudSaveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}"
+                                               IsEnabled="{Binding DataContext.IsLoading, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
+                                               Margin="0,0,8,0"
+                                               Icon="{ui:SymbolIcon Delete24}">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Xóa"/>
+                                                <Setter Property="ToolTip" Value="Xóa bản sao lưu trên Cloud"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
+
+                                    <ui:Button Appearance="Primary"
+                                               Command="{Binding DataContext.DownloadAndRestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                               CommandParameter="{Binding}"
+                                               IsEnabled="{Binding DataContext.IsLoading, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
+                                               Icon="{ui:SymbolIcon ArrowDownload24}">
+                                        <ui:Button.Style>
+                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
+                                                <Setter Property="Content" Value="Khôi phục về máy"/>
+                                                <Setter Property="ToolTip" Value="Khôi phục về máy"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
+                                                        <Setter Property="Content" Value="{x:Null}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ui:Button.Style>
+                                    </ui:Button>
+                                </StackPanel>
                             </Grid>
                         </ui:Card>
                     </DataTemplate>

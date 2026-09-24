@@ -37,10 +37,12 @@ public interface IGitHubService
     Task<(bool success, string? message)> TestConnectionAsync();
     Task<List<string>> ListRemoteGameIdsAsync();
     Task<RemoteGameMeta?> GetRemoteMetaAsync(string gameId);
-    Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync();
+    Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync(bool forceRefresh = false);
+    void InvalidateCatalogCache();
     Task<(bool success, string? error)> UploadGameSaveAsync(string gameId, string zipPath, string metaPath, string mappingPath);
     Task<(bool success, string? error)> DownloadGameSaveAsync(string gameId, string targetDir);
     Task<(bool success, string? error)> UploadFileAsync(string repoPath, string localPath, string commitMessage);
     Task<(bool success, string? error)> DownloadFileAsync(string repoPath, string localPath);
+    Task<(bool success, string? error)> DeleteGameSaveAsync(string gameId);
     Task<(int remaining, int limit, int resetMinutes)> GetRateLimitAsync();
 }
