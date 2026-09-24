@@ -44,13 +44,30 @@ public class GameWatcherService : IGameWatcherService, IDisposable
 
         try
         {
-            var currentProcessNames = Process.GetProcesses()
-                .Select(p =>
+            var processes = Process.GetProcesses();
+            var currentProcessNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            try
+            {
+                foreach (var p in processes)
                 {
-                    try { return p.ProcessName; } catch { return ""; }
-                })
-                .Where(n => !string.IsNullOrEmpty(n))
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    try
+                    {
+                        var name = p.ProcessName;
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            currentProcessNames.Add(name);
+                        }
+                    }
+                    catch { }
+                }
+            }
+            finally
+            {
+                foreach (var p in processes)
+                {
+                    try { p.Dispose(); } catch { }
+                }
+            }
 
             // Detect any games that were previously running and now closed
             foreach (var game in _watchedGames)

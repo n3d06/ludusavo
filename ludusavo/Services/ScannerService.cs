@@ -21,6 +21,17 @@ public class ScannerService : IScannerService
         "thumbs.db"
     };
 
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, Regex> _regexCache = new(StringComparer.OrdinalIgnoreCase);
+
+    private static Regex GetOrCreateRegex(string segment)
+    {
+        return _regexCache.GetOrAdd(segment, s =>
+        {
+            var regexStr = "^" + Regex.Escape(s).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
+            return new Regex(regexStr, RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        });
+    }
+
     public ScannerService(IConfigService configService)
     {
         _configService = configService;
@@ -500,7 +511,7 @@ public class ScannerService : IScannerService
                     Traverse(currentDir, index + 1);
                     try
                     {
-                        foreach (var sub in Directory.GetDirectories(currentDir))
+                        foreach (var sub in Directory.EnumerateDirectories(currentDir))
                         {
                             Traverse(sub, index);
                         }
@@ -511,10 +522,9 @@ public class ScannerService : IScannerService
                 {
                     try
                     {
-                        var regexStr = "^" + Regex.Escape(segment).Replace(@"\*", ".*").Replace(@"\?", ".") + "$";
-                        var regex = new Regex(regexStr, RegexOptions.IgnoreCase);
+                        var regex = GetOrCreateRegex(segment);
 
-                        foreach (var file in Directory.GetFiles(currentDir))
+                        foreach (var file in Directory.EnumerateFiles(currentDir))
                         {
                             if (regex.IsMatch(Path.GetFileName(file)))
                             {
@@ -522,7 +532,7 @@ public class ScannerService : IScannerService
                             }
                         }
 
-                        foreach (var dir in Directory.GetDirectories(currentDir))
+                        foreach (var dir in Directory.EnumerateDirectories(currentDir))
                         {
                             if (regex.IsMatch(Path.GetFileName(dir)))
                             {
@@ -553,11 +563,11 @@ public class ScannerService : IScannerService
     {
         try
         {
-            foreach (var f in Directory.GetFiles(dir))
+            foreach (var f in Directory.EnumerateFiles(dir))
             {
                 results.Add(f);
             }
-            foreach (var d in Directory.GetDirectories(dir))
+            foreach (var d in Directory.EnumerateDirectories(dir))
             {
                 GetAllFilesInDirectory(d, results);
             }
@@ -567,23 +577,32 @@ public class ScannerService : IScannerService
 
     public async Task<List<DetectedGame>> ScanGamesAsync(IEnumerable<GameEntry> games, IProgress<(int current, int total, string currentName)>? progress = null)
     {
-        var detected = new List<DetectedGame>();
+        var detected = new System.Collections.Concurrent.ConcurrentBag<DetectedGame>();
         var list = games.ToList();
         int count = 0;
         int total = list.Count;
 
-        foreach (var game in list)
+        var parallelOptions = new ParallelOptions
         {
-            count++;
-            progress?.Report((count, total, game.Name));
+            MaxDegreeOfParallelism = Math.Max(1, Environment.ProcessorCount)
+        };
+
+        await Parallel.ForEachAsync(list, parallelOptions, async (game, ct) =>
+        {
+            var currentCount = Interlocked.Increment(ref count);
+            if (currentCount % 15 == 0 || currentCount == total)
+            {
+                progress?.Report((currentCount, total, game.Name));
+            }
+
             var result = await ScanGameAsync(game);
             if (result != null)
             {
                 detected.Add(result);
             }
-        }
+        });
 
-        return detected;
+        return detected.ToList();
     }
 
     public async Task<List<DetectedGame>> GetDetectedGamesAsync(IReadOnlyList<GameEntry> allGames, bool forceRescan = false, IProgress<(int current, int total, string currentName)>? progress = null)

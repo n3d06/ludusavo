@@ -81,8 +81,23 @@ public class BackupService : IBackupService
                         var relPath = fullPath.Substring(root.Length).TrimStart('\\', '/').Replace('\\', '/');
                         var archiveEntryName = $"{driveKey}/{relPath}";
 
-                        // Compute file hash
-                        var hash = ComputeSha256(fullPath);
+                        // Single-pass read: stream file, compute SHA256 and compress into zip simultaneously
+                        string hash;
+                        var entry = archive.CreateEntry(archiveEntryName, CompressionLevel.Optimal);
+                        using (var srcStream = File.OpenRead(fullPath))
+                        using (var entryStream = entry.Open())
+                        using (var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
+                        {
+                            var buffer = new byte[81920]; // 80KB buffer
+                            int bytesRead;
+                            while ((bytesRead = srcStream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                sha.AppendData(buffer, 0, bytesRead);
+                                entryStream.Write(buffer, 0, bytesRead);
+                            }
+                            hash = BitConverter.ToString(sha.GetHashAndReset()).Replace("-", "").ToLowerInvariant();
+                        }
+
                         file.Sha256 = hash;
 
                         fileList.Add(new
@@ -93,9 +108,6 @@ public class BackupService : IBackupService
                             hash = hash,
                             modified = file.LastWriteTime.ToString("o")
                         });
-
-                        // Add to archive
-                        archive.CreateEntryFromFile(fullPath, archiveEntryName, CompressionLevel.Optimal);
                     }
                 }
 
