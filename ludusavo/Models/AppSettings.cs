@@ -28,6 +28,9 @@ public class AppSettings
     [JsonPropertyName("customScanPaths")]
     public List<string> CustomScanPaths { get; set; } = new();
 
+    [JsonPropertyName("pinnedGameIds")]
+    public List<string> PinnedGameIds { get; set; } = new();
+
     [JsonIgnore]
     public bool IsGitHubConfigured =>
         !string.IsNullOrWhiteSpace(GitHubToken) &&

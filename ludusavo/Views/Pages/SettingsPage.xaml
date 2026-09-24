@@ -11,10 +11,10 @@
       Background="Transparent">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="20,16,20,20" HorizontalAlignment="Stretch">
+        <StackPanel Margin="20,16,0,20" HorizontalAlignment="Stretch">
 
             <!-- GitHub Configuration Card -->
-            <ui:Card Margin="0,0,0,14" Padding="18">
+            <ui:Card Margin="0,0,20,14" Padding="18">
                 <StackPanel>
                     <ui:TextBlock Text="Cấu hình tài khoản GitHub"
                                   FontTypography="BodyStrong"
@@ -63,7 +63,7 @@
             </ui:Card>
 
             <!-- Automation & Behavior -->
-            <ui:Card Margin="0,0,0,8" Padding="18">
+            <ui:Card Margin="0,0,20,8" Padding="18">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -79,7 +79,7 @@
                 </Grid>
             </ui:Card>
 
-            <ui:Card Margin="0,0,0,8" Padding="18">
+            <ui:Card Margin="0,0,20,8" Padding="18">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -95,7 +95,7 @@
                 </Grid>
             </ui:Card>
 
-            <ui:Card Margin="0,0,0,18" Padding="18">
+            <ui:Card Margin="0,0,20,18" Padding="18">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />

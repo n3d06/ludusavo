@@ -10,7 +10,7 @@
       Title="CloudPage"
       Background="Transparent">
 
-    <Grid Margin="20,16,20,16">
+    <Grid Margin="20,16,0,16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -18,7 +18,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Grid Grid.Row="0" Margin="0,0,0,14">
+        <Grid Grid.Row="0" Margin="0,0,20,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
@@ -38,7 +38,7 @@
         </Grid>
 
         <!-- Status / Notice -->
-        <ui:Card Grid.Row="1" Margin="0,0,0,14" Padding="16,12">
+        <ui:Card Grid.Row="1" Margin="0,0,20,14" Padding="16,12">
             <ui:TextBlock Text="{Binding StatusText}" FontTypography="Body"/>
         </ui:Card>
 
@@ -47,10 +47,10 @@
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
-            <ItemsControl ItemsSource="{Binding RemoteSaves}" Margin="0,0,16,0">
+            <ItemsControl ItemsSource="{Binding RemoteSaves}" Margin="0,0,0,0">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ui:Card Margin="0,0,0,10" Padding="14">
+                        <ui:Card Margin="0,0,20,10" Padding="14">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
