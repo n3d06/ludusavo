@@ -28,8 +28,6 @@ public partial class SettingsViewModel : ObservableValidator
     [Required(ErrorMessage = "GitHub Repo không được để trống")]
     private string _gitHubRepo = string.Empty;
 
-    [ObservableProperty]
-    private bool _autoSyncOnExit = false;
 
     [ObservableProperty]
     private bool _minimizeToTray = false;
@@ -64,7 +62,6 @@ public partial class SettingsViewModel : ObservableValidator
         GitHubToken = s.GitHubToken;
         GitHubOwner = s.GitHubOwner;
         GitHubRepo = s.GitHubRepo;
-        AutoSyncOnExit = s.AutoSyncOnExit;
         MinimizeToTray = s.MinimizeToTray;
         StartWithWindows = s.StartWithWindows;
     }
@@ -96,7 +93,6 @@ public partial class SettingsViewModel : ObservableValidator
         current.GitHubToken = GitHubToken.Trim();
         current.GitHubOwner = GitHubOwner.Trim();
         current.GitHubRepo = GitHubRepo.Trim();
-        current.AutoSyncOnExit = AutoSyncOnExit;
         current.MinimizeToTray = MinimizeToTray;
         current.StartWithWindows = StartWithWindows;
 

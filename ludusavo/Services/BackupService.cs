@@ -84,7 +84,7 @@ public class BackupService : IBackupService
                         // Single-pass read: stream file, compute SHA256 and compress into zip simultaneously
                         string hash;
                         var entry = archive.CreateEntry(archiveEntryName, CompressionLevel.Optimal);
-                        using (var srcStream = File.OpenRead(fullPath))
+                        using (var srcStream = OpenFileStreamSafely(fullPath))
                         using (var entryStream = entry.Open())
                         using (var sha = IncrementalHash.CreateHash(HashAlgorithmName.SHA256))
                         {
@@ -170,5 +170,23 @@ public class BackupService : IBackupService
                 ErrorMessage = ex.Message
             };
         }
+    }
+
+    private static FileStream OpenFileStreamSafely(string filePath, int maxRetries = 3)
+    {
+        for (int i = 0; i < maxRetries; i++)
+        {
+            try
+            {
+                // Open with FileShare.ReadWrite so locked/in-use game save files can still be safely read
+                return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            }
+            catch (IOException) when (i < maxRetries - 1)
+            {
+                Thread.Sleep(300);
+            }
+        }
+
+        return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
     }
 }

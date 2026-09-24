@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using ludusavo.Services;
 
 namespace ludusavo.Models;
 
@@ -12,9 +13,7 @@ public partial class DetectedGame : ObservableObject
 
     public string? CustomBannerUrl { get; set; }
 
-    public string? BannerUrl => !string.IsNullOrEmpty(CustomBannerUrl) 
-        ? CustomBannerUrl
-        : (SteamId.HasValue ? $"https://cdn.cloudflare.steamstatic.com/steam/apps/{SteamId.Value}/header.jpg" : null);
+    public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
 
     [ObservableProperty]
     private int _fileCount;

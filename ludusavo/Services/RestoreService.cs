@@ -107,6 +107,15 @@ public class RestoreService : IRestoreService
                         Directory.CreateDirectory(destDir);
                     }
 
+                    if (File.Exists(destPath))
+                    {
+                        var attrs = File.GetAttributes(destPath);
+                        if ((attrs & FileAttributes.ReadOnly) != 0)
+                        {
+                            File.SetAttributes(destPath, attrs & ~FileAttributes.ReadOnly);
+                        }
+                    }
+
                     entry.ExtractToFile(destPath, overwrite: true);
                     count++;
                 }

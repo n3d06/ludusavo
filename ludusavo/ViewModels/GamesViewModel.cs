@@ -14,7 +14,6 @@ public partial class GamesViewModel : ObservableObject
     private readonly IManifestService _manifestService;
     private readonly IScannerService _scannerService;
     private readonly ISyncService _syncService;
-    private readonly IGameWatcherService _gameWatcher;
     private readonly IConfigService _configService;
     private readonly CloudViewModel _cloudViewModel;
     private readonly IGitHubService _gitHubService;
@@ -44,7 +43,6 @@ public partial class GamesViewModel : ObservableObject
         IManifestService manifestService,
         IScannerService scannerService,
         ISyncService syncService,
-        IGameWatcherService gameWatcher,
         IConfigService configService,
         CloudViewModel cloudViewModel,
         IGitHubService gitHubService)
@@ -52,18 +50,9 @@ public partial class GamesViewModel : ObservableObject
         _manifestService = manifestService;
         _scannerService = scannerService;
         _syncService = syncService;
-        _gameWatcher = gameWatcher;
         _configService = configService;
         _cloudViewModel = cloudViewModel;
         _gitHubService = gitHubService;
-
-        _gameWatcher.OnGameExitedAndSynced += game =>
-        {
-            System.Windows.Application.Current?.Dispatcher?.InvokeAsync(() =>
-            {
-                ScanStatusText = $"Tự động đồng bộ {game.Name} thành công!";
-            });
-        };
     }
 
     public async Task InitializeAsync()
@@ -149,9 +138,6 @@ public partial class GamesViewModel : ObservableObject
             }
 
             ScanStatusText = $"Tìm thấy {Games.Count} game có file save trên máy.";
-
-            // Start watcher for detected games
-            _gameWatcher.Start(Games);
 
             // Check cloud sync statuses in background
             _ = Task.Run(async () =>

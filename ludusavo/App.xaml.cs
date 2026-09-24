@@ -68,7 +68,6 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IRestoreService, RestoreService>();
         services.AddSingleton<IGitHubService, GitHubService>();
         services.AddSingleton<ISyncService, SyncService>();
-        services.AddSingleton<IGameWatcherService, GameWatcherService>();
 
         // ViewModels
         services.AddSingleton<MainViewModel>();
@@ -154,9 +153,6 @@ public partial class App : System.Windows.Application
             _notifyIcon.Visible = false;
             _notifyIcon.Dispose();
         }
-
-        var watcher = _serviceProvider?.GetService<IGameWatcherService>();
-        watcher?.Stop();
 
         base.OnExit(e);
     }

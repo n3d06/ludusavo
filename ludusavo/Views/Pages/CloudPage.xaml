@@ -17,18 +17,18 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- Header & Search Toolbar -->
         <Grid Grid.Row="0" Margin="0,0,20,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <ui:TextBlock Text="{Binding RateLimitInfo}"
-                              Appearance="Secondary"
-                              Margin="0,4,0,0"/>
-            </StackPanel>
+            <ui:TextBox Grid.Column="0" Margin="0,0,10,0"
+                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                        PlaceholderText="Tìm kiếm bản sao lưu trên Cloud..."
+                        Icon="{ui:SymbolIcon Search24}"
+                        ClearButtonEnabled="True"/>
 
             <ui:Button Grid.Column="1"
                        Content="Làm mới"
@@ -39,7 +39,14 @@
 
         <!-- Status / Notice -->
         <ui:Card Grid.Row="1" Margin="0,0,20,14" Padding="16,12">
-            <ui:TextBlock Text="{Binding StatusText}" FontTypography="Body"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <ui:TextBlock Grid.Column="0" Text="{Binding StatusText}" FontTypography="Body" VerticalAlignment="Center"/>
+                <ui:TextBlock Grid.Column="1" Text="{Binding RateLimitInfo}" Appearance="Secondary" VerticalAlignment="Center"/>
+            </Grid>
         </ui:Card>
 
         <!-- Remote Saves List -->
@@ -76,7 +83,8 @@
                                         Background="{DynamicResource ControlFillColorDefaultBrush}"
                                         Margin="0,0,16,0">
                                     <Grid>
-                                        <Image Source="{Binding BannerUrl}"
+                                        <Image Source="{Binding BannerUrl, IsAsync=True}"
+                                               RenderOptions.BitmapScalingMode="HighQuality"
                                                Stretch="UniformToFill"/>
                                         <TextBlock Text="{Binding GameName}"
                                                    Visibility="{Binding BannerUrl, Converter={StaticResource NullToVisibilityConverter}}"

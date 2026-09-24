@@ -11,9 +11,7 @@ public class RemoteGameMeta
     public int? SteamId { get; set; }
     public string? CustomBannerUrl { get; set; }
 
-    public string? BannerUrl => !string.IsNullOrEmpty(CustomBannerUrl)
-        ? CustomBannerUrl
-        : (SteamId.HasValue ? $"https://cdn.cloudflare.steamstatic.com/steam/apps/{SteamId.Value}/header.jpg" : null);
+    public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
 
     public string FormattedSize
     {

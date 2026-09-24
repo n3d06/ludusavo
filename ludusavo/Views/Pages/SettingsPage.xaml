@@ -62,22 +62,6 @@
                 </StackPanel>
             </ui:Card>
 
-            <!-- Automation & Behavior -->
-            <ui:Card Margin="0,0,20,8" Padding="18">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <ui:TextBlock Text="Tự động sao lưu &amp; đồng bộ khi tắt game" FontTypography="BodyStrong" />
-                        <ui:TextBlock Text="Phát hiện khi bạn chơi xong và tự động đẩy bản save mới nhất lên GitHub." Appearance="Secondary" />
-                    </StackPanel>
-
-                    <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding AutoSyncOnExit}" VerticalAlignment="Center" />
-                </Grid>
-            </ui:Card>
 
             <ui:Card Margin="0,0,20,8" Padding="18">
                 <Grid>

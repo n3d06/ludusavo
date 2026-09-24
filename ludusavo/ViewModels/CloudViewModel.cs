@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Windows.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ludusavo.Models;
@@ -17,6 +18,9 @@ public partial class CloudViewModel : ObservableObject
     private ObservableCollection<RemoteGameMeta> _remoteSaves = new();
 
     [ObservableProperty]
+    private string _searchText = string.Empty;
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -30,6 +34,49 @@ public partial class CloudViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isInitialized;
+
+    private System.Threading.CancellationTokenSource? _searchCts;
+
+    partial void OnSearchTextChanged(string value)
+    {
+        _searchCts?.Cancel();
+        _searchCts = new System.Threading.CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        _ = System.Threading.Tasks.Task.Delay(250, token).ContinueWith(t =>
+        {
+            if (t.IsCanceled) return;
+
+            System.Windows.Application.Current?.Dispatcher?.Invoke(() =>
+            {
+                ApplySearchFilter(value);
+            });
+        }, System.Threading.Tasks.TaskScheduler.Default);
+    }
+
+    public void ApplySearchFilter(string? query)
+    {
+        var view = CollectionViewSource.GetDefaultView(RemoteSaves);
+        if (view == null) return;
+
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            view.Filter = null;
+        }
+        else
+        {
+            var q = query.Trim();
+            view.Filter = obj =>
+            {
+                if (obj is RemoteGameMeta m)
+                {
+                    return m.GameName.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                           m.GameId.Contains(q, StringComparison.OrdinalIgnoreCase);
+                }
+                return false;
+            };
+        }
+    }
 
     public CloudViewModel(
         IGitHubService gitHubService,
@@ -109,6 +156,11 @@ public partial class CloudViewModel : ObservableObject
 
             StatusText = $"Tìm thấy {RemoteSaves.Count} bản sao lưu trên GitHub.";
             IsInitialized = true;
+
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                ApplySearchFilter(SearchText);
+            }
         }
         catch (Exception ex)
         {
