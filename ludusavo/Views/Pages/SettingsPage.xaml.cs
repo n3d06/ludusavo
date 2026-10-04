@@ -1,9 +1,10 @@
 using System.Windows.Controls;
 using ludusavo.ViewModels;
+using UserControl = System.Windows.Controls.UserControl;
 
 namespace ludusavo.Views.Pages;
 
-public partial class SettingsPage : Page
+public partial class SettingsPage : UserControl
 {
     public SettingsViewModel ViewModel { get; }
 

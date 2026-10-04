@@ -122,7 +122,7 @@ public class SyncService : ISyncService
         if (game == null) return (false, "Game null");
 
         game.IsBusy = true;
-        game.StatusMessage = "Đang sao lưu...";
+        game.StatusMessage = "Backing up...";
 
         try
         {
@@ -131,14 +131,14 @@ public class SyncService : ISyncService
             if (!backupResult.Success)
             {
                 game.IsBusy = false;
-                game.StatusMessage = backupResult.ErrorMessage ?? "Lỗi sao lưu";
+                game.StatusMessage = backupResult.ErrorMessage ?? "Backup error";
                 return (false, backupResult.ErrorMessage);
             }
 
             // 2. Upload to GitHub
             if (_gitHubService.IsConfigured)
             {
-                game.StatusMessage = "Đang tải lên GitHub...";
+                game.StatusMessage = "Uploading to GitHub...";
                 var uploadResult = await _gitHubService.UploadGameSaveAsync(
                     game.Id,
                     backupResult.ZipPath,
@@ -148,17 +148,17 @@ public class SyncService : ISyncService
                 if (!uploadResult.success)
                 {
                     game.IsBusy = false;
-                    game.StatusMessage = uploadResult.error ?? "Lỗi upload GitHub";
+                    game.StatusMessage = uploadResult.error ?? "GitHub upload error";
                     return (false, uploadResult.error);
                 }
 
                 game.Status = SyncStatus.Synced;
-                game.StatusMessage = "Đã đồng bộ lên Cloud!";
+                game.StatusMessage = "Synced to Cloud!";
             }
             else
             {
                 game.Status = SyncStatus.LocalOnly;
-                game.StatusMessage = "Đã lưu bản sao trên máy (chưa cấu hình GitHub)";
+                game.StatusMessage = "Saved locally (GitHub not configured)";
             }
 
             game.IsBusy = false;
@@ -177,7 +177,7 @@ public class SyncService : ISyncService
         if (game == null) return (false, "Game null");
 
         game.IsBusy = true;
-        game.StatusMessage = "Đang tải từ GitHub...";
+        game.StatusMessage = "Downloading from GitHub...";
 
         try
         {
@@ -188,22 +188,22 @@ public class SyncService : ISyncService
                 if (!dl.success)
                 {
                     game.IsBusy = false;
-                    game.StatusMessage = dl.error ?? "Lỗi tải từ GitHub";
+                    game.StatusMessage = dl.error ?? "GitHub download error";
                     return (false, dl.error);
                 }
             }
 
-            game.StatusMessage = "Đang giải nén vào máy...";
+            game.StatusMessage = "Extracting save files to PC...";
             var restoreRes = await _restoreService.RestoreGameAsync(game.Id);
             if (!restoreRes.Success)
             {
                 game.IsBusy = false;
-                game.StatusMessage = restoreRes.ErrorMessage ?? "Lỗi khôi phục save";
+                game.StatusMessage = restoreRes.ErrorMessage ?? "Save restore error";
                 return (false, restoreRes.ErrorMessage);
             }
 
             game.Status = SyncStatus.Synced;
-            game.StatusMessage = $"Đã khôi phục {restoreRes.RestoredFilesCount} files thành công!";
+            game.StatusMessage = $"Successfully restored {restoreRes.RestoredFilesCount} files!";
             game.IsBusy = false;
             return (true, game.StatusMessage);
         }
@@ -217,7 +217,7 @@ public class SyncService : ISyncService
 
     public async Task<(bool success, string? message)> UploadCustomManifestAsync()
     {
-        if (!_gitHubService.IsConfigured) return (false, "GitHub chưa được cấu hình");
+        if (!_gitHubService.IsConfigured) return (false, "GitHub is not configured");
         var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
         if (!File.Exists(customPath)) return (true, null);
 
@@ -226,7 +226,7 @@ public class SyncService : ISyncService
 
     public async Task<(bool success, string? message)> DownloadCustomManifestAsync()
     {
-        if (!_gitHubService.IsConfigured) return (false, "GitHub chưa được cấu hình");
+        if (!_gitHubService.IsConfigured) return (false, "GitHub is not configured");
         var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
         return await _gitHubService.DownloadFileAsync("saves/custom_manifest.json", customPath);
     }

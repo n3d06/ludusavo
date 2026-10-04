@@ -21,7 +21,7 @@ public class RestoreService : IRestoreService
 
         if (!File.Exists(zipPath))
         {
-            return new RestoreResult { Success = false, ErrorMessage = $"Không tìm thấy file backup archive tại {zipPath}" };
+            return new RestoreResult { Success = false, ErrorMessage = $"Backup archive file not found at {zipPath}" };
         }
 
         try

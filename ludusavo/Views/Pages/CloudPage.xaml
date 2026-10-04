@@ -1,169 +1,138 @@
-<Page x:Class="ludusavo.Views.Pages.CloudPage"
-      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-      xmlns:vm="clr-namespace:ludusavo.ViewModels"
-      mc:Ignorable="d"
-      d:DataContext="{d:DesignInstance vm:CloudViewModel}"
-      Title="CloudPage"
-      Background="Transparent">
+<UserControl x:Class="ludusavo.Views.Pages.CloudPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:ludusavo.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance vm:CloudViewModel}">
 
-    <Grid Margin="20,16,0,16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <!-- Header & Search Toolbar -->
-        <Grid Grid.Row="0" Margin="0,0,20,14">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-
-            <ui:TextBox Grid.Column="0" Margin="0,0,10,0"
-                        Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                        PlaceholderText="Tìm kiếm bản sao lưu trên Cloud..."
-                        Icon="{ui:SymbolIcon Search24}"
-                        ClearButtonEnabled="True"/>
-
-            <ui:Button Grid.Column="1"
-                       Content="Làm mới"
-                       Command="{Binding RefreshCloudSavesCommand}"
-                       IsEnabled="{Binding IsLoading, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
-                       Icon="{ui:SymbolIcon ArrowSync24}" />
-        </Grid>
-
-        <!-- Status / Notice -->
-        <ui:Card Grid.Row="1" Margin="0,0,20,14" Padding="16,12">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <ui:TextBlock Grid.Column="0" Text="{Binding StatusText}" FontTypography="Body" VerticalAlignment="Center"/>
-                <ui:TextBlock Grid.Column="1" Text="{Binding RateLimitInfo}" Appearance="Secondary" VerticalAlignment="Center"/>
+    <DockPanel PreviewMouseDown="Page_PreviewMouseDown" Background="Transparent">
+        <!-- Top Toolbar (Native flat panel without ToolBarTray frames) -->
+        <WrapPanel DockPanel.Dock="Top" Margin="8,6">
+            <!-- Modern Clean Search Box (No emoji, subtle text) -->
+            <Grid Width="170" Margin="0,0,8,0">
+                <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Padding="6,3" VerticalContentAlignment="Center"/>
+                <TextBlock Text="Search cloud saves..."
+                           Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                           IsHitTestVisible="False"
+                           VerticalAlignment="Center"
+                           Margin="8,0,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=SearchBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
             </Grid>
-        </ui:Card>
 
-        <!-- Remote Saves List -->
-        <ScrollViewer Grid.Row="2"
-                      VerticalScrollBarVisibility="Auto"
-                      HorizontalScrollBarVisibility="Disabled"
-                      CanContentScroll="True"
-                      PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
-            <ItemsControl ItemsSource="{Binding RemoteSaves}" Margin="0,0,0,0"
-                          VirtualizingPanel.IsVirtualizing="True"
-                          VirtualizingPanel.VirtualizationMode="Recycling"
-                          VirtualizingPanel.ScrollUnit="Pixel">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <ui:Card Margin="0,0,20,10" Padding="14">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
+            <Button Content="Refresh" Command="{Binding RefreshCloudSavesCommand}" Margin="0,0,12,0" Padding="8,3"/>
 
-                                <!-- Game Image Banner (Steam Header) -->
-                                <Border Grid.Column="0"
-                                        Width="140"
-                                        Height="65"
-                                        CornerRadius="6"
-                                        ClipToBounds="True"
-                                        Background="{DynamicResource ControlFillColorDefaultBrush}"
-                                        Margin="0,0,16,0">
-                                    <Grid>
-                                        <Image Source="{Binding BannerUrl, IsAsync=True}"
-                                               RenderOptions.BitmapScalingMode="HighQuality"
-                                               Stretch="UniformToFill"/>
-                                        <TextBlock Text="{Binding GameName}"
-                                                   Visibility="{Binding BannerUrl, Converter={StaticResource NullToVisibilityConverter}}"
-                                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                                                   FontSize="11"
-                                                   TextWrapping="Wrap"
-                                                   TextAlignment="Center"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"
-                                                   Margin="4"/>
-                                    </Grid>
+            <Button Content="Restore to PC"
+                    Command="{Binding DownloadAndRestoreCommand}"
+                    CommandParameter="{Binding SelectedSave}"
+                    IsEnabled="{Binding SelectedSave, Converter={StaticResource NotNullToBooleanConverter}}"
+                    Margin="0,0,6,0" Padding="8,3"/>
+            <Button Content="Delete Cloud Save"
+                    Command="{Binding DeleteCloudSaveCommand}"
+                    CommandParameter="{Binding SelectedSave}"
+                    IsEnabled="{Binding SelectedSave, Converter={StaticResource NotNullToBooleanConverter}}"
+                    Margin="0,0,6,0" Padding="8,3"/>
+        </WrapPanel>
+
+        <!-- Status / Rate Limit Bar -->
+        <DockPanel DockPanel.Dock="Top" Margin="8,0,8,6">
+            <TextBlock Text="{Binding RateLimitInfo}" DockPanel.Dock="Right" Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"/>
+        </DockPanel>
+
+        <!-- ListView (Flush with edges: BorderThickness="0,1,0,0") -->
+        <ListView ItemsSource="{Binding RemoteSaves}"
+                  SelectedItem="{Binding SelectedSave, Mode=TwoWay}"
+                  PreviewMouseDown="ListView_PreviewMouseDown"
+                  BorderThickness="0,1,0,0"
+                  Padding="0"
+                  Margin="0"
+                  ScrollViewer.CanContentScroll="False"
+                  ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    <Setter Property="VerticalContentAlignment" Value="Center"/>
+                    <Setter Property="Margin" Value="0"/>
+                    <Setter Property="Padding" Value="0"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+            <ListView.ContextMenu>
+                <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
+                    <MenuItem Header="Restore to PC"
+                              Command="{Binding DownloadAndRestoreCommand}"
+                              CommandParameter="{Binding SelectedSave}"/>
+                    <Separator/>
+                    <MenuItem Header="Delete Cloud Save"
+                              Command="{Binding DeleteCloudSaveCommand}"
+                              CommandParameter="{Binding SelectedSave}"/>
+                </ContextMenu>
+            </ListView.ContextMenu>
+
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <!-- Steam Header Banner (Rounded corners) -->
+                    <GridViewColumn Header="Banner" Width="96">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border Width="92" Height="43" Margin="0,2" Background="#15000000" HorizontalAlignment="Center">
+                                    <Border.Clip>
+                                        <RectangleGeometry Rect="0,0,92,43" RadiusX="3" RadiusY="3"/>
+                                    </Border.Clip>
+                                    <Image Source="{Binding BannerUrl, IsAsync=True}"
+                                           Width="92" Height="43"
+                                           RenderOptions.BitmapScalingMode="HighQuality"
+                                           Stretch="UniformToFill"/>
                                 </Border>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
-                                <!-- Details -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                                    <ui:TextBlock Text="{Binding GameName}"
-                                                  FontTypography="BodyStrong"
-                                                  Margin="0,0,0,6"/>
+                    <GridViewColumn Header="Title" Width="315" DisplayMemberBinding="{Binding GameName}"/>
 
-                                    <StackPanel Orientation="Horizontal">
-                                        <ui:TextBlock Text="{Binding FileCount, StringFormat='{}{0} files'}"
-                                                      Appearance="Secondary"
-                                                      Margin="0,0,16,0"/>
+                    <!-- Files: Centered -->
+                    <GridViewColumn Header="Files" Width="85">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FileCount, StringFormat='{}{0} files'}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
-                                        <ui:TextBlock Text="{Binding FormattedSize}"
-                                                      Appearance="Secondary"
-                                                      Margin="0,0,16,0"
-                                                      Visibility="{Binding FormattedSize, Converter={StaticResource StringToVisibilityConverter}}"/>
+                    <!-- Size: Right aligned -->
+                    <GridViewColumn Header="Size" Width="105">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FormattedSize}"
+                                           HorizontalAlignment="Right" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
 
-                                        <ui:TextBlock Text="{Binding FormattedTimestamp}"
-                                                      Appearance="Tertiary"/>
-                                    </StackPanel>
-                                </StackPanel>
-
-                                <!-- Actions -->
-                                <StackPanel Grid.Column="2"
-                                            Orientation="Horizontal"
-                                            VerticalAlignment="Center">
-                                    <ui:Button Command="{Binding DataContext.DeleteCloudSaveCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                               CommandParameter="{Binding}"
-                                               IsEnabled="{Binding DataContext.IsLoading, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
-                                               Margin="0,0,8,0"
-                                               Icon="{ui:SymbolIcon Delete24}">
-                                        <ui:Button.Style>
-                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                                <Setter Property="Content" Value="Xóa"/>
-                                                <Setter Property="ToolTip" Value="Xóa bản sao lưu trên Cloud"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
-                                                        <Setter Property="Content" Value="{x:Null}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ui:Button.Style>
-                                    </ui:Button>
-
-                                    <ui:Button Appearance="Primary"
-                                               Command="{Binding DataContext.DownloadAndRestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                               CommandParameter="{Binding}"
-                                               IsEnabled="{Binding DataContext.IsLoading, RelativeSource={RelativeSource AncestorType=ItemsControl}, Converter={StaticResource InverseBooleanConverter}, FallbackValue=True}"
-                                               Icon="{ui:SymbolIcon ArrowDownload24}">
-                                        <ui:Button.Style>
-                                            <Style TargetType="ui:Button" BasedOn="{StaticResource {x:Type ui:Button}}">
-                                                <Setter Property="Content" Value="Khôi phục về máy"/>
-                                                <Setter Property="ToolTip" Value="Khôi phục về máy"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding DataContext.IsCompactMode, RelativeSource={RelativeSource AncestorType=ItemsControl}}" Value="True">
-                                                        <Setter Property="Content" Value="{x:Null}"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ui:Button.Style>
-                                    </ui:Button>
-                                </StackPanel>
-                            </Grid>
-                        </ui:Card>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </ScrollViewer>
-    </Grid>
-</Page>
+                    <!-- Backup Time: Centered -->
+                    <GridViewColumn Header="Backup Time" Width="220">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FormattedTimestamp}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </DockPanel>
+</UserControl>

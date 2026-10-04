@@ -15,17 +15,17 @@ public partial class SettingsViewModel : ObservableValidator
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
-    [Required(ErrorMessage = "GitHub Token không được để trống")]
+    [Required(ErrorMessage = "GitHub Token cannot be empty")]
     private string _gitHubToken = string.Empty;
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
-    [Required(ErrorMessage = "GitHub Owner không được để trống")]
+    [Required(ErrorMessage = "GitHub Owner cannot be empty")]
     private string _gitHubOwner = string.Empty;
 
     [ObservableProperty]
     [NotifyDataErrorInfo]
-    [Required(ErrorMessage = "GitHub Repo không được để trống")]
+    [Required(ErrorMessage = "GitHub Repo cannot be empty")]
     private string _gitHubRepo = string.Empty;
 
 
@@ -70,7 +70,7 @@ public partial class SettingsViewModel : ObservableValidator
     public async Task TestConnectionAsync()
     {
         IsTesting = true;
-        TestStatusMessage = "Đang kiểm tra kết nối GitHub...";
+        TestStatusMessage = "Testing GitHub connection...";
         TestSuccess = null;
 
         // Save temporarily in memory to test
@@ -80,7 +80,7 @@ public partial class SettingsViewModel : ObservableValidator
 
         var (success, msg) = await _gitHubService.TestConnectionAsync();
         TestSuccess = success;
-        TestStatusMessage = msg ?? (success ? "Kết nối thành công!" : "Lỗi kết nối");
+        TestStatusMessage = msg ?? (success ? "Connected successfully!" : "Connection failed");
         IsTesting = false;
 
         _mainViewModel.UpdateGitHubStatus();
@@ -102,7 +102,7 @@ public partial class SettingsViewModel : ObservableValidator
         // Configure startup with Windows registry if requested
         ConfigureStartup(StartWithWindows);
 
-        TestStatusMessage = "Đã lưu cài đặt thành công!";
+        TestStatusMessage = "Settings saved successfully!";
         TestSuccess = true;
     }
 

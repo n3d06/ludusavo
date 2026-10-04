@@ -1,89 +1,28 @@
-<ui:FluentWindow x:Class="ludusavo.MainWindow"
+<Window x:Class="ludusavo.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        xmlns:vm="clr-namespace:ludusavo.ViewModels"
-        xmlns:pages="clr-namespace:ludusavo.Views.Pages"
         Title="{Binding Title}"
         Icon="icon.ico"
-        Height="720" Width="1080"
-        MinHeight="550" MinWidth="800"
-        WindowStartupLocation="CenterScreen"
-        WindowBackdropType="Mica"
-        ExtendsContentIntoTitleBar="True">
+        Height="520" Width="860"
+        MinHeight="520" MaxHeight="520"
+        MinWidth="860" MaxWidth="860"
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen">
 
-    <Grid>
-        <Grid.Resources>
-            <Style x:Key="SidebarIcon" TargetType="ui:SymbolIcon">
-                <Setter Property="FontSize" Value="22" />
-                <Style.Triggers>
-                    <DataTrigger Binding="{Binding IsActive, RelativeSource={RelativeSource AncestorType=ui:NavigationViewItem}}" Value="True">
-                        <Setter Property="Filled" Value="True" />
-                    </DataTrigger>
-                </Style.Triggers>
-            </Style>
-        </Grid.Resources>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <DockPanel>
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <TextBlock>
+                    <Run Text="GitHub:" />
+                    <Run Text="{Binding GitHubStatusText, Mode=OneWay}" />
+                </TextBlock>
+            </StatusBarItem>
+        </StatusBar>
 
-        <Grid Grid.Row="0">
-            <ui:TitleBar Title="" />
-            
-            <!-- Custom Title and Status (Overlaid to guarantee exact spacing) -->
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="16,0,0,0" IsHitTestVisible="False">
-                <!-- App Icon -->
-                <Image Source="pack://application:,,,/icon.ico" Width="16" Height="16" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                
-                <!-- App Title -->
-                <TextBlock Text="{Binding Title}" 
-                           FontSize="12" 
-                           VerticalAlignment="Center" 
-                           Margin="0,0,12,0"/>
-                
-                <!-- GitHub Status (No Plug Icon, just dot and text) -->
-                <Ellipse Width="8" Height="8"
-                         Fill="{Binding IsGitHubConnected, Converter={StaticResource BoolToBrushConverter}}"
-                         Margin="0,0,6,0" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding GitHubStatusText}"
-                           FontSize="12"
-                           FontWeight="Medium"
-                           Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                           VerticalAlignment="Center"/>
-            </StackPanel>
-        </Grid>
-
-        <ui:NavigationView Grid.Row="1"
-                           x:Name="RootNavigation"
-                           PaneDisplayMode="Left"
-                           IsPaneToggleVisible="False"
-                           IsPaneOpen="True"
-                           OpenPaneLength="220"
-                           IsBackButtonVisible="Collapsed"
-                           ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                           ScrollViewer.CanContentScroll="False"
-                           Transition="None"
-                           TransitionDuration="0">
-            <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="Game trên máy" FontSize="15" TargetPageType="{x:Type pages:GamesPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="XboxController24" Style="{StaticResource SidebarIcon}" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-                <ui:NavigationViewItem Content="Sao lưu Cloud" FontSize="15" TargetPageType="{x:Type pages:CloudPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Cloud24" Style="{StaticResource SidebarIcon}" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-            </ui:NavigationView.MenuItems>
-            <ui:NavigationView.FooterMenuItems>
-                <ui:NavigationViewItem Content="Cài đặt" FontSize="15" TargetPageType="{x:Type pages:SettingsPage}">
-                    <ui:NavigationViewItem.Icon>
-                        <ui:SymbolIcon Symbol="Settings24" Style="{StaticResource SidebarIcon}" />
-                    </ui:NavigationViewItem.Icon>
-                </ui:NavigationViewItem>
-            </ui:NavigationView.FooterMenuItems>
-        </ui:NavigationView>
-    </Grid>
-</ui:FluentWindow>
+        <TabControl BorderThickness="0,1,0,0" Padding="0">
+            <TabItem Header="Installed Games" x:Name="GamesTab" />
+            <TabItem Header="Cloud Saves" x:Name="CloudTab" />
+            <TabItem Header="Settings" x:Name="SettingsTab" />
+        </TabControl>
+    </DockPanel>
+</Window>

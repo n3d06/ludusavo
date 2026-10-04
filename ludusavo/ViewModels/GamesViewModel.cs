@@ -6,6 +6,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ludusavo.Models;
 using ludusavo.Services;
+using ludusavo.Views.Dialogs;
 
 namespace ludusavo.ViewModels;
 
@@ -28,7 +29,7 @@ public partial class GamesViewModel : ObservableObject
     private bool _isScanning;
 
     [ObservableProperty]
-    private string _scanStatusText = "Sẵn sàng";
+    private string _scanStatusText = "Ready";
 
     [ObservableProperty]
     private double _scanProgress;
@@ -73,15 +74,15 @@ public partial class GamesViewModel : ObservableObject
 
         IsScanning = true;
         ScanProgress = 0;
-        ScanStatusText = "Đang tải cơ sở dữ liệu game...";
+        ScanStatusText = "Loading game database...";
 
         try
         {
             if (!_manifestService.IsLoaded || forceRescan)
             {
-                ScanStatusText = "Đang đồng bộ manifest và đọc danh sách save trên Cloud...";
+                ScanStatusText = "Syncing manifest and cloud saves...";
 
-                // Gọi GitHub API đọc manifest và đọc danh sách save trên Cloud 1 lần duy nhất ngay lúc mở app
+                // Fetch manifest and cloud save metadata once on startup/refresh
                 var downloadManifestTask = _syncService.DownloadCustomManifestAsync();
                 var getRemoteMetasTask = _gitHubService.GetAllRemoteMetasAsync(forceRefresh: forceRescan);
 
@@ -92,13 +93,13 @@ public partial class GamesViewModel : ObservableObject
                     var loaded = await _manifestService.LoadManifestAsync();
                     if (!loaded)
                     {
-                        ScanStatusText = "Không tìm thấy dữ liệu manifest_processed.json!";
+                        ScanStatusText = "manifest_processed.json not found!";
                         IsScanning = false;
                         return;
                     }
                 }
 
-                // Cập nhật danh sách save Cloud vào CloudViewModel để sẵn sàng ngay lập tức
+                // Update cloud saves into CloudViewModel immediately
                 var remoteMetas = await getRemoteMetasTask;
                 _ = _cloudViewModel.PopulateFromMetasAsync(remoteMetas);
             }
@@ -107,14 +108,14 @@ public partial class GamesViewModel : ObservableObject
                 _ = _cloudViewModel.InitializeAsync();
             }
 
-            ScanStatusText = $"Đang quét hệ thống ({_manifestService.GameCount:N0} games)...";
+            ScanStatusText = $"Scanning system ({_manifestService.GameCount:N0} games)...";
 
             var progress = new Progress<(int current, int total, string currentName)>(p =>
             {
                 if (p.total > 0)
                 {
                     ScanProgress = (double)p.current / p.total * 100;
-                    ScanStatusText = $"Đang quét: {p.currentName} ({p.current}/{p.total})";
+                    ScanStatusText = $"Scanning: {p.currentName} ({p.current}/{p.total})";
                 }
             });
 
@@ -137,7 +138,7 @@ public partial class GamesViewModel : ObservableObject
                 Games.Add(g);
             }
 
-            ScanStatusText = $"Tìm thấy {Games.Count} game có file save trên máy.";
+            ScanStatusText = $"Found {Games.Count} games with saves on this PC.";
 
             // Check cloud sync statuses in background
             _ = Task.Run(async () =>
@@ -147,7 +148,7 @@ public partial class GamesViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            ScanStatusText = $"Lỗi quét: {ex.Message}";
+            ScanStatusText = $"Scan error: {ex.Message}";
         }
         finally
         {
@@ -222,52 +223,14 @@ public partial class GamesViewModel : ObservableObject
     [RelayCommand]
     public async Task AddCustomGameAsync()
     {
-        // 1. Pick Folder
-        using var dialog = new System.Windows.Forms.FolderBrowserDialog
-        {
-            Description = "Chọn thư mục lưu save game",
-            UseDescriptionForTitle = true
-        };
-
-        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+        var dialog = new CustomGameDialog("Add Custom Game");
+        if (dialog.ShowDialog() != true)
             return;
 
-        var folderPath = dialog.SelectedPath;
-
-        // 2. Input Name & Banner
-        string gameName = "";
-        string bannerUrl = "";
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            var window = new System.Windows.Window
-            {
-                Title = "Thêm Game Custom",
-                Width = 350,
-                Height = 220,
-                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen,
-                ResizeMode = System.Windows.ResizeMode.NoResize
-            };
-            var tbName = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10) };
-            var tbBanner = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10) };
-            var btn = new System.Windows.Controls.Button { Content = "OK", Margin = new System.Windows.Thickness(10), IsDefault = true };
-            btn.Click += (s, e) => window.DialogResult = true;
-            
-            var stack = new System.Windows.Controls.StackPanel();
-            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Nhập tên game:", Margin = new System.Windows.Thickness(10,10,10,0) });
-            stack.Children.Add(tbName);
-            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Link ảnh Banner (Tùy chọn):", Margin = new System.Windows.Thickness(10,10,10,0) });
-            stack.Children.Add(tbBanner);
-            stack.Children.Add(btn);
-            window.Content = stack;
-
-            if (window.ShowDialog() == true)
-            {
-                gameName = tbName.Text.Trim();
-                bannerUrl = tbBanner.Text.Trim();
-            }
-        });
-
-        if (string.IsNullOrEmpty(gameName)) return;
+        var gameName = dialog.GameTitle;
+        var folderPath = dialog.FolderPath;
+        var steamId = dialog.SteamId;
+        var bannerUrl = dialog.BannerUrl;
 
         // Convert absolute path to a placeholder path (e.g. <appdata>/...) for cross-PC compatibility
         var portablePath = _scannerService.ToPlaceholderPath(folderPath);
@@ -276,6 +239,7 @@ public partial class GamesViewModel : ObservableObject
         {
             Id = "custom_" + Guid.NewGuid().ToString("N").Substring(0, 8),
             Name = gameName,
+            SteamId = steamId,
             CustomBannerUrl = string.IsNullOrEmpty(bannerUrl) ? null : bannerUrl,
             SavePaths = new List<SavePathEntry>
             {
@@ -283,13 +247,13 @@ public partial class GamesViewModel : ObservableObject
             }
         };
 
-        ScanStatusText = $"Đang thêm game {gameName}...";
+        ScanStatusText = $"Adding game {gameName}...";
         await _manifestService.AddCustomGameAsync(newGame);
         
-        ScanStatusText = "Đang đồng bộ custom_manifest.json lên Cloud...";
+        ScanStatusText = "Syncing custom_manifest.json to Cloud...";
         await _syncService.UploadCustomManifestAsync();
 
-        ScanStatusText = "Thêm thành công! Đang tải lại danh sách...";
+        ScanStatusText = "Game added! Reloading list...";
         // Reload games list
         await LoadAndScanGamesAsync(forceRescan: true);
     }
@@ -302,54 +266,24 @@ public partial class GamesViewModel : ObservableObject
         var existingMeta = _manifestService.GetGameById(game.Id);
         if (existingMeta == null) return;
 
-        string currentPath = existingMeta.SavePaths.FirstOrDefault()?.Path ?? "";
-
-        // 1. Pick Folder
-        using var dialog = new System.Windows.Forms.FolderBrowserDialog
+        string currentFolder = string.Empty;
+        if (game.Files.Count > 0 && !string.IsNullOrEmpty(game.Files[0].AbsolutePath))
         {
-            Description = "Chọn thư mục lưu save game",
-            UseDescriptionForTitle = true
-        };
+            currentFolder = Path.GetDirectoryName(game.Files[0].AbsolutePath) ?? string.Empty;
+        }
+        else if (existingMeta.SavePaths.Count > 0)
+        {
+            currentFolder = existingMeta.SavePaths[0].Path;
+        }
 
-        if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+        var dialog = new CustomGameDialog("Edit Custom Game", game.Name, currentFolder, game.SteamId, game.CustomBannerUrl);
+        if (dialog.ShowDialog() != true)
             return;
 
-        var folderPath = dialog.SelectedPath;
-
-        // 2. Input Name & Banner
-        string gameName = "";
-        string bannerUrl = "";
-        await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
-        {
-            var window = new System.Windows.Window
-            {
-                Title = "Sửa Game Custom",
-                Width = 350,
-                Height = 220,
-                WindowStartupLocation = System.Windows.WindowStartupLocation.CenterScreen,
-                ResizeMode = System.Windows.ResizeMode.NoResize
-            };
-            var tbName = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10), Text = game.Name };
-            var tbBanner = new System.Windows.Controls.TextBox { Margin = new System.Windows.Thickness(10), Text = game.CustomBannerUrl };
-            var btn = new System.Windows.Controls.Button { Content = "Lưu", Margin = new System.Windows.Thickness(10), IsDefault = true };
-            btn.Click += (s, e) => window.DialogResult = true;
-            
-            var stack = new System.Windows.Controls.StackPanel();
-            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Sửa tên game:", Margin = new System.Windows.Thickness(10,10,10,0) });
-            stack.Children.Add(tbName);
-            stack.Children.Add(new System.Windows.Controls.TextBlock { Text = "Link ảnh Banner (Tùy chọn):", Margin = new System.Windows.Thickness(10,10,10,0) });
-            stack.Children.Add(tbBanner);
-            stack.Children.Add(btn);
-            window.Content = stack;
-
-            if (window.ShowDialog() == true)
-            {
-                gameName = tbName.Text?.Trim() ?? string.Empty;
-                bannerUrl = tbBanner.Text?.Trim() ?? string.Empty;
-            }
-        });
-
-        if (string.IsNullOrEmpty(gameName)) return;
+        var gameName = dialog.GameTitle;
+        var folderPath = dialog.FolderPath;
+        var steamId = dialog.SteamId;
+        var bannerUrl = dialog.BannerUrl;
 
         var portablePath = _scannerService.ToPlaceholderPath(folderPath);
 
@@ -357,6 +291,7 @@ public partial class GamesViewModel : ObservableObject
         {
             Id = game.Id,
             Name = gameName,
+            SteamId = steamId,
             CustomBannerUrl = string.IsNullOrEmpty(bannerUrl) ? null : bannerUrl,
             SavePaths = new List<SavePathEntry>
             {
@@ -364,13 +299,13 @@ public partial class GamesViewModel : ObservableObject
             }
         };
 
-        ScanStatusText = $"Đang cập nhật game {gameName}...";
+        ScanStatusText = $"Updating game {gameName}...";
         await _manifestService.AddCustomGameAsync(updatedGame);
         
-        ScanStatusText = "Đang đồng bộ custom_manifest.json lên Cloud...";
+        ScanStatusText = "Syncing custom_manifest.json to Cloud...";
         await _syncService.UploadCustomManifestAsync();
 
-        ScanStatusText = "Cập nhật thành công! Đang tải lại danh sách...";
+        ScanStatusText = "Game updated! Reloading list...";
         await LoadAndScanGamesAsync(forceRescan: true);
     }
 
@@ -383,8 +318,8 @@ public partial class GamesViewModel : ObservableObject
         await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
         {
             var result = System.Windows.MessageBox.Show(
-                $"Bạn có chắc muốn xóa game {game.Name} khỏi danh sách Custom không?\n(Lưu ý: Không xóa file save của bạn)",
-                "Xác nhận xóa",
+                $"Are you sure you want to remove \"{game.Name}\" from Custom games?\n(Note: Your local save files will not be deleted)",
+                "Confirm Removal",
                 System.Windows.MessageBoxButton.YesNo,
                 System.Windows.MessageBoxImage.Question);
             confirm = result == System.Windows.MessageBoxResult.Yes;
@@ -392,13 +327,13 @@ public partial class GamesViewModel : ObservableObject
 
         if (!confirm) return;
 
-        ScanStatusText = $"Đang xóa game {game.Name}...";
+        ScanStatusText = $"Removing game {game.Name}...";
         await _manifestService.RemoveCustomGameAsync(game.Id);
         
-        ScanStatusText = "Đang đồng bộ custom_manifest.json lên Cloud...";
+        ScanStatusText = "Syncing custom_manifest.json to Cloud...";
         await _syncService.UploadCustomManifestAsync();
 
-        ScanStatusText = "Xóa thành công! Đang tải lại danh sách...";
+        ScanStatusText = "Game removed! Reloading list...";
         await LoadAndScanGamesAsync(forceRescan: true);
     }
 

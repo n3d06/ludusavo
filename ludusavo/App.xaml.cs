@@ -21,7 +21,7 @@ public partial class App : System.Windows.Application
 
         if (!createdNew)
         {
-            System.Windows.MessageBox.Show("Ứng dụng ludusavo đã đang chạy (Vui lòng kiểm tra khay hệ thống / góc phải màn hình).", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("ludusavo is already running (Please check the system tray / notification area).", "Notice", MessageBoxButton.OK, MessageBoxImage.Information);
             System.Windows.Application.Current.Shutdown();
             return;
         }
@@ -34,8 +34,8 @@ public partial class App : System.Windows.Application
             LogCrash(ex.Exception);
             ex.Handled = true; // prevent crash, show message instead
             System.Windows.MessageBox.Show(
-                $"Đã xảy ra lỗi:\n{ex.Exception.Message}\n\nChi tiết đã lưu vào crash_log.txt",
-                "Lỗi", MessageBoxButton.OK, MessageBoxImage.Error);
+                $"An error occurred:\n{ex.Exception.Message}\n\nDetails saved to crash_log.txt",
+                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         };
         AppDomain.CurrentDomain.UnhandledException += (s, ex) =>
         {
@@ -121,7 +121,7 @@ public partial class App : System.Windows.Application
             };
 
             var contextMenu = new System.Windows.Forms.ContextMenuStrip();
-            contextMenu.Items.Add("Mở ludusavo", null, (s, e) =>
+            contextMenu.Items.Add("Open ludusavo", null, (s, e) =>
             {
                 mainWindow.Show();
                 mainWindow.WindowState = WindowState.Normal;
@@ -130,7 +130,7 @@ public partial class App : System.Windows.Application
 
 
 
-            contextMenu.Items.Add("Thoát", null, (s, e) =>
+            contextMenu.Items.Add("Exit", null, (s, e) =>
             {
                 _notifyIcon.Visible = false;
                 _notifyIcon.Dispose();

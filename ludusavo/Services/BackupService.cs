@@ -42,7 +42,7 @@ public class BackupService : IBackupService
     {
         if (game == null || game.Files.Count == 0)
         {
-            return new BackupResult { Success = false, ErrorMessage = "Không tìm thấy file save nào của game." };
+            return new BackupResult { Success = false, ErrorMessage = "No save files found for this game." };
         }
 
         try

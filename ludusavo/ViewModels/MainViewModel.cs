@@ -18,7 +18,7 @@ public partial class MainViewModel : ObservableObject
     private bool _isGitHubConnected;
 
     [ObservableProperty]
-    private string _gitHubStatusText = "Chưa kết nối GitHub";
+    private string _gitHubStatusText = "Not connected";
 
     [ObservableProperty]
     private int _detectedCount;
@@ -47,7 +47,7 @@ public partial class MainViewModel : ObservableObject
         else
         {
             IsGitHubConnected = false;
-            GitHubStatusText = "GitHub: Chưa cấu hình Token";
+            GitHubStatusText = "GitHub: Token not configured";
         }
     }
 }

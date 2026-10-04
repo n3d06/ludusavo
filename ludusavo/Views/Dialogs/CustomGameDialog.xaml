@@ -1,0 +1,130 @@
+<Window x:Class="ludusavo.Views.Dialogs.CustomGameDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Custom Game"
+        Width="520"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False"
+        Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
+
+    <Grid Margin="20,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <TextBlock Grid.Row="0" x:Name="DialogHeader" Text="Add Custom Game"
+                   FontSize="14" FontWeight="SemiBold" Margin="0,0,0,14"/>
+
+        <!-- Game Title Field -->
+        <StackPanel Grid.Row="1" Margin="0,0,0,12">
+            <Label Content="Game Title:" Padding="0,0,0,4" FontWeight="Medium"/>
+            <TextBox x:Name="TitleTextBox" Padding="6,4" VerticalContentAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Save Folder Field -->
+        <StackPanel Grid.Row="2" Margin="0,0,0,12">
+            <Label Content="Save Files Folder:" Padding="0,0,0,4" FontWeight="Medium"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="FolderTextBox" Grid.Column="0" Padding="6,4" VerticalContentAlignment="Center"/>
+                <Button Grid.Column="1" Content="Browse..." Margin="8,0,0,0" Padding="14,4" Click="BrowseButton_Click"/>
+            </Grid>
+        </StackPanel>
+
+        <!-- Banner Field & Source Options -->
+        <StackPanel Grid.Row="3" Margin="0,0,0,14">
+            <Label Content="Game Banner (Optional):" Padding="0,0,0,6" FontWeight="Medium"/>
+
+            <!-- Radio Buttons for Source Type -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                <RadioButton x:Name="RbSteamId" Content="Steam App ID" IsChecked="True"
+                             GroupName="BannerType" Margin="0,0,18,0"
+                             Checked="BannerType_Checked"/>
+                <RadioButton x:Name="RbCustomUrl" Content="Direct Image URL"
+                             GroupName="BannerType"
+                             Checked="BannerType_Checked"/>
+            </StackPanel>
+
+            <!-- Steam ID Input Panel -->
+            <Grid x:Name="SteamIdPanel" Margin="0,0,0,8">
+                <TextBox x:Name="SteamIdTextBox" Padding="6,4" VerticalContentAlignment="Center"
+                         TextChanged="SteamIdTextBox_TextChanged"/>
+                <TextBlock Text="Enter Steam App ID (e.g. 1091500, 730, 1245620)..."
+                           Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                           IsHitTestVisible="False" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=SteamIdTextBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+
+            <!-- Custom URL Input Panel -->
+            <Grid x:Name="CustomUrlPanel" Margin="0,0,0,8" Visibility="Collapsed">
+                <TextBox x:Name="BannerTextBox" Padding="6,4" VerticalContentAlignment="Center"
+                         TextChanged="BannerTextBox_TextChanged"/>
+                <TextBlock Text="https://example.com/banner.jpg"
+                           Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                           IsHitTestVisible="False" VerticalAlignment="Center" Margin="8,0,0,0">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Text, ElementName=BannerTextBox}" Value="">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Grid>
+
+            <!-- Banner Preview Container (Rounded 3px) -->
+            <Border Width="184" Height="86" HorizontalAlignment="Left" Background="#15000000" CornerRadius="3" ClipToBounds="True">
+                <Grid>
+                    <TextBlock x:Name="BannerPlaceholder" Text="No banner image"
+                               Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <Image x:Name="BannerImage" Width="184" Height="86"
+                           Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"/>
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- Validation Error Message -->
+        <TextBlock Grid.Row="4" x:Name="ErrorTextBlock"
+                   Foreground="#D32F2F" Margin="0,0,0,10"
+                   Visibility="Collapsed" TextWrapping="Wrap"/>
+
+        <!-- Separator -->
+        <Separator Grid.Row="5" Margin="0,0,0,12"/>
+
+        <!-- Action Buttons -->
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button x:Name="OkButton" Content="Save" IsDefault="True" Width="85" Height="28"
+                    Margin="0,0,8,0" Click="OkButton_Click"/>
+            <Button Content="Cancel" IsCancel="True" Width="85" Height="28"/>
+        </StackPanel>
+    </Grid>
+</Window>

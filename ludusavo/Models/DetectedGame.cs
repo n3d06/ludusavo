@@ -15,6 +15,22 @@ public partial class DetectedGame : ObservableObject
 
     public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
 
+    public DetectedGame()
+    {
+        BannerCache.BannerUpdated += OnBannerUpdated;
+    }
+
+    private void OnBannerUpdated(int steamId)
+    {
+        if (SteamId == steamId)
+        {
+            System.Windows.Application.Current?.Dispatcher?.InvokeAsync(() =>
+            {
+                OnPropertyChanged(nameof(BannerUrl));
+            });
+        }
+    }
+
     [ObservableProperty]
     private int _fileCount;
 
@@ -58,19 +74,40 @@ public partial class DetectedGame : ObservableObject
     }
 
     public string LastModifiedFormatted => LastModified.HasValue
-        ? LastModified.Value.ToString("dd/MM/yyyy HH:mm:ss")
-        : "Chưa rõ";
+        ? LastModified.Value.ToString("yyyy-MM-dd HH:mm:ss")
+        : "Unknown";
+
+    public string DisplayStatus
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(StatusMessage))
+                return StatusMessage;
+
+            return Status switch
+            {
+                SyncStatus.Synced => "In sync",
+                SyncStatus.LocalNewer => "Local is newer",
+                SyncStatus.RemoteNewer => "Cloud is newer",
+                SyncStatus.LocalOnly => "Local only",
+                SyncStatus.RemoteOnly => "Cloud only",
+                SyncStatus.Conflict => "Conflict",
+                SyncStatus.Syncing => "Syncing...",
+                _ => "Not checked"
+            };
+        }
+    }
 
     public string StatusBadgeText => Status switch
     {
-        SyncStatus.Synced => "Đã đồng bộ",
-        SyncStatus.LocalNewer => "Bản mới hơn trên máy",
-        SyncStatus.RemoteNewer => "Bản mới hơn trên Cloud",
-        SyncStatus.LocalOnly => "Chỉ có trên máy",
-        SyncStatus.RemoteOnly => "Chỉ có trên Cloud",
-        SyncStatus.Conflict => "Xung đột",
-        SyncStatus.Syncing => "Đang đồng bộ...",
-        _ => "Chưa kiểm tra"
+        SyncStatus.Synced => "In sync",
+        SyncStatus.LocalNewer => "Local is newer",
+        SyncStatus.RemoteNewer => "Cloud is newer",
+        SyncStatus.LocalOnly => "Local only",
+        SyncStatus.RemoteOnly => "Cloud only",
+        SyncStatus.Conflict => "Conflict",
+        SyncStatus.Syncing => "Syncing...",
+        _ => "Not checked"
     };
 
     public string StatusBadgeColor => Status switch
@@ -85,8 +122,14 @@ public partial class DetectedGame : ObservableObject
         _ => "#9CA3AF"
     };
 
+    partial void OnStatusMessageChanged(string value)
+    {
+        OnPropertyChanged(nameof(DisplayStatus));
+    }
+
     partial void OnStatusChanged(SyncStatus value)
     {
+        OnPropertyChanged(nameof(DisplayStatus));
         OnPropertyChanged(nameof(StatusBadgeText));
         OnPropertyChanged(nameof(StatusBadgeColor));
     }

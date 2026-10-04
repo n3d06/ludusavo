@@ -41,7 +41,7 @@ public class GitHubService : IGitHubService
     {
         if (!IsConfigured)
         {
-            return (false, "GitHub token, owner hoặc repo chưa được cấu hình.");
+            return (false, "GitHub token, owner, or repo is not configured.");
         }
 
         try
@@ -57,25 +57,25 @@ public class GitHubService : IGitHubService
                 using var doc = JsonDocument.Parse(content);
                 var isPrivate = doc.RootElement.TryGetProperty("private", out var priv) && priv.GetBoolean();
                 var fullName = doc.RootElement.GetProperty("full_name").GetString();
-                return (true, $"Kết nối thành công tới {fullName} ({(isPrivate ? "Private" : "Public")})");
+                return (true, $"Connected successfully to {fullName} ({(isPrivate ? "Private" : "Public")})");
             }
             else if (res.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                return (false, "Xác thực thất bại: Personal Access Token không hợp lệ hoặc đã hết hạn (401).");
+                return (false, "Authentication failed: Personal Access Token is invalid or expired (401).");
             }
             else if (res.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                return (false, $"Không tìm thấy repository '{owner}/{repo}' (404).");
+                return (false, $"Repository '{owner}/{repo}' not found (404).");
             }
             else
             {
                 var err = await res.Content.ReadAsStringAsync();
-                return (false, $"GitHub API trả về lỗi: {res.StatusCode} - {err}");
+                return (false, $"GitHub API error: {res.StatusCode} - {err}");
             }
         }
         catch (Exception ex)
         {
-            return (false, $"Lỗi kết nối mạng: {ex.Message}");
+            return (false, $"Network error: {ex.Message}");
         }
     }
 

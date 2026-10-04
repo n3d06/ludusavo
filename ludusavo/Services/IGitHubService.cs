@@ -1,6 +1,8 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace ludusavo.Services;
 
-public class RemoteGameMeta
+public class RemoteGameMeta : ObservableObject
 {
     public string GameId { get; set; } = string.Empty;
     public string GameName { get; set; } = string.Empty;
@@ -12,6 +14,22 @@ public class RemoteGameMeta
     public string? CustomBannerUrl { get; set; }
 
     public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
+
+    public RemoteGameMeta()
+    {
+        BannerCache.BannerUpdated += OnBannerUpdated;
+    }
+
+    private void OnBannerUpdated(int steamId)
+    {
+        if (SteamId == steamId)
+        {
+            System.Windows.Application.Current?.Dispatcher?.InvokeAsync(() =>
+            {
+                OnPropertyChanged(nameof(BannerUrl));
+            });
+        }
+    }
 
     public string FormattedSize
     {
@@ -25,8 +43,8 @@ public class RemoteGameMeta
     }
 
     public string FormattedTimestamp => Timestamp == DateTime.MinValue || Timestamp.Year <= 1
-        ? "Chưa rõ thời gian"
-        : $"Đồng bộ: {Timestamp:dd/MM/yyyy HH:mm}";
+        ? "Unknown"
+        : Timestamp.ToString("yyyy-MM-dd HH:mm");
 }
 
 public interface IGitHubService
