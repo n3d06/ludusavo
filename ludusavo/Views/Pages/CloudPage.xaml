@@ -45,13 +45,7 @@
                     IsEnabled="{Binding SelectedSave, Converter={StaticResource NotNullToBooleanConverter}}"
                     Margin="0,0,6,0" Padding="8,3"/>
         </WrapPanel>
-
-        <!-- Status / Rate Limit Bar -->
-        <DockPanel DockPanel.Dock="Top" Margin="8,0,8,6">
-            <TextBlock Text="{Binding RateLimitInfo}" DockPanel.Dock="Right" Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" VerticalAlignment="Center"/>
-            <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center"/>
-        </DockPanel>
-
+ 
         <!-- ListView (Flush with edges: BorderThickness="0,1,0,0") -->
         <ListView ItemsSource="{Binding RemoteSaves}"
                   SelectedItem="{Binding SelectedSave, Mode=TwoWay}"

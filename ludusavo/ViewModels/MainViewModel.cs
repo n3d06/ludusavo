@@ -10,6 +10,7 @@ public partial class MainViewModel : ObservableObject
     private readonly IGitHubService _gitHubService;
 
     public GamesViewModel GamesVm { get; }
+    public CloudViewModel CloudVm { get; }
 
     [ObservableProperty]
     private string _title = "ludusavo";
@@ -29,11 +30,16 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private string _globalBusyText = string.Empty;
 
-    public MainViewModel(IConfigService configService, IGitHubService gitHubService, GamesViewModel gamesVm)
+    public MainViewModel(
+        IConfigService configService,
+        IGitHubService gitHubService,
+        GamesViewModel gamesVm,
+        CloudViewModel cloudVm)
     {
         _configService = configService;
         _gitHubService = gitHubService;
         GamesVm = gamesVm;
+        CloudVm = cloudVm;
         UpdateGitHubStatus();
     }
 

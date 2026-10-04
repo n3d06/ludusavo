@@ -155,7 +155,7 @@ public partial class CloudViewModel : ObservableObject
             }
 
             var rate = await _gitHubService.GetRateLimitAsync();
-            RateLimitInfo = $"GitHub API: {rate.remaining}/{rate.limit} requests remaining (resets in {rate.resetMinutes}m)";
+            RateLimitInfo = $"GitHub API: {rate.remaining}/{rate.limit}";
 
             StatusText = $"Found {RemoteSaves.Count} cloud backups on GitHub.";
             IsInitialized = true;
@@ -252,7 +252,7 @@ public partial class CloudViewModel : ObservableObject
                 StatusText = $"Successfully deleted cloud backup for {meta.GameName}!";
 
                 var rate = await _gitHubService.GetRateLimitAsync();
-                RateLimitInfo = $"GitHub API: {rate.remaining}/{rate.limit} requests remaining (resets in {rate.resetMinutes}m)";
+                RateLimitInfo = $"GitHub API: {rate.remaining}/{rate.limit}";
             }
             else
             {
