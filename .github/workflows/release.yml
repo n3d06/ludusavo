@@ -74,41 +74,25 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore ludusavo/ludusavo.csproj
 
-      - name: Publish Standalone (Self-Contained, không cần cài .NET)
+      - name: Publish (Framework-Dependent, siêu nhẹ)
         run: |
-          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained true -o dist/standalone
+          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -p:PublishReadyToRun=false -o dist/app
 
-      - name: Publish Portable (Framework-Dependent, siêu nhẹ)
-        run: |
-          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -p:PublishReadyToRun=false -o dist/portable
-
-      - name: Package ZIP Distributions
+      - name: Package ZIP Distribution
         shell: pwsh
         run: |
           $tag = "${{ steps.version.outputs.TAG }}"
           New-Item -ItemType Directory -Force -Path "artifacts"
 
-          # 1. Đóng gói Standalone Package (Chạy độc lập, không cần cài runtime)
-          $standaloneDir = "package/ludusavo-Standalone"
-          New-Item -ItemType Directory -Force -Path "$standaloneDir"
-          Copy-Item "dist/standalone/*" -Destination "$standaloneDir/" -Recurse -Force
+          $pkgDir = "package/ludusavo"
+          New-Item -ItemType Directory -Force -Path "$pkgDir"
+          Copy-Item "dist/app/*" -Destination "$pkgDir/" -Recurse -Force
 
           if (Test-Path "assets") {
-              Copy-Item "assets" -Destination "$standaloneDir/" -Recurse
+              Copy-Item "assets" -Destination "$pkgDir/" -Recurse
           }
 
-          Compress-Archive -Path "$standaloneDir/*" -DestinationPath "artifacts/ludusavo-$tag-win-x64-standalone.zip" -Force
-
-          # 2. Đóng gói Portable Package (Gọn nhẹ, yêu cầu .NET 8 Desktop Runtime)
-          $portableDir = "package/ludusavo-Portable"
-          New-Item -ItemType Directory -Force -Path "$portableDir"
-          Copy-Item "dist/portable/*" -Destination "$portableDir/" -Recurse -Force
-
-          if (Test-Path "assets") {
-              Copy-Item "assets" -Destination "$portableDir/" -Recurse
-          }
-
-          Compress-Archive -Path "$portableDir/*" -DestinationPath "artifacts/ludusavo-$tag-win-x64-portable.zip" -Force
+          Compress-Archive -Path "$pkgDir/*" -DestinationPath "artifacts/ludusavo-$tag-win-x64.zip" -Force
 
           Write-Host "Danh sách file artifacts tạo ra:"
           Get-ChildItem -Path "artifacts"

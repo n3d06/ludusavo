@@ -10,6 +10,7 @@
             <conv:ZeroToIndeterminateConverter x:Key="ZeroToIndeterminateConverter" />
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <conv:NotNullToBooleanConverter x:Key="NotNullToBooleanConverter" />
+            <conv:BannerThumbnailConverter x:Key="BannerThumbnailConverter" />
 
             <!-- Lock all GridView column headers: disable mouse resizing and dragging -->
             <Style TargetType="GridViewColumnHeader">

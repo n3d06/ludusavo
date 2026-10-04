@@ -149,6 +149,8 @@ public partial class GamesViewModel : ObservableObject
             _ = Task.Run(async () =>
             {
                 await _syncService.CheckAllSyncStatusesAsync(Games);
+                // System is now idle after scan and checks; trim working set and collect GC
+                MemoryOptimizer.TrimMemory();
             });
         }
         catch (Exception ex)

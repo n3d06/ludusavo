@@ -14,8 +14,8 @@ public class ManifestService : IManifestService
     };
 
     private readonly IConfigService _configService;
-    private readonly Dictionary<string, GameEntry> _gamesById = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<int, GameEntry> _gamesBySteamId = new();
+    private Dictionary<string, GameEntry> _gamesById = new(StringComparer.OrdinalIgnoreCase);
+    private Dictionary<int, GameEntry> _gamesBySteamId = new();
     private List<GameEntry> _gamesList = new();
 
     public bool IsLoaded { get; private set; }
@@ -71,8 +71,8 @@ public class ManifestService : IManifestService
             if (loaded != null && loaded.Count > 0)
             {
                 _gamesList = loaded;
-                _gamesById.Clear();
-                _gamesBySteamId.Clear();
+                _gamesById = new Dictionary<string, GameEntry>(loaded.Count, StringComparer.OrdinalIgnoreCase);
+                _gamesBySteamId = new Dictionary<int, GameEntry>(loaded.Count);
 
                 foreach (var g in _gamesList)
                 {
@@ -89,6 +89,9 @@ public class ManifestService : IManifestService
                 // Load custom manifest
                 await LoadCustomManifestAsync();
                 
+                // Clean up large temporary JSON deserialization buffers
+                MemoryOptimizer.TrimMemory();
+
                 return true;
             }
         }

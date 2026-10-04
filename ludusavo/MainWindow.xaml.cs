@@ -36,10 +36,21 @@ public partial class MainWindow : Window
         {
             e.Cancel = true;
             Hide();
+            MemoryOptimizer.TrimMemory();
         }
         else
         {
             base.OnClosing(e);
+        }
+    }
+
+    protected override void OnStateChanged(EventArgs e)
+    {
+        base.OnStateChanged(e);
+        if (WindowState == WindowState.Minimized && _configService.Settings.MinimizeToTray)
+        {
+            Hide();
+            MemoryOptimizer.TrimMemory();
         }
     }
 
