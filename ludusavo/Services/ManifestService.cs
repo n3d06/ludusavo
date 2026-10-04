@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using ludusavo.Models;
 
@@ -6,6 +7,12 @@ namespace ludusavo.Services;
 
 public class ManifestService : IManifestService
 {
+    private static readonly HttpClient ManifestHttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(60),
+        DefaultRequestHeaders = { { "User-Agent", "ludusavo-Desktop" } }
+    };
+
     private readonly IConfigService _configService;
     private readonly Dictionary<string, GameEntry> _gamesById = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<int, GameEntry> _gamesBySteamId = new();
@@ -23,13 +30,30 @@ public class ManifestService : IManifestService
     {
         var cachePath = _configService.ManifestCachePath;
 
-        // Fallback: check if manifest_processed.json is in parent data/cache or relative
+        // 1. If not yet in Documents, check if present in dev mode local data/cache
         if (!File.Exists(cachePath))
         {
             var fallback = Path.Combine(_configService.RootDir, "data", "cache", "manifest_processed.json");
             if (File.Exists(fallback))
             {
-                cachePath = fallback;
+                try
+                {
+                    var dir = Path.GetDirectoryName(cachePath);
+                    if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+                    File.Copy(fallback, cachePath, overwrite: true);
+                }
+                catch { }
+            }
+        }
+
+        // 2. If still not present, automatically download from GitHub / CDN into Documents
+        if (!File.Exists(cachePath))
+        {
+            var downloaded = await DownloadManifestAsync(cachePath);
+            if (!downloaded)
+            {
+                Console.WriteLine($"[ManifestService] Manifest could not be downloaded to {cachePath}");
+                return false;
             }
         }
 
@@ -217,5 +241,55 @@ public class ManifestService : IManifestService
             _gamesList.RemoveAt(existingListIdx);
         }
         _gamesById.Remove(gameId);
+    }
+
+    private static async Task<bool> DownloadManifestAsync(string targetPath)
+    {
+        var urls = new[]
+        {
+            "https://raw.githubusercontent.com/3ky4r0/ludusavo/main/data/cache/manifest_processed.json",
+            "https://cdn.jsdelivr.net/gh/3ky4r0/ludusavo@main/data/cache/manifest_processed.json"
+        };
+
+        var dir = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+
+        var tempPath = targetPath + $".{Guid.NewGuid():N}.tmp";
+
+        foreach (var url in urls)
+        {
+            try
+            {
+                using var response = await ManifestHttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
+                if (response.IsSuccessStatusCode)
+                {
+                    await using (var remoteStream = await response.Content.ReadAsStreamAsync())
+                    await using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    {
+                        await remoteStream.CopyToAsync(fileStream);
+                    }
+
+                    if (File.Exists(tempPath) && new FileInfo(tempPath).Length > 1000)
+                    {
+                        if (File.Exists(targetPath)) File.Delete(targetPath);
+                        File.Move(tempPath, targetPath);
+                        return true;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ManifestService] Failed downloading manifest from {url}: {ex.Message}");
+            }
+            finally
+            {
+                if (File.Exists(tempPath))
+                {
+                    try { File.Delete(tempPath); } catch { }
+                }
+            }
+        }
+
+        return false;
     }
 }

@@ -90,10 +90,15 @@ public partial class GamesViewModel : ObservableObject
 
                 if (!_manifestService.IsLoaded)
                 {
+                    if (!File.Exists(_configService.ManifestCachePath))
+                    {
+                        ScanStatusText = "Downloading game database (first-time setup)...";
+                    }
+
                     var loaded = await _manifestService.LoadManifestAsync();
                     if (!loaded)
                     {
-                        ScanStatusText = "manifest_processed.json not found!";
+                        ScanStatusText = "Failed to load or download game database!";
                         IsScanning = false;
                         return;
                     }

@@ -69,10 +69,8 @@ public class ConfigService : IConfigService
         // Automatically migrate any existing files from app root to Documents/ludusavo
         MigrateExistingData();
 
-        // Manifest cache path: prefer Documents, fallback to bundled app root
-        var docManifest = Path.Combine(CacheDir, "manifest_processed.json");
-        var bundledManifest = Path.Combine(RootDir, "data", "cache", "manifest_processed.json");
-        ManifestCachePath = File.Exists(docManifest) ? docManifest : bundledManifest;
+        // Manifest cache path is always in Documents/ludusavo/data/cache
+        ManifestCachePath = Path.Combine(CacheDir, "manifest_processed.json");
 
         LoadSettings();
     }

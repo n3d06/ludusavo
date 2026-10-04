@@ -12,6 +12,14 @@
         ShowInTaskbar="False"
         Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
 
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+    </Window.Resources>
+
     <Grid Margin="20,16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -30,7 +38,7 @@
         <!-- Game Title Field -->
         <StackPanel Grid.Row="1" Margin="0,0,0,12">
             <Label Content="Game Title:" Padding="0,0,0,4" FontWeight="Medium"/>
-            <TextBox x:Name="TitleTextBox" Padding="6,4" VerticalContentAlignment="Center"/>
+            <TextBox x:Name="TitleTextBox"/>
         </StackPanel>
 
         <!-- Save Folder Field -->
@@ -41,8 +49,8 @@
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBox x:Name="FolderTextBox" Grid.Column="0" Padding="6,4" VerticalContentAlignment="Center"/>
-                <Button Grid.Column="1" Content="Browse..." Margin="8,0,0,0" Padding="14,4" Click="BrowseButton_Click"/>
+                <TextBox x:Name="FolderTextBox" Grid.Column="0"/>
+                <Button Grid.Column="1" Content="Browse..." Margin="8,0,0,0" Padding="14,0" Height="26" Click="BrowseButton_Click"/>
             </Grid>
         </StackPanel>
 
@@ -62,8 +70,7 @@
 
             <!-- Steam ID Input Panel -->
             <Grid x:Name="SteamIdPanel" Margin="0,0,0,8">
-                <TextBox x:Name="SteamIdTextBox" Padding="6,4" VerticalContentAlignment="Center"
-                         TextChanged="SteamIdTextBox_TextChanged"/>
+                <TextBox x:Name="SteamIdTextBox" TextChanged="SteamIdTextBox_TextChanged"/>
                 <TextBlock Text="Enter Steam App ID (e.g. 1091500, 730, 1245620)..."
                            Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                            IsHitTestVisible="False" VerticalAlignment="Center" Margin="8,0,0,0">
@@ -82,8 +89,7 @@
 
             <!-- Custom URL Input Panel -->
             <Grid x:Name="CustomUrlPanel" Margin="0,0,0,8" Visibility="Collapsed">
-                <TextBox x:Name="BannerTextBox" Padding="6,4" VerticalContentAlignment="Center"
-                         TextChanged="BannerTextBox_TextChanged"/>
+                <TextBox x:Name="BannerTextBox" TextChanged="BannerTextBox_TextChanged"/>
                 <TextBlock Text="https://example.com/banner.jpg"
                            Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                            IsHitTestVisible="False" VerticalAlignment="Center" Margin="8,0,0,0">
@@ -122,9 +128,9 @@
 
         <!-- Action Buttons -->
         <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button x:Name="OkButton" Content="Save" IsDefault="True" Width="85" Height="28"
+            <Button x:Name="OkButton" Content="Save" IsDefault="True" Width="85" Height="26"
                     Margin="0,0,8,0" Click="OkButton_Click"/>
-            <Button Content="Cancel" IsCancel="True" Width="85" Height="28"/>
+            <Button Content="Cancel" IsCancel="True" Width="85" Height="26"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -7,32 +7,49 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:SettingsViewModel}">
 
+    <UserControl.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="PasswordBox">
+            <Setter Property="Padding" Value="6,0"/>
+            <Setter Property="Height" Value="26"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="Label">
+            <Setter Property="Padding" Value="0,0,0,4"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+    </UserControl.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="20,16" MaxWidth="680" HorizontalAlignment="Left">
+        <StackPanel Margin="24,20" MaxWidth="680" HorizontalAlignment="Left">
 
             <!-- GitHub Configuration Section -->
-            <TextBlock Text="GitHub Account Configuration" FontWeight="SemiBold" FontSize="14"/>
-            <Separator Margin="0,4,0,14"/>
+            <TextBlock Text="GitHub Account Configuration" FontWeight="SemiBold" FontSize="15"/>
+            <Separator Margin="0,6,0,16"/>
 
-            <Label Content="Personal Access Token (requires repo scope):" Padding="0,0,0,4"/>
+            <Label Content="Personal Access Token (requires repo scope):"/>
             <PasswordBox x:Name="TokenBox"
                          PasswordChanged="TokenBox_PasswordChanged"
-                         Margin="0,0,0,12"/>
+                         Margin="0,0,0,14"/>
 
-            <Grid Margin="0,0,0,14">
+            <Grid Margin="0,0,0,16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0">
-                    <Label Content="GitHub Owner (Username or Organization):" Padding="0,0,0,4"/>
+                    <Label Content="GitHub Owner (Username or Organization):"/>
                     <TextBox Text="{Binding GitHubOwner, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
 
                 <StackPanel Grid.Column="2">
-                    <Label Content="GitHub Repository:" Padding="0,0,0,4"/>
+                    <Label Content="GitHub Repository:"/>
                     <TextBox Text="{Binding GitHubRepo, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
             </Grid>
@@ -41,7 +58,9 @@
                 <Button Content="Test Connection"
                         Command="{Binding TestConnectionCommand}"
                         IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBooleanConverter}}"
-                        Padding="12,4"/>
+                        Padding="14,0"
+                        Height="26"
+                        VerticalAlignment="Center"/>
                 <TextBlock Text="{Binding TestStatusMessage}"
                            VerticalAlignment="Center"
                            Margin="12,0,0,0"/>
@@ -70,7 +89,9 @@
                     IsDefault="True"
                     Command="{Binding SaveSettingsCommand}"
                     HorizontalAlignment="Left"
-                    Padding="20,6"/>
+                    Padding="20,0"
+                    Height="26"
+                    FontWeight="Medium"/>
 
         </StackPanel>
     </ScrollViewer>

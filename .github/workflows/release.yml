@@ -93,18 +93,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$standaloneDir"
           Copy-Item "dist/standalone/*" -Destination "$standaloneDir/" -Recurse -Force
 
-          if (Test-Path "data/cache/manifest_processed.json") {
-              New-Item -ItemType Directory -Force -Path "$standaloneDir/data/cache"
-              Copy-Item "data/cache/manifest_processed.json" -Destination "$standaloneDir/data/cache/"
-          }
           if (Test-Path "assets") {
               Copy-Item "assets" -Destination "$standaloneDir/" -Recurse
-          }
-          if (Test-Path "Run-ludusavo.bat") {
-              Copy-Item "Run-ludusavo.bat" -Destination "$standaloneDir/"
-          }
-          if (Test-Path "README.md") {
-              Copy-Item "README.md" -Destination "$standaloneDir/"
           }
 
           Compress-Archive -Path "$standaloneDir/*" -DestinationPath "artifacts/ludusavo-$tag-win-x64-standalone.zip" -Force
@@ -114,18 +104,8 @@ jobs:
           New-Item -ItemType Directory -Force -Path "$portableDir"
           Copy-Item "dist/portable/*" -Destination "$portableDir/" -Recurse -Force
 
-          if (Test-Path "data/cache/manifest_processed.json") {
-              New-Item -ItemType Directory -Force -Path "$portableDir/data/cache"
-              Copy-Item "data/cache/manifest_processed.json" -Destination "$portableDir/data/cache/"
-          }
           if (Test-Path "assets") {
               Copy-Item "assets" -Destination "$portableDir/" -Recurse
-          }
-          if (Test-Path "Run-ludusavo.bat") {
-              Copy-Item "Run-ludusavo.bat" -Destination "$portableDir/"
-          }
-          if (Test-Path "README.md") {
-              Copy-Item "README.md" -Destination "$portableDir/"
           }
 
           Compress-Archive -Path "$portableDir/*" -DestinationPath "artifacts/ludusavo-$tag-win-x64-portable.zip" -Force
