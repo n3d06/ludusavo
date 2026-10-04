@@ -12,14 +12,6 @@
         ShowInTaskbar="False"
         Background="{DynamicResource {x:Static SystemColors.WindowBrushKey}}">
 
-    <Window.Resources>
-        <Style TargetType="TextBox">
-            <Setter Property="Padding" Value="6,0"/>
-            <Setter Property="Height" Value="26"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-    </Window.Resources>
-
     <Grid Margin="20,16">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

@@ -32,7 +32,7 @@
             </StatusBarItem>
         </StatusBar>
 
-        <TabControl BorderThickness="0,1,0,0" Padding="0">
+        <TabControl>
             <TabItem Header="Installed Games" x:Name="GamesTab" />
             <TabItem Header="Cloud Saves" x:Name="CloudTab" />
             <TabItem Header="Settings" x:Name="SettingsTab" />

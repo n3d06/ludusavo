@@ -45,6 +45,24 @@ public partial class GamesPage : UserControl
         Keyboard.ClearFocus();
     }
 
+    private void ListView_PreviewMouseRightButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not System.Windows.Controls.ListView listView || e.OriginalSource is not System.Windows.DependencyObject dep)
+            return;
+
+        var item = System.Windows.Controls.ItemsControl.ContainerFromElement(listView, dep) as System.Windows.Controls.ListViewItem;
+        if (item != null)
+        {
+            item.IsSelected = true;
+            item.Focus();
+        }
+        else
+        {
+            // Right-click on empty space or column header: prevent ContextMenu from opening
+            e.Handled = true;
+        }
+    }
+
     private void Page_PreviewMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton != MouseButton.Left) return;

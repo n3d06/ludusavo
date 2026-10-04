@@ -12,8 +12,7 @@
         <WrapPanel DockPanel.Dock="Top" Margin="8,6">
             <!-- Modern Clean Search Box (No emoji, subtle text) -->
             <Grid Width="170" Margin="0,0,8,0">
-                <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                         Padding="6,3" VerticalContentAlignment="Center"/>
+                <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
                 <TextBlock Text="Search cloud saves..."
                            Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
                            IsHitTestVisible="False"
@@ -50,25 +49,18 @@
         <ListView ItemsSource="{Binding RemoteSaves}"
                   SelectedItem="{Binding SelectedSave, Mode=TwoWay}"
                   PreviewMouseDown="ListView_PreviewMouseDown"
+                  PreviewMouseRightButtonDown="ListView_PreviewMouseRightButtonDown"
                   BorderThickness="0,1,0,0"
+                  BorderBrush="#E5E5E5"
                   Padding="0"
                   Margin="0"
                   ScrollViewer.CanContentScroll="False"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-                    <Setter Property="VerticalContentAlignment" Value="Center"/>
-                    <Setter Property="Margin" Value="0"/>
-                    <Setter Property="Padding" Value="0"/>
-                </Style>
-            </ListView.ItemContainerStyle>
             <ListView.ContextMenu>
                 <ContextMenu DataContext="{Binding Path=PlacementTarget.DataContext, RelativeSource={RelativeSource Self}}">
                     <MenuItem Header="Restore to PC"
                               Command="{Binding DownloadAndRestoreCommand}"
                               CommandParameter="{Binding SelectedSave}"/>
-                    <Separator/>
                     <MenuItem Header="Delete Cloud Save"
                               Command="{Binding DeleteCloudSaveCommand}"
                               CommandParameter="{Binding SelectedSave}"/>

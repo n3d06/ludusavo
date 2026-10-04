@@ -7,92 +7,76 @@
              mc:Ignorable="d"
              d:DataContext="{d:DesignInstance vm:SettingsViewModel}">
 
-    <UserControl.Resources>
-        <Style TargetType="TextBox">
-            <Setter Property="Padding" Value="6,0"/>
-            <Setter Property="Height" Value="26"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-        <Style TargetType="PasswordBox">
-            <Setter Property="Padding" Value="6,0"/>
-            <Setter Property="Height" Value="26"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-        </Style>
-        <Style TargetType="Label">
-            <Setter Property="Padding" Value="0,0,0,4"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-        </Style>
-    </UserControl.Resources>
-
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-        <StackPanel Margin="24,20" MaxWidth="680" HorizontalAlignment="Left">
+        <Grid Margin="24,20" MaxWidth="812" HorizontalAlignment="Left">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="380"/>
+                <ColumnDefinition Width="32"/>
+                <ColumnDefinition Width="360"/>
+            </Grid.ColumnDefinitions>
 
-            <!-- GitHub Configuration Section -->
-            <TextBlock Text="GitHub Account Configuration" FontWeight="SemiBold" FontSize="15"/>
-            <Separator Margin="0,6,0,16"/>
+            <!-- Left Column: GitHub Account Configuration -->
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="GitHub Account Configuration" FontWeight="SemiBold" FontSize="14"/>
+                <Separator Margin="0,4,0,14"/>
 
-            <Label Content="Personal Access Token (requires repo scope):"/>
-            <PasswordBox x:Name="TokenBox"
-                         PasswordChanged="TokenBox_PasswordChanged"
-                         Margin="0,0,0,14"/>
+                <Label Content="Personal Access Token (requires repo scope):"/>
+                <PasswordBox x:Name="TokenBox"
+                             PasswordChanged="TokenBox_PasswordChanged"
+                             Margin="0,0,0,12"/>
 
-            <Grid Margin="0,0,0,16">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="16"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
+                <Label Content="GitHub Owner (Username or Organization):"/>
+                <TextBox Text="{Binding GitHubOwner, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,12"/>
 
-                <StackPanel Grid.Column="0">
-                    <Label Content="GitHub Owner (Username or Organization):"/>
-                    <TextBox Text="{Binding GitHubOwner, UpdateSourceTrigger=PropertyChanged}"/>
+                <Label Content="GitHub Repository:"/>
+                <TextBox Text="{Binding GitHubRepo, UpdateSourceTrigger=PropertyChanged}"
+                         Margin="0,0,0,16"/>
+
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <Button Content="Test Connection"
+                            Command="{Binding TestConnectionCommand}"
+                            IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBooleanConverter}}"
+                            Padding="14,0"
+                            Height="26"
+                            VerticalAlignment="Center"/>
+                    <Button Content="Save Settings"
+                            IsDefault="True"
+                            Command="{Binding SaveSettingsCommand}"
+                            Margin="8,0,0,0"
+                            Padding="16,0"
+                            Height="26"
+                            VerticalAlignment="Center"
+                            FontWeight="Medium"/>
+                    <TextBlock Text="{Binding TestStatusMessage}"
+                               VerticalAlignment="Center"
+                               Margin="12,0,0,0"/>
                 </StackPanel>
-
-                <StackPanel Grid.Column="2">
-                    <Label Content="GitHub Repository:"/>
-                    <TextBox Text="{Binding GitHubRepo, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
-            </Grid>
-
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,24">
-                <Button Content="Test Connection"
-                        Command="{Binding TestConnectionCommand}"
-                        IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBooleanConverter}}"
-                        Padding="14,0"
-                        Height="26"
-                        VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding TestStatusMessage}"
-                           VerticalAlignment="Center"
-                           Margin="12,0,0,0"/>
             </StackPanel>
 
-            <!-- System Options Section -->
-            <TextBlock Text="System Preferences" FontWeight="SemiBold" FontSize="14"/>
-            <Separator Margin="0,4,0,14"/>
+            <!-- Right Column: System Preferences -->
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="System Preferences" FontWeight="SemiBold" FontSize="14"/>
+                <Separator Margin="0,4,0,14"/>
 
-            <CheckBox IsChecked="{Binding MinimizeToTray}" Margin="0,0,0,12">
-                <StackPanel>
-                    <TextBlock Text="Minimize to System Tray" FontWeight="Medium"/>
-                    <TextBlock Text="When closing the window, keep the app running in the system tray." Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Margin="0,2,0,0"/>
-                </StackPanel>
-            </CheckBox>
+                <CheckBox IsChecked="{Binding MinimizeToTray}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="Minimize to System Tray" FontWeight="Medium"/>
+                        <TextBlock Text="When closing the window, keep the app running in the system tray."
+                                   Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                </CheckBox>
 
-            <CheckBox IsChecked="{Binding StartWithWindows}" Margin="0,0,0,24">
-                <StackPanel>
-                    <TextBlock Text="Start with Windows" FontWeight="Medium"/>
-                    <TextBlock Text="Automatically launch minimized on system startup to sync game saves." Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}" Margin="0,2,0,0"/>
-                </StackPanel>
-            </CheckBox>
-
-            <!-- Save Settings Button -->
-            <Button Content="Save Settings"
-                    IsDefault="True"
-                    Command="{Binding SaveSettingsCommand}"
-                    HorizontalAlignment="Left"
-                    Padding="20,0"
-                    Height="26"
-                    FontWeight="Medium"/>
-
-        </StackPanel>
+                <CheckBox IsChecked="{Binding StartWithWindows}" Margin="0,0,0,14">
+                    <StackPanel>
+                        <TextBlock Text="Start with Windows" FontWeight="Medium"/>
+                        <TextBlock Text="Automatically launch minimized on system startup to sync game saves."
+                                   Foreground="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                </CheckBox>
+            </StackPanel>
+        </Grid>
     </ScrollViewer>
 </UserControl>
