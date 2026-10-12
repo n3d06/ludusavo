@@ -4,18 +4,18 @@ namespace ludusavo.Commands;
 
 public class LscHandler
 {
-    private readonly IGitHubService _gitHubService;
+    private readonly IGoogleDriveService _driveService;
 
-    public LscHandler(IGitHubService gitHubService)
+    public LscHandler(IGoogleDriveService driveService)
     {
-        _gitHubService = gitHubService;
+        _driveService = driveService;
     }
 
     public async Task<List<RemoteGameMeta>> ExecuteAsync()
     {
-        if (!_gitHubService.IsConfigured)
+        if (!_driveService.IsConfigured)
         {
-            AnsiConsole.MarkupLine("[red]GitHub chưa được cấu hình! Vui lòng dùng lệnh [bold cyan]sav config[/] trước.[/]");
+            AnsiConsole.WriteLine("Google Drive chưa được cấu hình! Vui lòng dùng lệnh 'sav config' hoặc 'sav login' trước.");
             return new List<RemoteGameMeta>();
         }
 
@@ -23,16 +23,16 @@ public class LscHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang lấy danh sách bản save từ GitHub...", async ctx =>
+            .StartAsync("Đang lấy danh sách bản save từ Google Drive...", async ctx =>
             {
-                var metasDict = await _gitHubService.GetAllRemoteMetasAsync(forceRefresh: true);
-                list = metasDict.Values.OrderBy(m => m.GameName).ToList();
+                var metasDict = await _driveService.GetAllRemoteMetasAsync(forceRefresh: true);
+                list = metasDict.Values.OrderBy(m => m.GameName, StringComparer.OrdinalIgnoreCase).ToList();
             });
 
         if (list.Count == 0)
         {
-            AnsiConsole.MarkupLine("Chưa có bản save nào trên GitHub repository.");
-            AnsiConsole.MarkupLine("Gõ [cyan]sav push[/] để đẩy bản save đầu tiên lên cloud.");
+            AnsiConsole.WriteLine("Chưa có bản save nào trong thư mục 'sav' trên Google Drive.");
+            AnsiConsole.WriteLine("Gõ 'sav push' để đẩy bản save đầu tiên lên Google Drive.");
             return list;
         }
 
@@ -57,4 +57,3 @@ public class LscHandler
         return list;
     }
 }
-

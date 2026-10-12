@@ -38,19 +38,21 @@ public class GameBackupPayload
     public string? MappingPath { get; set; }
 }
 
-public interface IGitHubService
+public interface IGoogleDriveService
 {
     bool IsConfigured { get; }
+    Task<(bool success, string? message)> LoginAsync(Action<string>? statusCallback = null);
     Task<(bool success, string? message)> TestConnectionAsync();
     Task<List<string>> ListRemoteGameIdsAsync();
     Task<RemoteGameMeta?> GetRemoteMetaAsync(string gameId);
     Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync(bool forceRefresh = false);
     void InvalidateCatalogCache();
     Task<(bool success, string? error)> UploadGameSaveAsync(string gameId, string zipPath, string metaPath, string mappingPath);
-    Task<(bool success, string? error, string? commitSha)> UploadGameSavesBatchAsync(List<GameBackupPayload> payloads, string commitMessage, Action<string>? progressCallback = null);
+    Task<(bool success, string? error)> UploadGameSavesBatchAsync(List<GameBackupPayload> payloads, Action<string>? progressCallback = null);
     Task<(bool success, string? error)> DownloadGameSaveAsync(string gameId, string targetDir);
-    Task<(bool success, string? error)> UploadFileAsync(string repoPath, string localPath, string commitMessage);
-    Task<(bool success, string? error)> DownloadFileAsync(string repoPath, string localPath);
+    Task<(bool success, string? error)> UploadCustomManifestAsync(string localPath);
+    Task<(bool success, string? error)> DownloadCustomManifestAsync(string localPath);
     Task<(bool success, string? error)> DeleteGameSaveAsync(string gameId);
-    Task<(int remaining, int limit, int resetMinutes)> GetRateLimitAsync();
+    Task<(long usedBytes, long totalBytes, string? userEmail)> GetStorageQuotaAsync();
 }
+

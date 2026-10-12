@@ -9,27 +9,27 @@ public class PushHandler
     private readonly IScannerService _scannerService;
     private readonly IBackupService _backupService;
     private readonly ISyncService _syncService;
-    private readonly IGitHubService _gitHubService;
+    private readonly IGoogleDriveService _driveService;
 
     public PushHandler(
         IManifestService manifestService,
         IScannerService scannerService,
         IBackupService backupService,
         ISyncService syncService,
-        IGitHubService gitHubService)
+        IGoogleDriveService driveService)
     {
         _manifestService = manifestService;
         _scannerService = scannerService;
         _backupService = backupService;
         _syncService = syncService;
-        _gitHubService = gitHubService;
+        _driveService = driveService;
     }
 
     public async Task ExecuteAsync(string? target = null)
     {
-        if (!_gitHubService.IsConfigured)
+        if (!_driveService.IsConfigured)
         {
-            AnsiConsole.WriteLine("GitHub chưa được cấu hình! Vui lòng dùng lệnh 'sav config' trước.");
+            AnsiConsole.WriteLine("Google Drive chưa được cấu hình! Vui lòng dùng lệnh 'sav config' hoặc 'sav login' trước.");
             return;
         }
 
@@ -51,7 +51,7 @@ public class PushHandler
 
         if (games.Count == 0)
         {
-            AnsiConsole.WriteLine("Không tìm thấy game nào có save trên máy để đẩy lên GitHub.");
+            AnsiConsole.WriteLine("Không tìm thấy game nào có save trên máy để đẩy lên Google Drive.");
             return;
         }
 
@@ -96,7 +96,7 @@ public class PushHandler
 
             AnsiConsole.WriteLine($"{idxStr}  {nameStr}  {sizeStr}  {fileStr}");
         }
-        AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Đẩy tất cả game lên GitHub");
+        AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Đẩy tất cả game lên Google Drive");
         AnsiConsole.WriteLine($"{"[0]".PadRight(maxIndexWidth)}  Hủy bỏ\n");
 
         var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn push (hoặc 'A' / '0'):");
@@ -131,7 +131,6 @@ public class PushHandler
 
         bool success = false;
         string? msg = null;
-        string? commitSha = null;
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
@@ -143,16 +142,11 @@ public class PushHandler
                 });
                 success = syncRes.success;
                 msg = syncRes.message;
-                commitSha = syncRes.commitSha;
             });
 
         if (success)
         {
-            var shortSha = !string.IsNullOrEmpty(commitSha) && commitSha.Length >= 7 
-                ? commitSha.Substring(0, 7) 
-                : commitSha;
-            var shaText = !string.IsNullOrEmpty(shortSha) ? $" (Commit: {shortSha})" : "";
-            AnsiConsole.WriteLine($"Đã đẩy game '{game.Name}' lên GitHub thành công.{shaText}");
+            AnsiConsole.WriteLine($"Đã đẩy game '{game.Name}' lên Google Drive thành công.");
         }
         else
         {
@@ -162,13 +156,12 @@ public class PushHandler
 
     private async Task PushAllAsync(List<DetectedGame> games)
     {
-        AnsiConsole.WriteLine($"Bắt đầu sao lưu tất cả {games.Count} game lên GitHub...");
+        AnsiConsole.WriteLine($"Bắt đầu sao lưu tất cả {games.Count} game lên Google Drive...");
 
         bool success = false;
         string? message = null;
         int successCount = 0;
         int failCount = 0;
-        string? commitSha = null;
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
@@ -183,16 +176,11 @@ public class PushHandler
                 message = res.message;
                 successCount = res.successCount;
                 failCount = res.failCount;
-                commitSha = res.commitSha;
             });
 
         if (success)
         {
-            var shortSha = !string.IsNullOrEmpty(commitSha) && commitSha.Length >= 7 
-                ? commitSha.Substring(0, 7) 
-                : commitSha;
-            var shaText = !string.IsNullOrEmpty(shortSha) ? $" (Commit: {shortSha})" : "";
-            AnsiConsole.WriteLine($"Hoàn tất! Đã đẩy {successCount} game lên GitHub thành công.{shaText}");
+            AnsiConsole.WriteLine($"Hoàn tất! Đã đẩy {successCount} game lên Google Drive thành công.");
             if (failCount > 0)
             {
                 AnsiConsole.WriteLine($"Có {failCount} game không thể nén do lỗi file.");
@@ -204,4 +192,3 @@ public class PushHandler
         }
     }
 }
-

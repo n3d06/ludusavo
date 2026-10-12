@@ -4,25 +4,25 @@ namespace ludusavo.Commands;
 
 public class PullHandler
 {
-    private readonly IGitHubService _gitHubService;
+    private readonly IGoogleDriveService _driveService;
     private readonly IRestoreService _restoreService;
     private readonly IBackupService _backupService;
 
     public PullHandler(
-        IGitHubService gitHubService,
+        IGoogleDriveService driveService,
         IRestoreService restoreService,
         IBackupService backupService)
     {
-        _gitHubService = gitHubService;
+        _driveService = driveService;
         _restoreService = restoreService;
         _backupService = backupService;
     }
 
     public async Task ExecuteAsync(string? target = null)
     {
-        if (!_gitHubService.IsConfigured)
+        if (!_driveService.IsConfigured)
         {
-            AnsiConsole.MarkupLine("[red]GitHub chưa được cấu hình! Vui lòng dùng lệnh [bold cyan]sav config[/] trước.[/]");
+            AnsiConsole.WriteLine("Google Drive chưa được cấu hình! Vui lòng dùng lệnh 'sav config' hoặc 'sav login' trước.");
             return;
         }
 
@@ -30,15 +30,15 @@ public class PullHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang lấy danh sách các bản save từ GitHub...", async ctx =>
+            .StartAsync("Đang lấy danh sách các bản save từ Google Drive...", async ctx =>
             {
-                var dict = await _gitHubService.GetAllRemoteMetasAsync(forceRefresh: true);
-                remoteList = dict.Values.OrderBy(m => m.GameName).ToList();
+                var dict = await _driveService.GetAllRemoteMetasAsync(forceRefresh: true);
+                remoteList = dict.Values.OrderBy(m => m.GameName, StringComparer.OrdinalIgnoreCase).ToList();
             });
 
         if (remoteList.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]Không có bản save nào trên GitHub để tải về.[/]");
+            AnsiConsole.WriteLine("Không có bản save nào trên Google Drive để tải về.");
             return;
         }
 
@@ -64,7 +64,7 @@ public class PullHandler
                 return;
             }
 
-            AnsiConsole.MarkupLine($"[red]Không tìm thấy bản save trên cloud khớp với '{target}'.[/]");
+            AnsiConsole.WriteLine($"Không tìm thấy bản save khớp với '{target}'.");
             return;
         }
 
@@ -91,7 +91,7 @@ public class PullHandler
 
         if (choice == "0")
         {
-            AnsiConsole.MarkupLine("Đã hủy thao tác.");
+            AnsiConsole.WriteLine("Đã hủy thao tác.");
             return;
         }
 
@@ -107,13 +107,13 @@ public class PullHandler
         }
         else
         {
-            AnsiConsole.MarkupLine("[red]Lựa chọn không hợp lệ.[/]");
+            AnsiConsole.WriteLine("Lựa chọn không hợp lệ.");
         }
     }
 
     private async Task PullSingleAsync(RemoteGameMeta meta)
     {
-        AnsiConsole.MarkupLine($"\nĐang tải và khôi phục game: [bold]{Markup.Escape(meta.GameName)}[/]");
+        AnsiConsole.WriteLine($"Bắt đầu tải và khôi phục game: {meta.GameName}");
 
         bool success = false;
         string? error = null;
@@ -121,13 +121,13 @@ public class PullHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync($"Đang tải bản save từ GitHub...", async ctx =>
+            .StartAsync("Đang tải bản save từ Google Drive...", async ctx =>
             {
                 var cacheDir = _backupService.GetGameCacheDir(meta.GameId);
-                var dl = await _gitHubService.DownloadGameSaveAsync(meta.GameId, cacheDir);
+                var dl = await _driveService.DownloadGameSaveAsync(meta.GameId, cacheDir);
                 if (!dl.success)
                 {
-                    error = dl.error ?? "Lỗi tải file từ GitHub";
+                    error = dl.error ?? "Lỗi tải file từ Google Drive";
                     return;
                 }
 
@@ -141,17 +141,17 @@ public class PullHandler
 
         if (success)
         {
-            AnsiConsole.MarkupLine($"[bold green]Đã khôi phục thành công {restoredCount} file save cho '{Markup.Escape(meta.GameName)}'![/]");
+            AnsiConsole.WriteLine($"Đã khôi phục thành công {restoredCount} file save cho '{meta.GameName}'.");
         }
         else
         {
-            AnsiConsole.MarkupLine($"[bold red]Khôi phục thất bại:[/] {Markup.Escape(error ?? "Lỗi không xác định")}");
+            AnsiConsole.WriteLine($"Khôi phục thất bại: {error ?? "Lỗi không xác định"}");
         }
     }
 
     private async Task PullAllAsync(List<RemoteGameMeta> list)
     {
-        AnsiConsole.MarkupLine($"\n[bold yellow]Bắt đầu kéo tất cả {list.Count} game từ GitHub về máy...[/]");
+        AnsiConsole.WriteLine($"Bắt đầu kéo tất cả {list.Count} game từ Google Drive về máy...");
 
         int successCount = 0;
         int failCount = 0;
@@ -159,13 +159,13 @@ public class PullHandler
         for (int i = 0; i < list.Count; i++)
         {
             var meta = list[i];
-            AnsiConsole.Markup($"[[{i + 1}/{list.Count}]] Đang xử lý [bold]{Markup.Escape(meta.GameName)}[/]... ");
+            AnsiConsole.Write($"[{i + 1}/{list.Count}] Đang xử lý {meta.GameName}... ");
 
             var cacheDir = _backupService.GetGameCacheDir(meta.GameId);
-            var dl = await _gitHubService.DownloadGameSaveAsync(meta.GameId, cacheDir);
+            var dl = await _driveService.DownloadGameSaveAsync(meta.GameId, cacheDir);
             if (!dl.success)
             {
-                AnsiConsole.MarkupLine($"[red]Lỗi tải: {Markup.Escape(dl.error ?? "")}[/]");
+                AnsiConsole.WriteLine($"Lỗi tải: {dl.error ?? ""}");
                 failCount++;
                 continue;
             }
@@ -174,17 +174,16 @@ public class PullHandler
             var restoreRes = await _restoreService.RestoreGameAsync(meta.GameId, zipPath);
             if (restoreRes.Success)
             {
-                AnsiConsole.MarkupLine($"[green]Khôi phục {restoreRes.RestoredFilesCount} files[/]");
+                AnsiConsole.WriteLine($"Khôi phục {restoreRes.RestoredFilesCount} files");
                 successCount++;
             }
             else
             {
-                AnsiConsole.MarkupLine($"[red]Lỗi giải nén: {Markup.Escape(restoreRes.ErrorMessage ?? "")}[/]");
+                AnsiConsole.WriteLine($"Lỗi giải nén: {restoreRes.ErrorMessage ?? ""}");
                 failCount++;
             }
         }
 
-        AnsiConsole.MarkupLine($"\n[bold green]Hoàn tất![/] Thành công: [green]{successCount}[/], Thất bại: [red]{failCount}[/].");
+        AnsiConsole.WriteLine($"\nHoàn tất! Thành công: {successCount}, Thất bại: {failCount}.");
     }
 }
-

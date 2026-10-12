@@ -158,12 +158,10 @@ public class ConfigService : IConfigService
                     var key = parts[0].Trim();
                     var val = parts[1].Trim().Trim('"', '\'');
 
-                    if (key == "GITHUB_TOKEN" && string.IsNullOrEmpty(_settings.GitHubToken))
-                        _settings.GitHubToken = val;
-                    else if (key == "GITHUB_OWNER" && string.IsNullOrEmpty(_settings.GitHubOwner))
-                        _settings.GitHubOwner = val;
-                    else if (key == "GITHUB_REPO" && string.IsNullOrEmpty(_settings.GitHubRepo))
-                        _settings.GitHubRepo = val;
+                    if (key == "GOOGLE_CLIENT_ID" && string.IsNullOrEmpty(_settings.GoogleClientId))
+                        _settings.GoogleClientId = val;
+                    else if (key == "GOOGLE_CLIENT_SECRET" && string.IsNullOrEmpty(_settings.GoogleClientSecret))
+                        _settings.GoogleClientSecret = val;
                 }
             }
             catch (Exception ex)
@@ -184,7 +182,7 @@ public class ConfigService : IConfigService
 
             // Also keep .env in sync for interoperability
             var envPath = Path.Combine(RootDir, ".env");
-            var envContent = $"GITHUB_TOKEN={_settings.GitHubToken}\nGITHUB_OWNER={_settings.GitHubOwner}\nGITHUB_REPO={_settings.GitHubRepo}\n";
+            var envContent = $"GOOGLE_CLIENT_ID={_settings.GoogleClientId}\nGOOGLE_CLIENT_SECRET={_settings.GoogleClientSecret}\n";
             File.WriteAllText(envPath, envContent);
         }
         catch (Exception ex)

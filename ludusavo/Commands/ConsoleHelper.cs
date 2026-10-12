@@ -96,6 +96,14 @@ public static class ConsoleHelper
             return;
         }
 
+        bool originalCursorVisible = true;
+        try
+        {
+            originalCursorVisible = Console.CursorVisible;
+            Console.CursorVisible = false;
+        }
+        catch { }
+
         var spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
         var currentMsg = initialStatus;
         var cts = new CancellationTokenSource();
@@ -146,6 +154,12 @@ public static class ConsoleHelper
             {
                 Console.Write("\r                                                                                \r");
             }
+
+            try
+            {
+                Console.CursorVisible = originalCursorVisible;
+            }
+            catch { }
         }
     }
 

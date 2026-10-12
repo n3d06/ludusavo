@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
 using ludusavo.Commands;
@@ -33,7 +34,7 @@ public static class Program
         services.AddSingleton<IScannerService, ScannerService>();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IRestoreService, RestoreService>();
-        services.AddSingleton<IGitHubService, GitHubService>();
+        services.AddSingleton<IGoogleDriveService, GoogleDriveService>();
         services.AddSingleton<ISyncService, SyncService>();
 
         // Handlers
@@ -83,6 +84,14 @@ public static class Program
                     await sp.GetRequiredService<StatusHandler>().ExecuteAsync();
                     break;
 
+                case "login":
+                    await sp.GetRequiredService<ConfigHandler>().LoginAsync();
+                    break;
+
+                case "logout":
+                    await sp.GetRequiredService<ConfigHandler>().LogoutAsync();
+                    break;
+
                 case "config":
                     await sp.GetRequiredService<ConfigHandler>().ExecuteAsync(extraArgs);
                     break;
@@ -95,6 +104,12 @@ public static class Program
                     await sp.GetRequiredService<RemoveHandler>().ExecuteAsync(firstArg);
                     break;
 
+                case "version":
+                case "--version":
+                case "-v":
+                    ShowVersion();
+                    break;
+
                 case "help":
                 case "--help":
                 case "-h":
@@ -103,14 +118,14 @@ public static class Program
                     break;
 
                 default:
-                    AnsiConsole.MarkupLine($"[red]Lệnh không hợp lệ:[/] '{Markup.Escape(cmd)}'.");
-                    AnsiConsole.MarkupLine("[grey]Gõ [bold cyan]sav help[/] để xem danh sách các lệnh hỗ trợ.[/]");
+                    AnsiConsole.WriteLine($"Lệnh không hợp lệ: '{cmd}'.");
+                    AnsiConsole.WriteLine("Gõ 'sav help' để xem danh sách các lệnh hỗ trợ.");
                     break;
             }
         }
         catch (Exception ex)
         {
-            AnsiConsole.MarkupLine($"[bold red]Lỗi khi thực thi lệnh '{cmd}':[/] {Markup.Escape(ex.Message)}");
+            AnsiConsole.WriteLine($"Lỗi khi thực thi lệnh '{cmd}': {ex.Message}");
         }
     }
 
@@ -121,12 +136,14 @@ public static class Program
         var menuOptions = new (string cmd, string desc)[]
         {
             ("ls", "Danh sách game có trên máy"),
-            ("lsc", "Danh sách game trên GitHub"),
-            ("push", "Nén & đẩy bản save lên GitHub"),
-            ("pull", "Tải bản save từ GitHub về máy"),
+            ("lsc", "Danh sách game trên Google Drive"),
+            ("push", "Nén & đẩy bản save lên Google Drive"),
+            ("pull", "Tải bản save từ Google Drive về máy"),
             ("scan", "Quét lại toàn bộ save game"),
-            ("status", "Kiểm tra kết nối GitHub"),
-            ("config", "Cấu hình GitHub (Token, Owner, Repo)"),
+            ("status", "Kiểm tra kết nối Google Drive"),
+            ("login", "Đăng nhập Google Drive qua trình duyệt"),
+            ("logout", "Đăng xuất tài khoản Google Drive"),
+            ("config", "Cấu hình Google Client ID & Secret"),
             ("add", "Thêm game tùy chỉnh (Custom)"),
             ("remove", "Xóa game tùy chỉnh"),
             ("help", "Xem trợ giúp lệnh"),
@@ -136,14 +153,14 @@ public static class Program
         while (true)
         {
             AnsiConsole.WriteLine();
-            AnsiConsole.MarkupLine("[cyan]Chọn chức năng:[/]");
+            AnsiConsole.WriteLine("Chọn chức năng:");
             for (int i = 0; i < menuOptions.Length; i++)
             {
                 var num = (i + 1 == menuOptions.Length) ? "0" : (i + 1).ToString();
                 AnsiConsole.WriteLine($"[{num}] {menuOptions[i].cmd,-7} - {menuOptions[i].desc}");
             }
 
-            var input = AnsiConsole.Prompt("\nNhập số hoặc lệnh (0-10):");
+            var input = AnsiConsole.Prompt("\nNhập số hoặc lệnh (0-12):");
             if (string.IsNullOrWhiteSpace(input)) continue;
 
             string cmd = input.ToLowerInvariant();
@@ -169,21 +186,38 @@ public static class Program
         }
     }
 
+    private static void ShowVersion()
+    {
+        var asm = typeof(Program).Assembly;
+        var infoVer = asm.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (!string.IsNullOrWhiteSpace(infoVer))
+        {
+            var clean = infoVer.Split('+')[0].TrimStart('v');
+            AnsiConsole.WriteLine($"sav version {clean}");
+            return;
+        }
+
+        var ver = asm.GetName().Version?.ToString(3) ?? "1.0.0";
+        AnsiConsole.WriteLine($"sav version {ver}");
+    }
+
     private static void ShowHelp()
     {
         AnsiConsole.WriteLine("Sử dụng: sav [lệnh] [tham số]");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("Các lệnh hỗ trợ:");
         AnsiConsole.WriteLine("ls              Liệt kê các game có save trên máy");
-        AnsiConsole.WriteLine("lsc             Liệt kê các bản save hiện có trên GitHub");
+        AnsiConsole.WriteLine("lsc             Liệt kê các bản save hiện có trên Google Drive");
         AnsiConsole.WriteLine("scan            Quét lại (rescan) toàn bộ database và file save");
-        AnsiConsole.WriteLine("push [số|all]   Nén backup và đẩy game lên GitHub");
-        AnsiConsole.WriteLine("pull [số|all]   Tải bản save từ GitHub và khôi phục vào máy");
-        AnsiConsole.WriteLine("status          Kiểm tra trạng thái kết nối tới GitHub");
-        AnsiConsole.WriteLine("config          Xem hoặc sửa thông tin cấu hình GitHub");
+        AnsiConsole.WriteLine("push [số|all]   Nén backup và đẩy game lên Google Drive");
+        AnsiConsole.WriteLine("pull [số|all]   Tải bản save từ Google Drive và khôi phục vào máy");
+        AnsiConsole.WriteLine("status          Kiểm tra trạng thái kết nối tới Google Drive");
+        AnsiConsole.WriteLine("login           Đăng nhập tài khoản Google Drive qua trình duyệt");
+        AnsiConsole.WriteLine("logout          Đăng xuất tài khoản Google Drive hiện tại");
+        AnsiConsole.WriteLine("config          Xem hoặc sửa cấu hình Google Client ID & Secret");
+        AnsiConsole.WriteLine("version         Hiển thị phiên bản ứng dụng");
         AnsiConsole.WriteLine("add             Thêm game tùy chỉnh (custom game)");
         AnsiConsole.WriteLine("remove [số]     Xóa game tùy chỉnh theo số thứ tự");
         AnsiConsole.WriteLine("help            Hiển thị trợ giúp này");
     }
 }
-

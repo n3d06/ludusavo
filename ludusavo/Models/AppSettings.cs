@@ -4,18 +4,45 @@ namespace ludusavo.Models;
 
 public class AppSettings
 {
-    [JsonPropertyName("gitHubToken")]
-    public string GitHubToken { get; set; } = string.Empty;
+    [JsonPropertyName("googleClientId")]
+    public string GoogleClientId { get; set; } = string.Empty;
 
-    [JsonPropertyName("gitHubOwner")]
-    public string GitHubOwner { get; set; } = string.Empty;
+    [JsonPropertyName("googleClientSecret")]
+    public string GoogleClientSecret { get; set; } = string.Empty;
 
-    [JsonPropertyName("gitHubRepo")]
-    public string GitHubRepo { get; set; } = string.Empty;
+    [JsonPropertyName("googleRefreshToken")]
+    public string GoogleRefreshToken { get; set; } = string.Empty;
+
+    [JsonPropertyName("googleAccessToken")]
+    public string GoogleAccessToken { get; set; } = string.Empty;
+
+    [JsonPropertyName("googleTokenExpiry")]
+    public DateTime? GoogleTokenExpiry { get; set; }
+
+    [JsonPropertyName("googleRootFolderId")]
+    public string GoogleRootFolderId { get; set; } = string.Empty;
+
+    [JsonPropertyName("userEmail")]
+    public string UserEmail { get; set; } = string.Empty;
 
     [JsonIgnore]
-    public bool IsGitHubConfigured =>
-        !string.IsNullOrWhiteSpace(GitHubToken) &&
-        !string.IsNullOrWhiteSpace(GitHubOwner) &&
-        !string.IsNullOrWhiteSpace(GitHubRepo);
+    public string EffectiveClientId =>
+        !string.IsNullOrWhiteSpace(GoogleClientId)
+            ? GoogleClientId
+            : DefaultConfig.GoogleClientId;
+
+    [JsonIgnore]
+    public string EffectiveClientSecret =>
+        !string.IsNullOrWhiteSpace(GoogleClientSecret)
+            ? GoogleClientSecret
+            : DefaultConfig.GoogleClientSecret;
+
+    [JsonIgnore]
+    public bool HasCredentials =>
+        !string.IsNullOrWhiteSpace(EffectiveClientId) &&
+        !string.IsNullOrWhiteSpace(EffectiveClientSecret);
+
+    [JsonIgnore]
+    public bool IsGoogleDriveConfigured =>
+        HasCredentials && !string.IsNullOrWhiteSpace(GoogleRefreshToken);
 }

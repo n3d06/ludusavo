@@ -5,30 +5,45 @@ namespace ludusavo.Commands;
 public class StatusHandler
 {
     private readonly IConfigService _configService;
-    private readonly IGitHubService _gitHubService;
+    private readonly IGoogleDriveService _driveService;
 
-    public StatusHandler(IConfigService configService, IGitHubService gitHubService)
+    public StatusHandler(IConfigService configService, IGoogleDriveService driveService)
     {
         _configService = configService;
-        _gitHubService = gitHubService;
+        _driveService = driveService;
     }
 
     public async Task ExecuteAsync()
     {
         var settings = _configService.Settings;
 
-        var repoInfo = (!string.IsNullOrWhiteSpace(settings.GitHubOwner) && !string.IsNullOrWhiteSpace(settings.GitHubRepo))
-            ? $"{settings.GitHubOwner}/{settings.GitHubRepo}"
-            : "[red]Chưa cấu hình[/]";
+        var accountInfo = !string.IsNullOrWhiteSpace(settings.UserEmail)
+            ? settings.UserEmail
+            : "Chưa đăng nhập";
 
-        AnsiConsole.MarkupLine($"GitHub Repo:   {repoInfo}");
-        AnsiConsole.MarkupLine($"GitHub Token:  {ConsoleHelper.MaskToken(settings.GitHubToken)}");
-        AnsiConsole.MarkupLine($"Thư mục Cache: {_configService.CacheDir}");
-
-        if (!_gitHubService.IsConfigured)
+        string idInfo;
+        if (!string.IsNullOrWhiteSpace(settings.GoogleClientId))
         {
-            AnsiConsole.MarkupLine("[red]Chưa cấu hình đầy đủ thông tin GitHub (Owner, Repo, Token)![/]");
-            AnsiConsole.MarkupLine("Gõ [cyan]sav config[/] để thiết lập thông tin kết nối.");
+            idInfo = settings.GoogleClientId.Length > 12 ? settings.GoogleClientId.Substring(0, 8) + "..." : settings.GoogleClientId;
+        }
+        else if (DefaultConfig.HasEmbeddedCredentials)
+        {
+            idInfo = "Mặc định (từ bản build)";
+        }
+        else
+        {
+            idInfo = "Chưa cấu hình";
+        }
+
+        AnsiConsole.WriteLine($"Tài khoản Google: {accountInfo}");
+        AnsiConsole.WriteLine($"Google Client ID: {idInfo}");
+        AnsiConsole.WriteLine($"Thư mục Cloud:    Google Drive (thư mục 'sav')");
+        AnsiConsole.WriteLine($"Thư mục Cache:    {_configService.CacheDir}");
+
+        if (!_driveService.IsConfigured)
+        {
+            AnsiConsole.WriteLine("Chưa cấu hình hoặc chưa đăng nhập Google Drive!");
+            AnsiConsole.WriteLine("Gõ 'sav config' hoặc 'sav login' để thiết lập kết nối.");
             return;
         }
 
@@ -37,9 +52,9 @@ public class StatusHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang kiểm tra kết nối tới GitHub API...", async ctx =>
+            .StartAsync("Đang kiểm tra kết nối tới Google Drive API...", async ctx =>
             {
-                var result = await _gitHubService.TestConnectionAsync();
+                var result = await _driveService.TestConnectionAsync();
                 connected = result.success;
                 message = result.message;
             });
@@ -48,21 +63,13 @@ public class StatusHandler
         {
             if (!string.IsNullOrEmpty(message))
             {
-                AnsiConsole.MarkupLine(Markup.Escape(message));
+                AnsiConsole.WriteLine(message);
             }
-
-            try
-            {
-                var rate = await _gitHubService.GetRateLimitAsync();
-                AnsiConsole.MarkupLine($"Giới hạn GitHub API còn lại: {rate.remaining}/{rate.limit}");
-            }
-            catch { }
         }
         else
         {
-            AnsiConsole.MarkupLine($"[red]Lỗi kết nối GitHub:[/] {Markup.Escape(message ?? "Không xác định")}");
-            AnsiConsole.MarkupLine("Vui lòng kiểm tra lại Token hoặc repository bằng lệnh [cyan]sav config[/].");
+            AnsiConsole.WriteLine($"Lỗi kết nối Google Drive: {message ?? "Không xác định"}");
+            AnsiConsole.WriteLine("Vui lòng thử đăng nhập lại bằng lệnh 'sav login'.");
         }
     }
 }
-

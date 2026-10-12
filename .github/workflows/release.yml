@@ -75,8 +75,20 @@ jobs:
         run: dotnet restore ludusavo/ludusavo.csproj
 
       - name: Publish sav (Single-File)
+        shell: pwsh
+        env:
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
         run: |
-          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o dist/app
+          $tag = "${{ steps.version.outputs.TAG }}"
+          $version = $tag.TrimStart('v')
+          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false `
+            -p:PublishSingleFile=true `
+            -p:Version=$version `
+            -p:InformationalVersion=$version `
+            -p:DefaultGoogleClientId="$env:GOOGLE_CLIENT_ID" `
+            -p:DefaultGoogleClientSecret="$env:GOOGLE_CLIENT_SECRET" `
+            -o dist/app
 
       - name: Cache Inno Setup
         id: cache-innosetup

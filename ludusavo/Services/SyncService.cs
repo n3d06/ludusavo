@@ -5,18 +5,18 @@ namespace ludusavo.Services;
 
 public class SyncService : ISyncService
 {
-    private readonly IGitHubService _gitHubService;
+    private readonly IGoogleDriveService _driveService;
     private readonly IBackupService _backupService;
     private readonly IRestoreService _restoreService;
     private readonly IConfigService _configService;
 
     public SyncService(
-        IGitHubService gitHubService,
+        IGoogleDriveService driveService,
         IBackupService backupService,
         IRestoreService restoreService,
         IConfigService configService)
     {
-        _gitHubService = gitHubService;
+        _driveService = driveService;
         _backupService = backupService;
         _restoreService = restoreService;
         _configService = configService;
@@ -26,7 +26,7 @@ public class SyncService : ISyncService
     {
         if (game == null) return;
 
-        if (!_gitHubService.IsConfigured)
+        if (!_driveService.IsConfigured)
         {
             game.Status = game.Files.Count > 0 ? SyncStatus.LocalOnly : SyncStatus.Unknown;
             return;
@@ -34,7 +34,7 @@ public class SyncService : ISyncService
 
         try
         {
-            var remote = await _gitHubService.GetRemoteMetaAsync(game.Id);
+            var remote = await _driveService.GetRemoteMetaAsync(game.Id);
             UpdateGameStatusWithRemote(game, remote);
         }
         catch
@@ -53,66 +53,81 @@ public class SyncService : ISyncService
 
         game.RemoteModified = remote.Timestamp;
 
-        // Check if local cache zip exists and matches remote archiveHash
         var localZip = Path.Combine(_backupService.GetGameCacheDir(game.Id), "latest.zip");
         if (File.Exists(localZip))
         {
             var localHash = BackupService.ComputeSha256(localZip);
-            if (string.Equals(localHash, remote.ArchiveHash, StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrEmpty(remote.ArchiveHash) &&
+                string.Equals(localHash, remote.ArchiveHash, StringComparison.OrdinalIgnoreCase))
             {
-                game.Status = SyncStatus.Synced;
+                var latestLocalFileTime = game.Files.Count > 0 ? game.Files.Max(f => f.LastWriteTime) : DateTime.MinValue;
+                if (latestLocalFileTime > remote.Timestamp.AddSeconds(5))
+                {
+                    game.Status = SyncStatus.LocalNewer;
+                }
+                else
+                {
+                    game.Status = SyncStatus.Synced;
+                }
                 return;
             }
         }
 
-        // Compare timestamps
-        if (game.LastModified.HasValue)
+        var localLatest = game.Files.Count > 0 ? game.Files.Max(f => f.LastWriteTime) : DateTime.MinValue;
+
+        if (localLatest == DateTime.MinValue && remote.Timestamp > DateTime.MinValue)
         {
-            var diff = (game.LastModified.Value.ToUniversalTime() - remote.Timestamp.ToUniversalTime()).TotalSeconds;
-            if (diff > 5)
-            {
-                game.Status = SyncStatus.LocalNewer;
-            }
-            else if (diff < -5)
-            {
-                game.Status = SyncStatus.RemoteNewer;
-            }
-            else
-            {
-                game.Status = SyncStatus.Synced;
-            }
+            game.Status = SyncStatus.RemoteNewer;
+        }
+        else if (localLatest > remote.Timestamp.AddSeconds(5))
+        {
+            game.Status = SyncStatus.LocalNewer;
+        }
+        else if (remote.Timestamp > localLatest.AddSeconds(5))
+        {
+            game.Status = SyncStatus.RemoteNewer;
         }
         else
         {
-            game.Status = SyncStatus.RemoteOnly;
+            game.Status = SyncStatus.Synced;
         }
     }
 
     public async Task CheckAllSyncStatusesAsync(IEnumerable<DetectedGame> games)
     {
-        if (!_gitHubService.IsConfigured)
+        if (games == null) return;
+        var list = games.ToList();
+        if (list.Count == 0) return;
+
+        if (!_driveService.IsConfigured)
         {
-            foreach (var game in games)
+            foreach (var g in list)
             {
-                game.Status = game.Files.Count > 0 ? SyncStatus.LocalOnly : SyncStatus.Unknown;
+                g.Status = g.Files.Count > 0 ? SyncStatus.LocalOnly : SyncStatus.Unknown;
             }
             return;
         }
 
         try
         {
-            var catalog = await _gitHubService.GetAllRemoteMetasAsync();
-            foreach (var game in games)
+            var catalog = await _driveService.GetAllRemoteMetasAsync();
+            foreach (var game in list)
             {
-                catalog.TryGetValue(game.Id, out var remote);
-                UpdateGameStatusWithRemote(game, remote);
+                if (catalog.TryGetValue(game.Id, out var remoteMeta))
+                {
+                    UpdateGameStatusWithRemote(game, remoteMeta);
+                }
+                else
+                {
+                    game.Status = game.Files.Count > 0 ? SyncStatus.LocalOnly : SyncStatus.Unknown;
+                }
             }
         }
         catch
         {
-            foreach (var game in games)
+            foreach (var g in list)
             {
-                game.Status = game.Files.Count > 0 ? SyncStatus.LocalOnly : SyncStatus.Unknown;
+                g.Status = g.Files.Count > 0 ? SyncStatus.LocalOnly : SyncStatus.Unknown;
             }
         }
     }
@@ -122,11 +137,10 @@ public class SyncService : ISyncService
         if (game == null) return (false, "Game null");
 
         game.IsBusy = true;
-        game.StatusMessage = "Backing up...";
+        game.StatusMessage = "Backing up save files...";
 
         try
         {
-            // 1. Create local backup zip
             var backupResult = await _backupService.CreateBackupAsync(game);
             if (!backupResult.Success)
             {
@@ -135,11 +149,10 @@ public class SyncService : ISyncService
                 return (false, backupResult.ErrorMessage);
             }
 
-            // 2. Upload to GitHub
-            if (_gitHubService.IsConfigured)
+            if (_driveService.IsConfigured)
             {
-                game.StatusMessage = "Uploading to GitHub...";
-                var uploadResult = await _gitHubService.UploadGameSaveAsync(
+                game.StatusMessage = "Uploading to Google Drive...";
+                var uploadResult = await _driveService.UploadGameSaveAsync(
                     game.Id,
                     backupResult.ZipPath,
                     backupResult.MetaPath,
@@ -148,17 +161,17 @@ public class SyncService : ISyncService
                 if (!uploadResult.success)
                 {
                     game.IsBusy = false;
-                    game.StatusMessage = uploadResult.error ?? "GitHub upload error";
+                    game.StatusMessage = uploadResult.error ?? "Google Drive upload error";
                     return (false, uploadResult.error);
                 }
 
                 game.Status = SyncStatus.Synced;
-                game.StatusMessage = "Synced to Cloud!";
+                game.StatusMessage = "Synced to Google Drive!";
             }
             else
             {
                 game.Status = SyncStatus.LocalOnly;
-                game.StatusMessage = "Saved locally (GitHub not configured)";
+                game.StatusMessage = "Saved locally (Google Drive not configured)";
             }
 
             game.IsBusy = false;
@@ -172,13 +185,13 @@ public class SyncService : ISyncService
         }
     }
 
-    public async Task<(bool success, string? message, int successCount, int failCount, string? commitSha)> SyncGamesBatchToCloudAsync(
+    public async Task<(bool success, string? message, int successCount, int failCount)> SyncGamesBatchToCloudAsync(
         List<DetectedGame> games,
         Action<string>? progressCallback = null)
     {
         if (games == null || games.Count == 0)
         {
-            return (true, "Không có game nào cần đồng bộ.", 0, 0, null);
+            return (true, "Không có game nào cần đồng bộ.", 0, 0);
         }
 
         var payloads = new List<GameBackupPayload>();
@@ -213,37 +226,21 @@ public class SyncService : ISyncService
 
         if (payloads.Count == 0)
         {
-            return (false, "Không thể sao lưu file của bất kỳ game nào.", 0, failCount, null);
+            return (false, "Không thể sao lưu file của bất kỳ game nào.", 0, failCount);
         }
 
-        string? commitSha = null;
-
-        if (_gitHubService.IsConfigured)
+        if (_driveService.IsConfigured)
         {
-            string commitMessage;
-            if (payloads.Count == 1)
-            {
-                commitMessage = $"Backup save: {payloads[0].GameName}";
-            }
-            else
-            {
-                var names = string.Join(", ", payloads.Take(3).Select(p => p.GameName));
-                var extra = payloads.Count > 3 ? $" và {payloads.Count - 3} game khác" : "";
-                commitMessage = $"Backup saves: {payloads.Count} games ({names}{extra})";
-            }
-
-            var uploadRes = await _gitHubService.UploadGameSavesBatchAsync(payloads, commitMessage, progressCallback);
+            var uploadRes = await _driveService.UploadGameSavesBatchAsync(payloads, progressCallback);
             if (!uploadRes.success)
             {
-                return (false, uploadRes.error ?? "Lỗi đẩy lên GitHub", 0, games.Count, null);
+                return (false, uploadRes.error ?? "Lỗi đẩy lên Google Drive", 0, games.Count);
             }
-
-            commitSha = uploadRes.commitSha;
 
             foreach (var g in backedUpGames)
             {
                 g.Status = SyncStatus.Synced;
-                g.StatusMessage = "Synced to Cloud!";
+                g.StatusMessage = "Synced to Google Drive!";
             }
         }
         else
@@ -251,11 +248,11 @@ public class SyncService : ISyncService
             foreach (var g in backedUpGames)
             {
                 g.Status = SyncStatus.LocalOnly;
-                g.StatusMessage = "Saved locally (GitHub not configured)";
+                g.StatusMessage = "Saved locally (Google Drive not configured)";
             }
         }
 
-        return (true, $"Đã sao lưu thành công {backedUpGames.Count} game trong 1 commit duy nhất.", backedUpGames.Count, failCount, commitSha);
+        return (true, $"Đã sao lưu thành công {backedUpGames.Count} game lên Google Drive.", backedUpGames.Count, failCount);
     }
 
     public async Task<(bool success, string? message)> RestoreGameFromCloudAsync(DetectedGame game)
@@ -263,18 +260,18 @@ public class SyncService : ISyncService
         if (game == null) return (false, "Game null");
 
         game.IsBusy = true;
-        game.StatusMessage = "Downloading from GitHub...";
+        game.StatusMessage = "Downloading from Google Drive...";
 
         try
         {
             var cacheDir = _backupService.GetGameCacheDir(game.Id);
-            if (_gitHubService.IsConfigured)
+            if (_driveService.IsConfigured)
             {
-                var dl = await _gitHubService.DownloadGameSaveAsync(game.Id, cacheDir);
+                var dl = await _driveService.DownloadGameSaveAsync(game.Id, cacheDir);
                 if (!dl.success)
                 {
                     game.IsBusy = false;
-                    game.StatusMessage = dl.error ?? "GitHub download error";
+                    game.StatusMessage = dl.error ?? "Google Drive download error";
                     return (false, dl.error);
                 }
             }
@@ -303,17 +300,17 @@ public class SyncService : ISyncService
 
     public async Task<(bool success, string? message)> UploadCustomManifestAsync()
     {
-        if (!_gitHubService.IsConfigured) return (false, "GitHub is not configured");
+        if (!_driveService.IsConfigured) return (false, "Google Drive is not configured");
         var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
         if (!File.Exists(customPath)) return (true, null);
 
-        return await _gitHubService.UploadFileAsync("saves/custom_manifest.json", customPath, "Update custom_manifest.json");
+        return await _driveService.UploadCustomManifestAsync(customPath);
     }
 
     public async Task<(bool success, string? message)> DownloadCustomManifestAsync()
     {
-        if (!_gitHubService.IsConfigured) return (false, "GitHub is not configured");
+        if (!_driveService.IsConfigured) return (false, "Google Drive is not configured");
         var customPath = Path.Combine(_configService.CacheDir, "custom_manifest.json");
-        return await _gitHubService.DownloadFileAsync("saves/custom_manifest.json", customPath);
+        return await _driveService.DownloadCustomManifestAsync(customPath);
     }
 }
