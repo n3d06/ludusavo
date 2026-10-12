@@ -46,7 +46,7 @@ public class LscHandler
                 : "-";
             var size = string.IsNullOrEmpty(item.FormattedSize) ? "-" : item.FormattedSize;
 
-            AnsiConsole.WriteLine($"  [{index}] {item.GameName} ({size}, {dateStr}, {hashShort})");
+            AnsiConsole.WriteLine($"[{index}] {item.GameName} ({size}, {dateStr}, {hashShort})");
             index++;
         }
         return list;

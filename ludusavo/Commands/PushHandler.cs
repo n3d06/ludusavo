@@ -86,10 +86,10 @@ public class PushHandler
         for (int i = 0; i < games.Count; i++)
         {
             var g = games[i];
-            AnsiConsole.WriteLine($"  [{i + 1}] {g.Name} ({ConsoleHelper.FormatSize(g.TotalSizeBytes)}, {g.FileCount} files)");
+            AnsiConsole.WriteLine($"[{i + 1}] {g.Name} ({ConsoleHelper.FormatSize(g.TotalSizeBytes)}, {g.FileCount} files)");
         }
-        AnsiConsole.WriteLine("  [A] Đẩy tất cả game lên GitHub");
-        AnsiConsole.WriteLine("  [0] Hủy bỏ\n");
+        AnsiConsole.WriteLine("[A] Đẩy tất cả game lên GitHub");
+        AnsiConsole.WriteLine("[0] Hủy bỏ\n");
 
         var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn push (hoặc 'A' / '0'):");
 

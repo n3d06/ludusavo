@@ -73,10 +73,10 @@ public class PullHandler
         {
             var m = remoteList[i];
             var dateStr = ConsoleHelper.FormatDateTime(m.Timestamp);
-            AnsiConsole.WriteLine($"  [{i + 1}] {m.GameName} ({m.FormattedSize}, {dateStr})");
+            AnsiConsole.WriteLine($"[{i + 1}] {m.GameName} ({m.FormattedSize}, {dateStr})");
         }
-        AnsiConsole.WriteLine("  [A] Kéo và khôi phục tất cả game về máy");
-        AnsiConsole.WriteLine("  [0] Hủy bỏ\n");
+        AnsiConsole.WriteLine("[A] Kéo và khôi phục tất cả game về máy");
+        AnsiConsole.WriteLine("[0] Hủy bỏ\n");
 
         var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn pull (hoặc 'A' / '0'):");
 

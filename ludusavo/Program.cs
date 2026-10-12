@@ -140,7 +140,7 @@ public static class Program
             for (int i = 0; i < menuOptions.Length; i++)
             {
                 var num = (i + 1 == menuOptions.Length) ? "0" : (i + 1).ToString();
-                AnsiConsole.WriteLine($"  [{num}] {menuOptions[i].cmd,-7} - {menuOptions[i].desc}");
+                AnsiConsole.WriteLine($"[{num}] {menuOptions[i].cmd,-7} - {menuOptions[i].desc}");
             }
 
             var input = AnsiConsole.Prompt("\nNhập số hoặc lệnh (0-10):");
@@ -175,16 +175,16 @@ public static class Program
         AnsiConsole.WriteLine("Sử dụng: sav [lệnh] [tham số]");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("Các lệnh hỗ trợ:");
-        AnsiConsole.WriteLine("  ls              Liệt kê các game có save trên máy");
-        AnsiConsole.WriteLine("  lsc             Liệt kê các bản save hiện có trên GitHub");
-        AnsiConsole.WriteLine("  scan            Quét lại (rescan) toàn bộ database và file save");
-        AnsiConsole.WriteLine("  push [số|all]   Nén backup và đẩy game lên GitHub");
-        AnsiConsole.WriteLine("  pull [số|all]   Tải bản save từ GitHub và khôi phục vào máy");
-        AnsiConsole.WriteLine("  status          Kiểm tra trạng thái kết nối tới GitHub");
-        AnsiConsole.WriteLine("  config          Xem hoặc sửa thông tin cấu hình GitHub");
-        AnsiConsole.WriteLine("  add             Thêm game tùy chỉnh (custom game)");
-        AnsiConsole.WriteLine("  remove [số]     Xóa game tùy chỉnh theo số thứ tự");
-        AnsiConsole.WriteLine("  help            Hiển thị trợ giúp này");
+        AnsiConsole.WriteLine("ls              Liệt kê các game có save trên máy");
+        AnsiConsole.WriteLine("lsc             Liệt kê các bản save hiện có trên GitHub");
+        AnsiConsole.WriteLine("scan            Quét lại (rescan) toàn bộ database và file save");
+        AnsiConsole.WriteLine("push [số|all]   Nén backup và đẩy game lên GitHub");
+        AnsiConsole.WriteLine("pull [số|all]   Tải bản save từ GitHub và khôi phục vào máy");
+        AnsiConsole.WriteLine("status          Kiểm tra trạng thái kết nối tới GitHub");
+        AnsiConsole.WriteLine("config          Xem hoặc sửa thông tin cấu hình GitHub");
+        AnsiConsole.WriteLine("add             Thêm game tùy chỉnh (custom game)");
+        AnsiConsole.WriteLine("remove [số]     Xóa game tùy chỉnh theo số thứ tự");
+        AnsiConsole.WriteLine("help            Hiển thị trợ giúp này");
     }
 }
 

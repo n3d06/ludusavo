@@ -55,9 +55,9 @@ public class RemoveHandler
         for (int i = 0; i < customGames.Count; i++)
         {
             var g = customGames[i];
-            AnsiConsole.WriteLine($"  [{i + 1}] {g.Name} ({g.Id})");
+            AnsiConsole.WriteLine($"[{i + 1}] {g.Name} ({g.Id})");
         }
-        AnsiConsole.WriteLine("  [0] Hủy bỏ\n");
+        AnsiConsole.WriteLine("[0] Hủy bỏ\n");
 
         var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn xóa (hoặc '0'):");
 

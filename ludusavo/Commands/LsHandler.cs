@@ -56,7 +56,7 @@ public class LsHandler
             var size = ConsoleHelper.FormatSize(game.TotalSizeBytes);
             var fileStr = game.FileCount == 1 ? "1 file" : $"{game.FileCount} files";
 
-            AnsiConsole.WriteLine($"  [{index}] {game.Name} ({type}, {fileStr}, {size}, {modified})");
+            AnsiConsole.WriteLine($"[{index}] {game.Name} ({type}, {fileStr}, {size}, {modified})");
             index++;
         }
         return games;
