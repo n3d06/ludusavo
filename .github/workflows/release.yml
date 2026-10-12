@@ -76,9 +76,17 @@ jobs:
 
       - name: Publish sav (Single-File)
         run: |
-          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:PublishReadyToRun=true -o dist/app
+          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o dist/app
+
+      - name: Cache Inno Setup
+        id: cache-innosetup
+        uses: actions/cache@v4
+        with:
+          path: C:\Program Files (x86)\Inno Setup 6
+          key: ${{ runner.os }}-innosetup-6
 
       - name: Install Inno Setup
+        if: steps.cache-innosetup.outputs.cache-hit != 'true'
         run: |
           choco install innosetup --no-progress
 
