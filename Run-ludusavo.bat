@@ -1,6 +1,5 @@
 @echo off
-title ludusavo Launcher
+title ludusavo CLI
 cd /d "%~dp0"
 
-echo [ludusavo] Dang khoi dong bang dotnet run...
-dotnet run --project ludusavo\ludusavo.csproj -c Release
+dotnet run --project ludusavo\ludusavo.csproj --no-launch-profile -- %*

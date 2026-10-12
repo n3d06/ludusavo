@@ -324,7 +324,247 @@ public class GitHubService : IGitHubService
         }
     }
 
+    private async Task<(string branch, string headCommitSha)?> GetDefaultBranchAndHeadShaAsync()
+    {
+        ApplyAuth();
+        var owner = _configService.Settings.GitHubOwner;
+        var repo = _configService.Settings.GitHubRepo;
+
+        var repoRes = await _httpClient.GetAsync($"repos/{owner}/{repo}");
+        if (!repoRes.IsSuccessStatusCode) return null;
+
+        var repoJson = await repoRes.Content.ReadAsStringAsync();
+        using var repoDoc = JsonDocument.Parse(repoJson);
+        var defaultBranch = repoDoc.RootElement.TryGetProperty("default_branch", out var db)
+            ? db.GetString() ?? "main"
+            : "main";
+
+        var refRes = await _httpClient.GetAsync($"repos/{owner}/{repo}/git/ref/heads/{defaultBranch}");
+        if (!refRes.IsSuccessStatusCode) return null;
+
+        var refJson = await refRes.Content.ReadAsStringAsync();
+        using var refDoc = JsonDocument.Parse(refJson);
+        var headCommitSha = refDoc.RootElement.GetProperty("object").GetProperty("sha").GetString();
+
+        if (string.IsNullOrEmpty(headCommitSha)) return null;
+        return (defaultBranch, headCommitSha);
+    }
+
+    private async Task<string?> GetCommitTreeShaAsync(string commitSha)
+    {
+        ApplyAuth();
+        var owner = _configService.Settings.GitHubOwner;
+        var repo = _configService.Settings.GitHubRepo;
+
+        var res = await _httpClient.GetAsync($"repos/{owner}/{repo}/git/commits/{commitSha}");
+        if (!res.IsSuccessStatusCode) return null;
+
+        var json = await res.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.GetProperty("tree").GetProperty("sha").GetString();
+    }
+
+    private async Task<string?> CreateBlobAsync(byte[] content)
+    {
+        ApplyAuth();
+        var owner = _configService.Settings.GitHubOwner;
+        var repo = _configService.Settings.GitHubRepo;
+
+        var payload = new
+        {
+            content = Convert.ToBase64String(content),
+            encoding = "base64"
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        using var contentObj = new StringContent(json, Encoding.UTF8, "application/json");
+        var res = await _httpClient.PostAsync($"repos/{owner}/{repo}/git/blobs", contentObj);
+        if (!res.IsSuccessStatusCode) return null;
+
+        var resJson = await res.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(resJson);
+        return doc.RootElement.GetProperty("sha").GetString();
+    }
+
+    private async Task<string?> CreateTreeAsync(string baseTreeSha, List<(string path, string blobSha)> items)
+    {
+        ApplyAuth();
+        var owner = _configService.Settings.GitHubOwner;
+        var repo = _configService.Settings.GitHubRepo;
+
+        var treeArray = items.Select(i => new
+        {
+            path = i.path,
+            mode = "100644",
+            type = "blob",
+            sha = i.blobSha
+        }).ToArray();
+
+        var payload = new
+        {
+            base_tree = baseTreeSha,
+            tree = treeArray
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        using var contentObj = new StringContent(json, Encoding.UTF8, "application/json");
+        var res = await _httpClient.PostAsync($"repos/{owner}/{repo}/git/trees", contentObj);
+        if (!res.IsSuccessStatusCode) return null;
+
+        var resJson = await res.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(resJson);
+        return doc.RootElement.GetProperty("sha").GetString();
+    }
+
+    private async Task<string?> CreateCommitAsync(string message, string treeSha, string parentCommitSha)
+    {
+        ApplyAuth();
+        var owner = _configService.Settings.GitHubOwner;
+        var repo = _configService.Settings.GitHubRepo;
+
+        var payload = new
+        {
+            message = message,
+            tree = treeSha,
+            parents = new[] { parentCommitSha }
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        using var contentObj = new StringContent(json, Encoding.UTF8, "application/json");
+        var res = await _httpClient.PostAsync($"repos/{owner}/{repo}/git/commits", contentObj);
+        if (!res.IsSuccessStatusCode) return null;
+
+        var resJson = await res.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(resJson);
+        return doc.RootElement.GetProperty("sha").GetString();
+    }
+
+    private async Task<bool> UpdateBranchRefAsync(string branch, string commitSha)
+    {
+        ApplyAuth();
+        var owner = _configService.Settings.GitHubOwner;
+        var repo = _configService.Settings.GitHubRepo;
+
+        var payload = new
+        {
+            sha = commitSha,
+            force = false
+        };
+
+        var json = JsonSerializer.Serialize(payload);
+        using var request = new HttpRequestMessage(HttpMethod.Patch, $"repos/{owner}/{repo}/git/refs/heads/{branch}")
+        {
+            Content = new StringContent(json, Encoding.UTF8, "application/json")
+        };
+
+        var res = await _httpClient.SendAsync(request);
+        return res.IsSuccessStatusCode;
+    }
+
+    public async Task<(bool success, string? error)> UploadGameSavesBatchAsync(List<GameBackupPayload> payloads, string commitMessage)
+    {
+        if (!IsConfigured)
+            return (false, "GitHub chưa được cấu hình");
+
+        if (payloads == null || payloads.Count == 0)
+            return (true, null);
+
+        try
+        {
+            var headInfo = await GetDefaultBranchAndHeadShaAsync();
+            if (headInfo == null)
+            {
+                foreach (var p in payloads)
+                {
+                    var r = await UploadGameSaveLegacyAsync(p.GameId, p.ZipPath, p.MetaPath, p.MappingPath ?? string.Empty);
+                    if (!r.success) return r;
+                }
+                return (true, null);
+            }
+
+            var (branch, headCommitSha) = headInfo.Value;
+
+            var baseTreeSha = await GetCommitTreeShaAsync(headCommitSha);
+            if (string.IsNullOrEmpty(baseTreeSha))
+            {
+                return (false, "Không thể lấy thông tin Tree của commit hiện tại.");
+            }
+
+            var treeItems = new List<(string path, string blobSha)>();
+            var allMetas = await GetAllRemoteMetasAsync();
+
+            foreach (var p in payloads)
+            {
+                if (!string.IsNullOrEmpty(p.MappingPath) && File.Exists(p.MappingPath))
+                {
+                    var mapBytes = await File.ReadAllBytesAsync(p.MappingPath);
+                    var mapBlob = await CreateBlobAsync(mapBytes);
+                    if (string.IsNullOrEmpty(mapBlob)) return (false, $"Lỗi tạo blob cho mapping.yaml của {p.GameName}");
+                    treeItems.Add(($"saves/{p.GameId}/mapping.yaml", mapBlob));
+                }
+
+                if (File.Exists(p.ZipPath))
+                {
+                    var zipBytes = await File.ReadAllBytesAsync(p.ZipPath);
+                    var zipBlob = await CreateBlobAsync(zipBytes);
+                    if (string.IsNullOrEmpty(zipBlob)) return (false, $"Lỗi tạo blob cho latest.zip của {p.GameName}");
+                    treeItems.Add(($"saves/{p.GameId}/latest.zip", zipBlob));
+                }
+
+                if (!string.IsNullOrEmpty(p.MetaPath) && File.Exists(p.MetaPath))
+                {
+                    var metaBytes = await File.ReadAllBytesAsync(p.MetaPath);
+                    var metaBlob = await CreateBlobAsync(metaBytes);
+                    if (string.IsNullOrEmpty(metaBlob)) return (false, $"Lỗi tạo blob cho meta.json của {p.GameName}");
+                    treeItems.Add(($"saves/{p.GameId}/meta.json", metaBlob));
+
+                    var metaText = Encoding.UTF8.GetString(metaBytes);
+                    var metaObj = JsonSerializer.Deserialize<RemoteGameMeta>(metaText, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                    if (metaObj != null)
+                    {
+                        allMetas[p.GameId] = metaObj;
+                    }
+                }
+            }
+
+            var catalogJson = JsonSerializer.Serialize(allMetas, new JsonSerializerOptions { WriteIndented = true });
+            var catalogBytes = Encoding.UTF8.GetBytes(catalogJson);
+            var catalogBlob = await CreateBlobAsync(catalogBytes);
+            if (string.IsNullOrEmpty(catalogBlob)) return (false, "Lỗi tạo blob cho catalog.json");
+            treeItems.Add(("saves/catalog.json", catalogBlob));
+
+            var newTreeSha = await CreateTreeAsync(baseTreeSha, treeItems);
+            if (string.IsNullOrEmpty(newTreeSha)) return (false, "Lỗi tạo Git Tree.");
+
+            var newCommitSha = await CreateCommitAsync(commitMessage, newTreeSha, headCommitSha);
+            if (string.IsNullOrEmpty(newCommitSha)) return (false, "Lỗi tạo Git Commit.");
+
+            var updated = await UpdateBranchRefAsync(branch, newCommitSha);
+            if (!updated) return (false, "Lỗi cập nhật Branch Reference (HEAD).");
+
+            _cachedRemoteMetas = allMetas;
+            return (true, null);
+        }
+        catch (Exception ex)
+        {
+            return (false, ex.Message);
+        }
+    }
+
     public async Task<(bool success, string? error)> UploadGameSaveAsync(string gameId, string zipPath, string metaPath, string mappingPath)
+    {
+        var payload = new GameBackupPayload
+        {
+            GameId = gameId,
+            GameName = gameId,
+            ZipPath = zipPath,
+            MetaPath = metaPath,
+            MappingPath = mappingPath
+        };
+        return await UploadGameSavesBatchAsync(new List<GameBackupPayload> { payload }, $"Backup save: {gameId}");
+    }
+
+    private async Task<(bool success, string? error)> UploadGameSaveLegacyAsync(string gameId, string zipPath, string metaPath, string mappingPath)
     {
         if (!IsConfigured)
             return (false, "GitHub chưa được cấu hình");
@@ -334,7 +574,6 @@ public class GitHubService : IGitHubService
 
         try
         {
-            // Upload mapping.yaml if exists
             if (File.Exists(mappingPath))
             {
                 var mappingBytes = await File.ReadAllBytesAsync(mappingPath);
@@ -342,12 +581,10 @@ public class GitHubService : IGitHubService
                 if (!rMap.success) return rMap;
             }
 
-            // Upload latest.zip
             var zipBytes = await File.ReadAllBytesAsync(zipPath);
             var rZip = await UploadOrUpdateFileAsync($"saves/{gameId}/latest.zip", zipBytes, $"Sync save archive for {gameId}");
             if (!rZip.success) return rZip;
 
-            // Upload meta.json
             if (File.Exists(metaPath))
             {
                 var metaBytes = await File.ReadAllBytesAsync(metaPath);
@@ -355,7 +592,6 @@ public class GitHubService : IGitHubService
                 if (!rMeta.success) return rMeta;
             }
 
-            // Update catalog.json
             try
             {
                 var allMetas = await GetAllRemoteMetasAsync();

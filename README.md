@@ -1,83 +1,60 @@
-# ludusavo
- 
-> A modern Windows desktop app (C# / .NET 8 WPF) that automatically backs up and syncs game saves to your private GitHub repository, powered by [Ludusavi](https://github.com/mtkennerly/ludusavi) manifest data.
+# sav (Game Save CLI)
+
+> Công cụ dòng lệnh (CLI - .NET 8) cực kỳ nhanh gọn giúp tự động quét, sao lưu, nén và đồng bộ file save game lên GitHub repository riêng tư, sử dụng dữ liệu từ [Ludusavi](https://github.com/mtkennerly/ludusavi).
 
 ---
 
-## ✨ Features
+## ✨ Tính năng nổi bật
 
-- **Clean Native Desktop UI** — Built with native WPF, crisp typography, and smooth responsiveness.
-- **System Tray Integration**
-  - Runs silently in the background notification area.
-  - Minimize to tray on close, or launch minimized at Windows startup.
-  - Automatic memory trimming to only ~15-20 MB RAM when idle in tray.
-- **Smart Save Detection (50,000+ Games)**
-  - Auto-detects save paths for thousands of games on Windows (`%APPDATA%`, `%LOCALAPPDATA%`, `Saved Games`, Documents, etc.).
-  - Includes Steam App ID and authentic game poster banner art.
-  - Auto-downloads and caches game manifest into `Documents/ludusavo/data/cache` on first launch.
-- **Custom Game Support**
-  - Add games not in the database with custom folder paths and Steam ID or image URLs.
-- **Secure Cloud Storage via Private GitHub Repo**
-  - Direct communication with GitHub REST API via Personal Access Token.
-  - Token stored locally and encrypted — no third-party servers involved.
-- **ZIP Packaging & Data Integrity (SHA-256)**
-  - Compresses saves into timestamped ZIP archives with relative path preservation.
-  - SHA-256 checksum comparison: `In sync`, `Local is newer`, `Cloud is newer`, `Local only`, `Cloud only`.
+- **Tên lệnh siêu ngắn**: Đúng 3 ký tự `sav`, đọc 1 âm tiết dứt khoát như `git`.
+- **Giao diện terminal trực quan**: Sử dụng `Spectre.Console` hiển thị bảng màu, trạng thái loading/spinner và menu tương tác.
+- **Hỗ trợ 50.000+ tựa game**: Tự động nhận diện thư mục save trên Windows (`%APPDATA%`, `%LOCALAPPDATA%`, `Saved Games`, Documents,...).
+- **Sao lưu an toàn & toàn vẹn**: Nén ZIP kèm mapping đường dẫn portable và mã kiểm tra SHA-256.
+- **Lưu trữ đám mây riêng tư**: Đẩy và kéo save game trực tiếp từ GitHub repository cá nhân qua Personal Access Token.
 
 ---
 
-## 🚀 Getting Started
+## ⌨️ Bảng lệnh `sav`
 
-### Requirements
-* **Windows 10 / 11 (64-bit)**
-* **[.NET 8 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)**
-  > 💡 *Note: If your PC does not have .NET 8 Desktop Runtime installed yet, Windows will automatically pop up a prompt on first launch asking: **"You must install .NET Desktop Runtime to run this application. Would you like to download it now?"** Simply click **Yes** to install it once.*
+```bash
+sav [command] [arguments]
+```
 
-### Installation
-1. Go to the [**Releases**](https://github.com/3ky4r0/ludusavo/releases) page.
-2. Download the latest release: `ludusavo-vX.Y.Z-win-x64.zip`.
-3. Extract the ZIP to any folder and double-click `ludusavo.exe`.
+| Lệnh | Ý nghĩa | Ví dụ sử dụng |
+| :--- | :--- | :--- |
+| **`sav ls`** | Liệt kê các game có save trên máy | `sav ls` |
+| **`sav lsc`** | Liệt kê các bản save hiện có trên GitHub | `sav lsc` |
+| **`sav scan`**| Quét lại (rescan) toàn bộ database và save game | `sav scan` |
+| **`sav push`** | Nén và đẩy game lên GitHub (chọn theo số hoặc tất cả) | `sav push`<br>`sav push 1`<br>`sav push all` |
+| **`sav pull`** | Tải bản save từ GitHub và khôi phục vào máy theo số | `sav pull`<br>`sav pull 1`<br>`sav pull all` |
+| **`sav status`**| Kiểm tra cấu hình và kết nối tới GitHub | `sav status` |
+| **`sav config`**| Cài đặt / sửa cấu hình GitHub (Token, Owner, Repo) | `sav config`<br>`sav config token ghp_xxx` |
+| **`sav add`** | Thêm game tùy chỉnh (nhập tên, đường dẫn thư mục save) | `sav add` |
+| **`sav remove`**| Xóa game tùy chỉnh theo số chọn | `sav remove`<br>`sav remove 1` |
+| **`sav help`** | Hiển thị bảng trợ giúp | `sav help` |
 
-### Configuration
-1. Open the **Settings** tab in the app.
-2. Enter your:
-   - **GitHub Personal Access Token** (classic token with `repo` scope).
-   - **GitHub Owner** (your GitHub username).
-   - **GitHub Repository** (name of your private repository, e.g. `game-saves`).
-3. Click **Test Connection**, then click **Save Settings**.
-4. Go back to **Games** to scan your games and start backing up!
+> 💡 **Mẹo**: Nếu bạn chỉ gõ `sav` (không kèm tham số), chương trình sẽ tự động mở **Interactive Menu** với các phím mũi tên điều hướng.
 
 ---
 
-## 🛠️ Build & Publish
+## 🚀 Cài đặt & Sử dụng
 
-### Development Prerequisites
-- Windows 10/11
-- [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
-- Visual Studio 2022 / Rider / VS Code
+### Cách 1: Tải file Setup (Khuyên dùng - Tự động thêm vào PATH)
+1. Vào mục [**Releases**](https://github.com/3ky4r0/ludusavo/releases) của repository.
+2. Tải file `sav-vX.Y.Z-setup.exe` về máy.
+3. Chạy file cài đặt (không cần quyền Admin). Trình cài đặt sẽ tự động:
+   - Cài đặt `sav` vào máy.
+   - **Tự động cấu hình biến môi trường `PATH`**.
+4. Mở bất kỳ PowerShell/CMD nào và gõ ngay:
+   ```bash
+   sav ls
+   sav push
+   sav pull
+   ```
 
-### 1. Build Solution
+### Cách 2: Chạy trực tiếp từ mã nguồn qua script
 ```powershell
-dotnet build ludusavo.sln -c Release
-```
-
-### 2. Publish Lightweight Distribution
-```powershell
-dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -o dist/app
-```
-
----
-
-## 📂 Project Structure
-
-```
-├── ludusavo.sln              # Visual Studio solution
-├── assets/                   # App icons and graphics
-├── data/cache/               # Local cache for manifest & game banners
-└── ludusavo/                 # WPF Desktop source code (.NET 8)
-    ├── Converters/           # XAML Value Converters (Thumbnails, Status, etc.)
-    ├── Models/               # Data models (GameEntry, AppSettings, DetectedGame)
-    ├── Services/             # Business logic (GitHub, Backup, Scanner, Manifest, Memory)
-    ├── ViewModels/           # MVVM ViewModels (CommunityToolkit.Mvvm)
-    └── Views/                # XAML UI (MainWindow, Pages, Dialogs)
+.\sav.bat status
+.\sav.bat ls
+.\sav.bat push
 ```

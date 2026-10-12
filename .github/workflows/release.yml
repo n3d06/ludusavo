@@ -27,7 +27,7 @@ permissions:
 
 jobs:
   build-and-release:
-    name: Build & Release ludusavo
+    name: Build & Release sav
     runs-on: windows-latest
 
     steps:
@@ -67,34 +67,38 @@ jobs:
           if (-not [string]::IsNullOrWhiteSpace("${{ inputs.release_title }}")) {
               $title = "${{ inputs.release_title }}"
           } else {
-              $title = "ludusavo $tag"
+              $title = "sav $tag"
           }
           echo "TITLE=$title" >> $env:GITHUB_OUTPUT
 
       - name: Restore dependencies
         run: dotnet restore ludusavo/ludusavo.csproj
 
-      - name: Publish (Framework-Dependent, siêu nhẹ)
+      - name: Publish sav (Single-File)
         run: |
-          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -p:PublishReadyToRun=false -o dist/app
+          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:PublishReadyToRun=true -o dist/app
 
-      - name: Package ZIP Distribution
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup --no-progress
+
+      - name: Build Setup Installer (.exe with auto-PATH)
         shell: pwsh
         run: |
           $tag = "${{ steps.version.outputs.TAG }}"
+          $version = $tag.TrimStart('v')
           New-Item -ItemType Directory -Force -Path "artifacts"
+          
+          # Compile Inno Setup
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "/DMyAppVersion=$version" installer.iss
 
-          $pkgDir = "package/ludusavo"
-          New-Item -ItemType Directory -Force -Path "$pkgDir"
-          Copy-Item "dist/app/*" -Destination "$pkgDir/" -Recurse -Force
+      - name: Package Portable ZIP
+        shell: pwsh
+        run: |
+          $tag = "${{ steps.version.outputs.TAG }}"
+          Compress-Archive -Path "dist/app/*" -DestinationPath "artifacts/sav-$tag-win-x64.zip" -Force
 
-          if (Test-Path "assets") {
-              Copy-Item "assets" -Destination "$pkgDir/" -Recurse
-          }
-
-          Compress-Archive -Path "$pkgDir/*" -DestinationPath "artifacts/ludusavo-$tag-win-x64.zip" -Force
-
-          Write-Host "Danh sách file artifacts tạo ra:"
+          Write-Host "Danh sách artifacts tạo ra:"
           Get-ChildItem -Path "artifacts"
 
       - name: Create Git Tag (nếu chưa có)
@@ -121,6 +125,7 @@ jobs:
           tag_name: ${{ steps.version.outputs.TAG }}
           name: ${{ steps.version.outputs.TITLE }}
           files: |
+            artifacts/*.exe
             artifacts/*.zip
           generate_release_notes: true
           prerelease: ${{ inputs.prerelease || false }}

@@ -54,9 +54,9 @@ public class ConfigService : IConfigService
 
         RootDir = resolvedRoot ?? exeDir;
 
-        // Store all generated user data in Documents/ludusavo for easy user access and management
+        // Store all generated user data in Documents/sav for easy user access and management
         var docsDir = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        var userDocsDir = Path.Combine(docsDir, "ludusavo");
+        var userDocsDir = Path.Combine(docsDir, "sav");
         Directory.CreateDirectory(userDocsDir);
 
         DataDir = Path.Combine(userDocsDir, "data");
@@ -66,10 +66,10 @@ public class ConfigService : IConfigService
 
         _settingsFilePath = Path.Combine(userDocsDir, "appsettings.json");
 
-        // Automatically migrate any existing files from app root to Documents/ludusavo
+        // Automatically migrate any existing files from app root to Documents/sav
         MigrateExistingData();
 
-        // Manifest cache path is always in Documents/ludusavo/data/cache
+        // Manifest cache path is always in Documents/sav/data/cache
         ManifestCachePath = Path.Combine(CacheDir, "manifest_processed.json");
 
         LoadSettings();
@@ -79,44 +79,42 @@ public class ConfigService : IConfigService
     {
         try
         {
-            // 1. Migrate appsettings.json
+            // 1. Migrate appsettings.json from RootDir if still needed
             var oldSettings = Path.Combine(RootDir, "appsettings.json");
             if (File.Exists(oldSettings) && !File.Exists(_settingsFilePath))
             {
                 File.Copy(oldSettings, _settingsFilePath, overwrite: false);
             }
 
-            // 2. Migrate existing data/cache (custom_manifest, detected_games, local save zip backups)
+            // 3. Migrate existing data/cache from RootDir
             var oldCacheDir = Path.Combine(RootDir, "data", "cache");
             if (Directory.Exists(oldCacheDir) && !string.Equals(oldCacheDir, CacheDir, StringComparison.OrdinalIgnoreCase))
             {
-                foreach (var file in Directory.GetFiles(oldCacheDir))
-                {
-                    var dest = Path.Combine(CacheDir, Path.GetFileName(file));
-                    if (!File.Exists(dest))
-                    {
-                        File.Copy(file, dest, overwrite: true);
-                    }
-                }
-
-                foreach (var dir in Directory.GetDirectories(oldCacheDir))
-                {
-                    var dirName = Path.GetFileName(dir);
-                    var destDir = Path.Combine(CacheDir, dirName);
-                    if (!Directory.Exists(destDir))
-                    {
-                        Directory.CreateDirectory(destDir);
-                        foreach (var f in Directory.GetFiles(dir))
-                        {
-                            File.Copy(f, Path.Combine(destDir, Path.GetFileName(f)), overwrite: true);
-                        }
-                    }
-                }
+                CopyDirectoryRecursively(oldCacheDir, CacheDir);
             }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ConfigService] Migration notice: {ex.Message}");
+        }
+    }
+
+    private static void CopyDirectoryRecursively(string sourceDir, string targetDir)
+    {
+        Directory.CreateDirectory(targetDir);
+        foreach (var file in Directory.GetFiles(sourceDir))
+        {
+            var dest = Path.Combine(targetDir, Path.GetFileName(file));
+            if (!File.Exists(dest))
+            {
+                File.Copy(file, dest, overwrite: true);
+            }
+        }
+
+        foreach (var dir in Directory.GetDirectories(sourceDir))
+        {
+            var destSub = Path.Combine(targetDir, Path.GetFileName(dir));
+            CopyDirectoryRecursively(dir, destSub);
         }
     }
 

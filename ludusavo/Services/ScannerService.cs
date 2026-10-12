@@ -602,7 +602,7 @@ public class ScannerService : IScannerService
             }
         });
 
-        return detected.ToList();
+        return detected.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 
     public async Task<List<DetectedGame>> GetDetectedGamesAsync(IReadOnlyList<GameEntry> allGames, bool forceRescan = false, IProgress<(int current, int total, string currentName)>? progress = null)
@@ -622,7 +622,7 @@ public class ScannerService : IScannerService
                     var results = await ScanGamesAsync(candidates, progress);
                     if (results.Count > 0)
                     {
-                        return results;
+                        return results.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase).ToList();
                     }
                 }
             }
@@ -643,6 +643,6 @@ public class ScannerService : IScannerService
         }
         catch { }
 
-        return detected;
+        return detected.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase).ToList();
     }
 }

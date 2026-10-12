@@ -19,6 +19,8 @@ appsettings.*.json
 [Bb]in/
 [Oo]bj/
 publish/
+dist/
+artifacts/
 *_wpftmp.csproj
 
 # Temp, cache & personal game saves

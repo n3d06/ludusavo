@@ -24,10 +24,7 @@ public partial class DetectedGame : ObservableObject
     {
         if (SteamId == steamId)
         {
-            System.Windows.Application.Current?.Dispatcher?.InvokeAsync(() =>
-            {
-                OnPropertyChanged(nameof(BannerUrl));
-            });
+            OnPropertyChanged(nameof(BannerUrl));
         }
     }
 
