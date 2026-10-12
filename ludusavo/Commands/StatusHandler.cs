@@ -15,7 +15,6 @@ public class StatusHandler
 
     public async Task ExecuteAsync()
     {
-        AnsiConsole.WriteLine();
         var settings = _configService.Settings;
 
         var repoInfo = (!string.IsNullOrWhiteSpace(settings.GitHubOwner) && !string.IsNullOrWhiteSpace(settings.GitHubRepo))

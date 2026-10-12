@@ -47,7 +47,7 @@ public interface IGitHubService
     Task<Dictionary<string, RemoteGameMeta>> GetAllRemoteMetasAsync(bool forceRefresh = false);
     void InvalidateCatalogCache();
     Task<(bool success, string? error)> UploadGameSaveAsync(string gameId, string zipPath, string metaPath, string mappingPath);
-    Task<(bool success, string? error)> UploadGameSavesBatchAsync(List<GameBackupPayload> payloads, string commitMessage);
+    Task<(bool success, string? error, string? commitSha)> UploadGameSavesBatchAsync(List<GameBackupPayload> payloads, string commitMessage, Action<string>? progressCallback = null);
     Task<(bool success, string? error)> DownloadGameSaveAsync(string gameId, string targetDir);
     Task<(bool success, string? error)> UploadFileAsync(string repoPath, string localPath, string commitMessage);
     Task<(bool success, string? error)> DownloadFileAsync(string repoPath, string localPath);

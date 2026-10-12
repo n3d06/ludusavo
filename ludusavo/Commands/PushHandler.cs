@@ -29,7 +29,7 @@ public class PushHandler
     {
         if (!_gitHubService.IsConfigured)
         {
-            AnsiConsole.MarkupLine("[red]GitHub chưa được cấu hình! Vui lòng dùng lệnh [bold cyan]sav config[/] trước.[/]");
+            AnsiConsole.WriteLine("GitHub chưa được cấu hình! Vui lòng dùng lệnh 'sav config' trước.");
             return;
         }
 
@@ -51,7 +51,7 @@ public class PushHandler
 
         if (games.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]Không tìm thấy game nào có save trên máy để đẩy lên GitHub.[/]");
+            AnsiConsole.WriteLine("Không tìm thấy game nào có save trên máy để đẩy lên GitHub.");
             return;
         }
 
@@ -77,19 +77,27 @@ public class PushHandler
                 return;
             }
 
-            AnsiConsole.MarkupLine($"[red]Không tìm thấy game khớp với '{target}'.[/]");
+            AnsiConsole.WriteLine($"Không tìm thấy game khớp với '{target}'.");
             return;
         }
 
-        // Hiển thị danh sách đánh số
-        AnsiConsole.WriteLine();
+        int maxIndexWidth = $"[{games.Count}]".Length;
+        int maxNameWidth = games.Max(g => g.Name.Length);
+        int maxSizeWidth = games.Max(g => ConsoleHelper.FormatSize(g.TotalSizeBytes).Length);
+        int maxFileWidth = games.Max(g => $"{g.FileCount} files".Length);
+
         for (int i = 0; i < games.Count; i++)
         {
             var g = games[i];
-            AnsiConsole.WriteLine($"[{i + 1}] {g.Name} ({ConsoleHelper.FormatSize(g.TotalSizeBytes)}, {g.FileCount} files)");
+            var idxStr = $"[{i + 1}]".PadRight(maxIndexWidth);
+            var nameStr = g.Name.PadRight(maxNameWidth);
+            var sizeStr = ConsoleHelper.FormatSize(g.TotalSizeBytes).PadLeft(maxSizeWidth);
+            var fileStr = (g.FileCount == 1 ? "1 file" : $"{g.FileCount} files").PadRight(maxFileWidth);
+
+            AnsiConsole.WriteLine($"{idxStr}  {nameStr}  {sizeStr}  {fileStr}");
         }
-        AnsiConsole.WriteLine("[A] Đẩy tất cả game lên GitHub");
-        AnsiConsole.WriteLine("[0] Hủy bỏ\n");
+        AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Đẩy tất cả game lên GitHub");
+        AnsiConsole.WriteLine($"{"[0]".PadRight(maxIndexWidth)}  Hủy bỏ\n");
 
         var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn push (hoặc 'A' / '0'):");
 
@@ -97,7 +105,7 @@ public class PushHandler
 
         if (choice == "0")
         {
-            AnsiConsole.MarkupLine("Đã hủy thao tác.");
+            AnsiConsole.WriteLine("Đã hủy thao tác.");
             return;
         }
 
@@ -113,47 +121,54 @@ public class PushHandler
         }
         else
         {
-            AnsiConsole.MarkupLine("[red]Lựa chọn không hợp lệ.[/]");
+            AnsiConsole.WriteLine("Lựa chọn không hợp lệ.");
         }
     }
 
     private async Task PushSingleAsync(DetectedGame game)
     {
-        AnsiConsole.MarkupLine($"\nĐang sao lưu và đẩy game: [bold]{Markup.Escape(game.Name)}[/]");
+        AnsiConsole.WriteLine($"Bắt đầu sao lưu game: {game.Name}");
 
         bool success = false;
         string? msg = null;
+        string? commitSha = null;
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang nén file save và tải lên GitHub...", async ctx =>
+            .StartAsync($"Đang nén bản save: {game.Name}...", async ctx =>
             {
                 var syncRes = await _syncService.SyncGamesBatchToCloudAsync(new List<DetectedGame> { game }, statusText =>
                 {
-                    ctx.Status(Markup.Escape(statusText));
+                    ctx.Status(statusText);
                 });
                 success = syncRes.success;
                 msg = syncRes.message;
+                commitSha = syncRes.commitSha;
             });
 
         if (success)
         {
-            AnsiConsole.MarkupLine($"[green]Đã đẩy game '{Markup.Escape(game.Name)}' lên GitHub thành công (1 commit).[/]");
+            var shortSha = !string.IsNullOrEmpty(commitSha) && commitSha.Length >= 7 
+                ? commitSha.Substring(0, 7) 
+                : commitSha;
+            var shaText = !string.IsNullOrEmpty(shortSha) ? $" (Commit: {shortSha})" : "";
+            AnsiConsole.WriteLine($"Đã đẩy game '{game.Name}' lên GitHub thành công.{shaText}");
         }
         else
         {
-            AnsiConsole.MarkupLine($"[red]Đẩy game thất bại:[/] {Markup.Escape(msg ?? "Lỗi không xác định")}");
+            AnsiConsole.WriteLine($"Đẩy game thất bại: {msg ?? "Lỗi không xác định"}");
         }
     }
 
     private async Task PushAllAsync(List<DetectedGame> games)
     {
-        AnsiConsole.MarkupLine($"\nĐang sao lưu và đẩy tất cả [bold]{games.Count}[/] game lên GitHub...");
+        AnsiConsole.WriteLine($"Bắt đầu sao lưu tất cả {games.Count} game lên GitHub...");
 
         bool success = false;
         string? message = null;
         int successCount = 0;
         int failCount = 0;
+        string? commitSha = null;
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
@@ -161,26 +176,31 @@ public class PushHandler
             {
                 var res = await _syncService.SyncGamesBatchToCloudAsync(games, statusText =>
                 {
-                    ctx.Status(Markup.Escape(statusText));
+                    ctx.Status(statusText);
                 });
 
                 success = res.success;
                 message = res.message;
                 successCount = res.successCount;
                 failCount = res.failCount;
+                commitSha = res.commitSha;
             });
 
         if (success)
         {
-            AnsiConsole.MarkupLine($"[green]Hoàn tất![/] Đã đẩy [green]{successCount}[/] game lên GitHub trong [bold]1 commit duy nhất[/].");
+            var shortSha = !string.IsNullOrEmpty(commitSha) && commitSha.Length >= 7 
+                ? commitSha.Substring(0, 7) 
+                : commitSha;
+            var shaText = !string.IsNullOrEmpty(shortSha) ? $" (Commit: {shortSha})" : "";
+            AnsiConsole.WriteLine($"Hoàn tất! Đã đẩy {successCount} game lên GitHub thành công.{shaText}");
             if (failCount > 0)
             {
-                AnsiConsole.MarkupLine($"[yellow]Có {failCount} game không thể nén do lỗi file.[/]");
+                AnsiConsole.WriteLine($"Có {failCount} game không thể nén do lỗi file.");
             }
         }
         else
         {
-            AnsiConsole.MarkupLine($"[red]Đẩy game thất bại:[/] {Markup.Escape(message ?? "Lỗi không xác định")}");
+            AnsiConsole.WriteLine($"Đẩy game thất bại: {message ?? "Lỗi không xác định"}");
         }
     }
 }

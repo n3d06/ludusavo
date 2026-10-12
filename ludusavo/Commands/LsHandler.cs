@@ -42,21 +42,27 @@ public class LsHandler
             return games;
         }
 
-        AnsiConsole.WriteLine();
+        int maxIndexWidth = $"[{games.Count}]".Length;
+        int maxNameWidth = games.Max(g => g.Name.Length);
+        int maxTypeWidth = games.Max(g => (g.IsCustomGame ? "Custom" : (g.SteamId.HasValue && g.SteamId.Value > 0 ? "Steam" : "Official")).Length);
+        int maxFileWidth = games.Max(g => (g.FileCount == 1 ? "1 file" : $"{g.FileCount} files").Length);
+        int maxSizeWidth = games.Max(g => ConsoleHelper.FormatSize(g.TotalSizeBytes).Length);
+
         int index = 1;
         foreach (var game in games)
         {
-            var modified = ConsoleHelper.FormatDateTime(game.LastModified);
-            var type = game.IsCustomGame
+            var idxStr = $"[{index}]".PadRight(maxIndexWidth);
+            var nameStr = game.Name.PadRight(maxNameWidth);
+            var type = (game.IsCustomGame
                 ? "Custom"
                 : (game.SteamId.HasValue && game.SteamId.Value > 0)
                     ? "Steam"
-                    : "Official";
+                    : "Official").PadRight(maxTypeWidth);
+            var fileStr = (game.FileCount == 1 ? "1 file" : $"{game.FileCount} files").PadRight(maxFileWidth);
+            var sizeStr = ConsoleHelper.FormatSize(game.TotalSizeBytes).PadLeft(maxSizeWidth);
+            var modified = ConsoleHelper.FormatDateTime(game.LastModified);
 
-            var size = ConsoleHelper.FormatSize(game.TotalSizeBytes);
-            var fileStr = game.FileCount == 1 ? "1 file" : $"{game.FileCount} files";
-
-            AnsiConsole.WriteLine($"[{index}] {game.Name} ({type}, {fileStr}, {size}, {modified})");
+            AnsiConsole.WriteLine($"{idxStr}  {nameStr}  {type}  {fileStr}  {sizeStr}  {modified}");
             index++;
         }
         return games;

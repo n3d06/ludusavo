@@ -171,7 +171,6 @@ public static class Program
 
     private static void ShowHelp()
     {
-        AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("Sử dụng: sav [lệnh] [tham số]");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("Các lệnh hỗ trợ:");

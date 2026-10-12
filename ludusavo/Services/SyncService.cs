@@ -172,13 +172,13 @@ public class SyncService : ISyncService
         }
     }
 
-    public async Task<(bool success, string? message, int successCount, int failCount)> SyncGamesBatchToCloudAsync(
+    public async Task<(bool success, string? message, int successCount, int failCount, string? commitSha)> SyncGamesBatchToCloudAsync(
         List<DetectedGame> games,
         Action<string>? progressCallback = null)
     {
         if (games == null || games.Count == 0)
         {
-            return (true, "Không có game nào cần đồng bộ.", 0, 0);
+            return (true, "Không có game nào cần đồng bộ.", 0, 0, null);
         }
 
         var payloads = new List<GameBackupPayload>();
@@ -188,7 +188,10 @@ public class SyncService : ISyncService
         for (int i = 0; i < games.Count; i++)
         {
             var game = games[i];
-            progressCallback?.Invoke($"[{i + 1}/{games.Count}] Đang nén file save '{game.Name}'...");
+            var progressText = games.Count == 1 
+                ? $"Nén bản save: {game.Name}..." 
+                : $"[{i + 1}/{games.Count}] Nén bản save: {game.Name}...";
+            progressCallback?.Invoke(progressText);
 
             var backupRes = await _backupService.CreateBackupAsync(game);
             if (!backupRes.Success)
@@ -210,13 +213,13 @@ public class SyncService : ISyncService
 
         if (payloads.Count == 0)
         {
-            return (false, "Không thể sao lưu file của bất kỳ game nào.", 0, failCount);
+            return (false, "Không thể sao lưu file của bất kỳ game nào.", 0, failCount, null);
         }
+
+        string? commitSha = null;
 
         if (_gitHubService.IsConfigured)
         {
-            progressCallback?.Invoke($"Đang tải {payloads.Count} game lên GitHub (tạo 1 commit duy nhất)...");
-
             string commitMessage;
             if (payloads.Count == 1)
             {
@@ -229,11 +232,13 @@ public class SyncService : ISyncService
                 commitMessage = $"Backup saves: {payloads.Count} games ({names}{extra})";
             }
 
-            var uploadRes = await _gitHubService.UploadGameSavesBatchAsync(payloads, commitMessage);
+            var uploadRes = await _gitHubService.UploadGameSavesBatchAsync(payloads, commitMessage, progressCallback);
             if (!uploadRes.success)
             {
-                return (false, uploadRes.error ?? "Lỗi đẩy lên GitHub", 0, games.Count);
+                return (false, uploadRes.error ?? "Lỗi đẩy lên GitHub", 0, games.Count, null);
             }
+
+            commitSha = uploadRes.commitSha;
 
             foreach (var g in backedUpGames)
             {
@@ -250,7 +255,7 @@ public class SyncService : ISyncService
             }
         }
 
-        return (true, $"Đã sao lưu thành công {backedUpGames.Count} game trong 1 commit duy nhất.", backedUpGames.Count, failCount);
+        return (true, $"Đã sao lưu thành công {backedUpGames.Count} game trong 1 commit duy nhất.", backedUpGames.Count, failCount, commitSha);
     }
 
     public async Task<(bool success, string? message)> RestoreGameFromCloudAsync(DetectedGame game)

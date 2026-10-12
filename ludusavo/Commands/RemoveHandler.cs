@@ -51,7 +51,6 @@ public class RemoveHandler
             return;
         }
 
-        AnsiConsole.WriteLine();
         for (int i = 0; i < customGames.Count; i++)
         {
             var g = customGames[i];

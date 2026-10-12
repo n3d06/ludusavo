@@ -68,15 +68,22 @@ public class PullHandler
             return;
         }
 
-        AnsiConsole.WriteLine();
+        int maxIndexWidth = $"[{remoteList.Count}]".Length;
+        int maxNameWidth = remoteList.Max(m => m.GameName.Length);
+        int maxSizeWidth = remoteList.Max(m => (string.IsNullOrEmpty(m.FormattedSize) ? "-" : m.FormattedSize).Length);
+
         for (int i = 0; i < remoteList.Count; i++)
         {
             var m = remoteList[i];
+            var idxStr = $"[{i + 1}]".PadRight(maxIndexWidth);
+            var nameStr = m.GameName.PadRight(maxNameWidth);
+            var sizeStr = (string.IsNullOrEmpty(m.FormattedSize) ? "-" : m.FormattedSize).PadLeft(maxSizeWidth);
             var dateStr = ConsoleHelper.FormatDateTime(m.Timestamp);
-            AnsiConsole.WriteLine($"[{i + 1}] {m.GameName} ({m.FormattedSize}, {dateStr})");
+
+            AnsiConsole.WriteLine($"{idxStr}  {nameStr}  {sizeStr}  {dateStr}");
         }
-        AnsiConsole.WriteLine("[A] Kéo và khôi phục tất cả game về máy");
-        AnsiConsole.WriteLine("[0] Hủy bỏ\n");
+        AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Kéo và khôi phục tất cả game về máy");
+        AnsiConsole.WriteLine($"{"[0]".PadRight(maxIndexWidth)}  Hủy bỏ\n");
 
         var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn pull (hoặc 'A' / '0'):");
 

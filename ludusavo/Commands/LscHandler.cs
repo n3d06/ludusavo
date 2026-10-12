@@ -36,17 +36,22 @@ public class LscHandler
             return list;
         }
 
-        AnsiConsole.WriteLine();
+        int maxIndexWidth = $"[{list.Count}]".Length;
+        int maxNameWidth = list.Max(m => m.GameName.Length);
+        int maxSizeWidth = list.Max(m => (string.IsNullOrEmpty(m.FormattedSize) ? "-" : m.FormattedSize).Length);
+
         int index = 1;
         foreach (var item in list)
         {
+            var idxStr = $"[{index}]".PadRight(maxIndexWidth);
+            var nameStr = item.GameName.PadRight(maxNameWidth);
+            var sizeStr = (string.IsNullOrEmpty(item.FormattedSize) ? "-" : item.FormattedSize).PadLeft(maxSizeWidth);
             var dateStr = ConsoleHelper.FormatDateTime(item.Timestamp);
             var hashShort = !string.IsNullOrEmpty(item.ArchiveHash) && item.ArchiveHash.Length >= 8
                 ? item.ArchiveHash.Substring(0, 8)
                 : "-";
-            var size = string.IsNullOrEmpty(item.FormattedSize) ? "-" : item.FormattedSize;
 
-            AnsiConsole.WriteLine($"[{index}] {item.GameName} ({size}, {dateStr}, {hashShort})");
+            AnsiConsole.WriteLine($"{idxStr}  {nameStr}  {sizeStr}  {dateStr}  {hashShort}");
             index++;
         }
         return list;
