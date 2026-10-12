@@ -1,4 +1,3 @@
-using Spectre.Console;
 using ludusavo.Models;
 using ludusavo.Services;
 
@@ -60,8 +59,7 @@ public class RemoveHandler
         }
         AnsiConsole.WriteLine("  [0] Hủy bỏ\n");
 
-        var choice = AnsiConsole.Prompt(
-            new TextPrompt<string>("Nhập số thứ tự game muốn xóa (hoặc '0'):"));
+        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn xóa (hoặc '0'):");
 
         choice = choice.Trim();
 

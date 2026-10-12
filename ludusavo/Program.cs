@@ -1,6 +1,5 @@
 using System.Text;
 using Microsoft.Extensions.DependencyInjection;
-using Spectre.Console;
 using ludusavo.Commands;
 using ludusavo.Services;
 
@@ -119,31 +118,48 @@ public static class Program
     {
         ConsoleHelper.ShowHeader();
 
+        var menuOptions = new (string cmd, string desc)[]
+        {
+            ("ls", "Danh sách game có trên máy"),
+            ("lsc", "Danh sách game trên GitHub"),
+            ("push", "Nén & đẩy bản save lên GitHub"),
+            ("pull", "Tải bản save từ GitHub về máy"),
+            ("scan", "Quét lại toàn bộ save game"),
+            ("status", "Kiểm tra kết nối GitHub"),
+            ("config", "Cấu hình GitHub (Token, Owner, Repo)"),
+            ("add", "Thêm game tùy chỉnh (Custom)"),
+            ("remove", "Xóa game tùy chỉnh"),
+            ("help", "Xem trợ giúp lệnh"),
+            ("exit", "Thoát chương trình")
+        };
+
         while (true)
         {
             AnsiConsole.WriteLine();
-            var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("Chọn chức năng:")
-                    .PageSize(12)
-                    .AddChoices(new[]
-                    {
-                        "ls      - Danh sách game có trên máy",
-                        "lsc     - Danh sách game trên GitHub",
-                        "push    - Nén & đẩy bản save lên GitHub",
-                        "pull    - Tải bản save từ GitHub về máy",
-                        "scan    - Quét lại toàn bộ save game",
-                        "status  - Kiểm tra kết nối GitHub",
-                        "config  - Cấu hình GitHub (Token, Owner, Repo)",
-                        "add     - Thêm game tùy chỉnh (Custom)",
-                        "remove  - Xóa game tùy chỉnh",
-                        "help    - Xem trợ giúp lệnh",
-                        "exit    - Thoát chương trình"
-                    }));
+            AnsiConsole.MarkupLine("[cyan]Chọn chức năng:[/]");
+            for (int i = 0; i < menuOptions.Length; i++)
+            {
+                var num = (i + 1 == menuOptions.Length) ? "0" : (i + 1).ToString();
+                AnsiConsole.WriteLine($"  [{num}] {menuOptions[i].cmd,-7} - {menuOptions[i].desc}");
+            }
 
-            var cmd = choice.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0].ToLowerInvariant();
+            var input = AnsiConsole.Prompt("\nNhập số hoặc lệnh (0-10):");
+            if (string.IsNullOrWhiteSpace(input)) continue;
 
-            if (cmd == "exit")
+            string cmd = input.ToLowerInvariant();
+            if (int.TryParse(input, out int choiceNum))
+            {
+                if (choiceNum == 0 || choiceNum == menuOptions.Length)
+                {
+                    break;
+                }
+                if (choiceNum >= 1 && choiceNum < menuOptions.Length)
+                {
+                    cmd = menuOptions[choiceNum - 1].cmd;
+                }
+            }
+
+            if (cmd == "exit" || cmd == "0")
             {
                 break;
             }

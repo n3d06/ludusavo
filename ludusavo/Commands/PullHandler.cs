@@ -1,4 +1,3 @@
-using Spectre.Console;
 using ludusavo.Services;
 
 namespace ludusavo.Commands;
@@ -79,8 +78,7 @@ public class PullHandler
         AnsiConsole.WriteLine("  [A] Kéo và khôi phục tất cả game về máy");
         AnsiConsole.WriteLine("  [0] Hủy bỏ\n");
 
-        var choice = AnsiConsole.Prompt(
-            new TextPrompt<string>("Nhập số thứ tự game muốn pull (hoặc 'A' / '0'):"));
+        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn pull (hoặc 'A' / '0'):");
 
         choice = choice.Trim();
 

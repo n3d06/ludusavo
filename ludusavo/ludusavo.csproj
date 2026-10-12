@@ -10,14 +10,11 @@
     <ApplicationIcon>..\assets\icon.ico</ApplicationIcon>
     
     <!-- Publishing Optimizations -->
-    <PublishReadyToRun>true</PublishReadyToRun>
     <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
-    <PackageReference Include="Spectre.Console" Version="0.57.2" />
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 

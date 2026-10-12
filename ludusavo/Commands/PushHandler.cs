@@ -1,4 +1,3 @@
-using Spectre.Console;
 using ludusavo.Models;
 using ludusavo.Services;
 
@@ -92,8 +91,7 @@ public class PushHandler
         AnsiConsole.WriteLine("  [A] Đẩy tất cả game lên GitHub");
         AnsiConsole.WriteLine("  [0] Hủy bỏ\n");
 
-        var choice = AnsiConsole.Prompt(
-            new TextPrompt<string>("Nhập số thứ tự game muốn push (hoặc 'A' / '0'):"));
+        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn push (hoặc 'A' / '0'):");
 
         choice = choice.Trim();
 

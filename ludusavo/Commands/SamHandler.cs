@@ -1,4 +1,3 @@
-using Spectre.Console;
 using ludusavo.Services;
 
 namespace ludusavo.Commands;

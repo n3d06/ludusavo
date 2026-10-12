@@ -1,4 +1,3 @@
-using Spectre.Console;
 using ludusavo.Services;
 
 namespace ludusavo.Commands;
@@ -49,26 +48,17 @@ public class ConfigHandler
         }
 
         // Chế độ tương tác hỏi đáp (Interactive)
-        AnsiConsole.MarkupLine("[bold cyan]Cấu hình GitHub Synchronization[/]");
+        AnsiConsole.MarkupLine("[cyan]Cấu hình GitHub Synchronization[/]");
         AnsiConsole.MarkupLine("[dim]Nhấn Enter nếu muốn giữ nguyên giá trị hiện tại.[/]\n");
 
         var currentOwner = settings.GitHubOwner ?? string.Empty;
-        var newOwner = AnsiConsole.Prompt(
-            new TextPrompt<string>("GitHub Owner (Username hoặc Org):")
-                .DefaultValue(currentOwner)
-                .AllowEmpty());
+        var newOwner = AnsiConsole.Prompt("GitHub Owner (Username hoặc Org):", currentOwner);
 
         var currentRepo = settings.GitHubRepo ?? string.Empty;
-        var newRepo = AnsiConsole.Prompt(
-            new TextPrompt<string>("GitHub Repository (ví dụ: game-saves):")
-                .DefaultValue(currentRepo)
-                .AllowEmpty());
+        var newRepo = AnsiConsole.Prompt("GitHub Repository (ví dụ: game-saves):", currentRepo);
 
         var currentTokenMask = string.IsNullOrWhiteSpace(settings.GitHubToken) ? "(chưa có)" : ConsoleHelper.MaskToken(settings.GitHubToken);
-        var newTokenInput = AnsiConsole.Prompt(
-            new TextPrompt<string>($"GitHub Personal Access Token [dim][hiện tại: {currentTokenMask}][/]:")
-                .Secret()
-                .AllowEmpty());
+        var newTokenInput = AnsiConsole.Prompt($"GitHub Personal Access Token [hiện tại: {currentTokenMask}]:", secret: true);
 
         if (!string.IsNullOrWhiteSpace(newOwner))
             settings.GitHubOwner = newOwner.Trim();
@@ -80,7 +70,7 @@ public class ConfigHandler
             settings.GitHubToken = newTokenInput.Trim();
 
         _configService.SaveSettings(settings);
-        AnsiConsole.MarkupLine("\n[bold green]Đã lưu cấu hình thành công![/]");
+        AnsiConsole.MarkupLine("\n[green]Đã lưu cấu hình thành công![/]");
 
         await TestConnectionNoticeAsync();
     }
@@ -90,20 +80,18 @@ public class ConfigHandler
         if (_gitHubService.IsConfigured)
         {
             await AnsiConsole.Status()
-                .Spinner(Spinner.Known.Dots)
                 .StartAsync("Đang kiểm tra kết nối với thông tin mới...", async ctx =>
                 {
-                    var (success, msg) = await _gitHubService.TestConnectionAsync();
-                    if (success)
+                    var res = await _gitHubService.TestConnectionAsync();
+                    if (res.success)
                     {
-                        AnsiConsole.MarkupLine("[green]Kiểm tra kết nối thành công![/]");
+                        AnsiConsole.MarkupLine($"\n[green]{res.message}[/]");
                     }
                     else
                     {
-                        AnsiConsole.MarkupLine($"[yellow]Chưa kết nối được tới GitHub:[/] {Markup.Escape(msg ?? "Lỗi không xác định")}");
+                        AnsiConsole.MarkupLine($"\n[red]{res.message}[/]");
                     }
                 });
         }
     }
 }
-

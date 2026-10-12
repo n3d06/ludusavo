@@ -1,12 +1,199 @@
-using Spectre.Console;
+using System.Text.RegularExpressions;
 
 namespace ludusavo.Commands;
 
+public static class Markup
+{
+    public static string Escape(string text) => text ?? string.Empty;
+}
+
+public static class Spinner
+{
+    public static class Known
+    {
+        public static object Dots => new();
+    }
+}
+
 public static class ConsoleHelper
 {
-    public static void ShowHeader()
+    public static void ShowHeader() { }
+
+    public static void WriteLine(string text = "")
     {
-        // Giữ gọn gàng như git, không in banner chiếm màn hình
+        Console.WriteLine(text);
+    }
+
+    public static void Write(string text)
+    {
+        Console.Write(text);
+    }
+
+    public static void MarkupLine(string text)
+    {
+        Markup(text);
+        Console.WriteLine();
+    }
+
+    public static void Markup(string text)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+
+        // Parse tags like [red], [green], [yellow], [cyan], [bold], [dim], [grey], [/]
+        var pattern = @"(\[[a-zA-Z]+\]|\[\/\])";
+        var parts = Regex.Split(text, pattern);
+
+        foreach (var part in parts)
+        {
+            if (part.StartsWith("[") && part.EndsWith("]"))
+            {
+                var tag = part.Substring(1, part.Length - 2).ToLowerInvariant();
+                switch (tag)
+                {
+                    case "red":
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        break;
+                    case "green":
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        break;
+                    case "yellow":
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        break;
+                    case "cyan":
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                        break;
+                    case "blue":
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                        break;
+                    case "magenta":
+                        Console.ForegroundColor = ConsoleColor.Magenta;
+                        break;
+                    case "grey":
+                    case "gray":
+                    case "dim":
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        break;
+                    case "/":
+                    default:
+                        Console.ResetColor();
+                        break;
+                }
+            }
+            else if (!string.IsNullOrEmpty(part))
+            {
+                Console.Write(part);
+            }
+        }
+        Console.ResetColor();
+    }
+
+    public static async Task StatusAsync(string initialStatus, Func<Action<string>, Task> action)
+    {
+        if (Console.IsOutputRedirected)
+        {
+            Console.WriteLine(initialStatus);
+            await action(newStatus => Console.WriteLine(newStatus));
+            return;
+        }
+
+        var spinnerFrames = new[] { "⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏" };
+        var currentMsg = initialStatus;
+        var cts = new CancellationTokenSource();
+        int frameIdx = 0;
+
+        var spinnerTask = Task.Run(async () =>
+        {
+            while (!cts.Token.IsCancellationRequested)
+            {
+                var frame = spinnerFrames[frameIdx % spinnerFrames.Length];
+                frameIdx++;
+                try
+                {
+                    Console.Write($"\r{frame} {currentMsg}   ");
+                }
+                catch { }
+
+                try
+                {
+                    await Task.Delay(80, cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+            }
+        });
+
+        try
+        {
+            await action(newStatus => { currentMsg = newStatus; });
+        }
+        finally
+        {
+            cts.Cancel();
+            try
+            {
+                await spinnerTask;
+            }
+            catch { }
+
+            try
+            {
+                var clearWidth = Math.Max(Console.WindowWidth > 0 ? Console.WindowWidth - 1 : 80, currentMsg.Length + 15);
+                Console.Write("\r" + new string(' ', clearWidth) + "\r");
+            }
+            catch
+            {
+                Console.Write("\r                                                                                \r");
+            }
+        }
+    }
+
+    public static string Prompt(string label, string? defaultValue = null, bool secret = false)
+    {
+        Markup(label + " ");
+        if (!string.IsNullOrEmpty(defaultValue))
+        {
+            Markup($"[dim]({defaultValue})[/] ");
+        }
+
+        if (secret)
+        {
+            var pass = string.Empty;
+            while (true)
+            {
+                var key = Console.ReadKey(true);
+                if (key.Key == ConsoleKey.Enter)
+                {
+                    Console.WriteLine();
+                    break;
+                }
+                if (key.Key == ConsoleKey.Backspace && pass.Length > 0)
+                {
+                    pass = pass.Substring(0, pass.Length - 1);
+                    Console.Write("\b \b");
+                }
+                else if (!char.IsControl(key.KeyChar))
+                {
+                    pass += key.KeyChar;
+                    Console.Write("*");
+                }
+            }
+            return string.IsNullOrEmpty(pass) && !string.IsNullOrEmpty(defaultValue) ? defaultValue : pass;
+        }
+
+        var input = Console.ReadLine() ?? string.Empty;
+        input = input.Trim();
+        return string.IsNullOrEmpty(input) && !string.IsNullOrEmpty(defaultValue) ? defaultValue : input;
+    }
+
+    public static bool Confirm(string question, bool defaultChoice = true)
+    {
+        var hint = defaultChoice ? "[Y/n]" : "[y/N]";
+        Markup($"{question} [dim]{hint}[/] ");
+        var res = Console.ReadLine()?.Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(res)) return defaultChoice;
+        return res == "y" || res == "yes";
     }
 
     public static string FormatSize(long bytes)
@@ -30,4 +217,36 @@ public static class ConsoleHelper
             return "-";
         return dt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
     }
+}
+
+public static class AnsiConsole
+{
+    public static void WriteLine(string text = "") => ConsoleHelper.WriteLine(text);
+    public static void Write(string text) => ConsoleHelper.Write(text);
+    public static void MarkupLine(string text) => ConsoleHelper.MarkupLine(text);
+    public static void Markup(string text) => ConsoleHelper.Markup(text);
+    public static StatusRunner Status() => new StatusRunner();
+    public static string Prompt(string prompt, string? defaultValue = null, bool secret = false) => ConsoleHelper.Prompt(prompt, defaultValue, secret);
+    public static bool Confirm(string prompt, bool defaultVal = true) => ConsoleHelper.Confirm(prompt, defaultVal);
+}
+
+public class StatusRunner
+{
+    public StatusRunner Spinner(object? unused = null) => this;
+
+    public async Task StartAsync(string initialStatus, Func<StatusContext, Task> action)
+    {
+        await ConsoleHelper.StatusAsync(initialStatus, async updateStatus =>
+        {
+            var ctx = new StatusContext(updateStatus);
+            await action(ctx);
+        });
+    }
+}
+
+public class StatusContext
+{
+    private readonly Action<string> _update;
+    public StatusContext(Action<string> update) => _update = update;
+    public void Status(string text) => _update(text);
 }
