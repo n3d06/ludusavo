@@ -195,7 +195,11 @@ public class ManifestService : IManifestService
         }
 
         // Save back
-        var options = new JsonSerializerOptions { WriteIndented = true };
+        var options = new JsonSerializerOptions 
+        { 
+            WriteIndented = true,
+            Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
         var json = JsonSerializer.Serialize(customGames, options);
         await File.WriteAllTextAsync(customPath, json);
 
@@ -232,7 +236,11 @@ public class ManifestService : IManifestService
         if (existingIdx >= 0)
         {
             customGames.RemoveAt(existingIdx);
-            var options = new JsonSerializerOptions { WriteIndented = true };
+            var options = new JsonSerializerOptions 
+            { 
+                WriteIndented = true,
+                Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+            };
             var json = JsonSerializer.Serialize(customGames, options);
             await File.WriteAllTextAsync(customPath, json);
         }

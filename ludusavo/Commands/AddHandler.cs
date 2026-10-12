@@ -22,14 +22,14 @@ public class AddHandler
 
     public async Task ExecuteAsync()
     {
-        AnsiConsole.MarkupLine("Thêm game tùy chỉnh (Custom game)\n");
+        AnsiConsole.WriteLine("Thêm game tùy chỉnh (Custom game)\n");
 
         string gameName;
         while (true)
         {
             gameName = AnsiConsole.Prompt("Nhập tên Game:");
             if (!string.IsNullOrWhiteSpace(gameName)) break;
-            AnsiConsole.MarkupLine("[red]Tên game không được để trống![/]");
+            AnsiConsole.WriteLine("Tên game không được để trống!");
         }
 
         string folderPath = string.Empty;
@@ -40,13 +40,13 @@ public class AddHandler
 
             if (string.IsNullOrWhiteSpace(folderPath))
             {
-                AnsiConsole.MarkupLine("[red]Đường dẫn không được để trống![/]");
+                AnsiConsole.WriteLine("Đường dẫn không được để trống!");
                 continue;
             }
 
             if (!Directory.Exists(folderPath))
             {
-                var confirm = AnsiConsole.Confirm($"[yellow]Thư mục '{folderPath}' hiện chưa tồn tại trên máy. Bạn có chắc chắn muốn dùng đường dẫn này?[/]", false);
+                var confirm = AnsiConsole.Confirm($"Thư mục '{folderPath}' hiện chưa tồn tại trên máy. Bạn có chắc chắn muốn dùng đường dẫn này?", false);
                 if (confirm) break;
             }
             else
@@ -55,7 +55,7 @@ public class AddHandler
             }
         }
 
-        var steamIdInput = AnsiConsole.Prompt("Nhập Steam App ID [dim](tùy chọn, nhấn Enter nếu không có)[/]:");
+        var steamIdInput = AnsiConsole.Prompt("Nhập Steam App ID (tùy chọn, nhấn Enter nếu không có):");
 
         int? steamId = null;
         if (int.TryParse(steamIdInput, out int sId) && sId > 0)
@@ -77,7 +77,7 @@ public class AddHandler
         };
 
         await AnsiConsole.Status()
-            .StartAsync("Đang lưu game tùy chỉnh và đồng bộ lên GitHub...", async ctx =>
+            .StartAsync("Đang lưu game tùy chỉnh và đồng bộ lên Google Drive...", async ctx =>
             {
                 await _manifestService.AddCustomGameAsync(newGame);
                 try
@@ -87,9 +87,9 @@ public class AddHandler
                 catch { }
             });
 
-        AnsiConsole.MarkupLine($"\n[green]Đã thêm thành công game tùy chỉnh:[/] {newGame.Name}");
-        AnsiConsole.MarkupLine($"ID: {newGame.Id}");
-        AnsiConsole.MarkupLine($"Đường dẫn portable: {portablePath}");
-        AnsiConsole.MarkupLine("Gõ [cyan]sav push[/] để đẩy file save của game này lên GitHub.");
+        AnsiConsole.WriteLine($"\nĐã thêm thành công game tùy chỉnh: {newGame.Name}");
+        AnsiConsole.WriteLine($"ID: {newGame.Id}");
+        AnsiConsole.WriteLine($"Đường dẫn portable: {portablePath}");
+        AnsiConsole.WriteLine("Gõ 'sav push' để đẩy file save của game này lên Google Drive.");
     }
 }

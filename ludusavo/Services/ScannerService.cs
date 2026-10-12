@@ -164,17 +164,39 @@ public class ScannerService : IScannerService
 
     public string ToPlaceholderPath(string fullPath)
     {
-        var normalized = Path.GetFullPath(fullPath);
-        // Replace longest matching directory placeholder first
-        foreach (var kvp in _placeholders.OrderByDescending(p => p.Value.Length))
+        if (string.IsNullOrWhiteSpace(fullPath)) return string.Empty;
+        var trimmed = fullPath.Trim().Trim('"', '\'');
+
+        if (trimmed.StartsWith("<"))
         {
-            if (normalized.StartsWith(kvp.Value, StringComparison.OrdinalIgnoreCase))
-            {
-                var rel = normalized.Substring(kvp.Value.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                return $"{kvp.Key}/{rel.Replace('\\', '/')}";
-            }
+            return trimmed.Replace('\\', '/');
         }
-        return normalized.Replace('\\', '/');
+
+        // Nếu người dùng nhập C:/<appdata>/... hoặc C:\<appdata>\... thì cắt bỏ tiền tố ổ đĩa
+        var placeholderMatch = Regex.Match(trimmed, @"^[a-zA-Z]:[/\\]?(<[^>]+>.*)$");
+        if (placeholderMatch.Success)
+        {
+            return placeholderMatch.Groups[1].Value.Replace('\\', '/');
+        }
+
+        try
+        {
+            var normalized = Path.GetFullPath(trimmed);
+            // Thay thế placeholder khớp dài nhất trước
+            foreach (var kvp in _placeholders.OrderByDescending(p => p.Value.Length))
+            {
+                if (normalized.StartsWith(kvp.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    var rel = normalized.Substring(kvp.Value.Length).TrimStart(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                    return $"{kvp.Key}/{rel.Replace('\\', '/')}";
+                }
+            }
+            return normalized.Replace('\\', '/');
+        }
+        catch
+        {
+            return trimmed.Replace('\\', '/');
+        }
     }
 
     private List<string> ResolvePatterns(string rawPath)

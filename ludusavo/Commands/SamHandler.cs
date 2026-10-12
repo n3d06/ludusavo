@@ -27,7 +27,7 @@ public class SamHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang đồng bộ custom manifest từ GitHub (nếu có)...", async ctx =>
+            .StartAsync("Đang đồng bộ custom manifest từ Google Drive (nếu có)...", async ctx =>
             {
                 try
                 {

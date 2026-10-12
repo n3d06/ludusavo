@@ -80,16 +80,16 @@ public class RemoveHandler
 
     private async Task RemoveGameAsync(GameEntry game)
     {
-        var confirm = AnsiConsole.Confirm($"Bạn có chắc chắn muốn xóa game tùy chỉnh '[bold]{Markup.Escape(game.Name)}[/]' không? [dim](Lưu ý: File save trên ổ đĩa sẽ KHÔNG bị xóa)[/]", false);
+        var confirm = AnsiConsole.Confirm($"Bạn có chắc chắn muốn xóa game tùy chỉnh '{game.Name}' không? (Lưu ý: File save trên ổ đĩa sẽ KHÔNG bị xóa)", false);
         if (!confirm)
         {
-            AnsiConsole.MarkupLine("[yellow]Đã hủy bỏ xóa.[/]");
+            AnsiConsole.WriteLine("Đã hủy bỏ thao tác xóa.");
             return;
         }
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync($"Đang xóa {game.Name} và đồng bộ lên GitHub...", async ctx =>
+            .StartAsync($"Đang xóa {game.Name} và đồng bộ lên Google Drive...", async ctx =>
             {
                 await _manifestService.RemoveCustomGameAsync(game.Id);
                 try
@@ -99,7 +99,7 @@ public class RemoveHandler
                 catch { }
             });
 
-        AnsiConsole.MarkupLine($"[green]Đã xóa thành công game tùy chỉnh '{Markup.Escape(game.Name)}'.[/]");
+        AnsiConsole.WriteLine($"Đã xóa thành công game tùy chỉnh '{game.Name}'.");
     }
 }
 
