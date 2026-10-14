@@ -29,6 +29,7 @@ jobs:
   build-and-release:
     name: Build & Release sav
     runs-on: windows-latest
+    environment: google
 
     steps:
       - name: Checkout repository
