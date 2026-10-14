@@ -6,7 +6,7 @@ public interface IManifestService
 {
     bool IsLoaded { get; }
     int GameCount { get; }
-    Task<bool> LoadManifestAsync();
+    Task<bool> LoadManifestAsync(bool forceDownload = false);
     IReadOnlyList<GameEntry> GetAllGames();
     GameEntry? GetGameById(string id);
     GameEntry? GetGameBySteamId(int steamId);

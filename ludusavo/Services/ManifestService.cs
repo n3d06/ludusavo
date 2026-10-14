@@ -1,6 +1,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Text.Json;
+using YamlDotNet.Serialization;
 using ludusavo.Models;
 
 namespace ludusavo.Services;
@@ -10,7 +11,7 @@ public class ManifestService : IManifestService
     private static readonly HttpClient ManifestHttpClient = new()
     {
         Timeout = TimeSpan.FromSeconds(60),
-        DefaultRequestHeaders = { { "User-Agent", "ludusavo-Desktop" } }
+        DefaultRequestHeaders = { { "User-Agent", "ludusavo-CLI" } }
     };
 
     private readonly IConfigService _configService;
@@ -26,12 +27,12 @@ public class ManifestService : IManifestService
         _configService = configService;
     }
 
-    public async Task<bool> LoadManifestAsync()
+    public async Task<bool> LoadManifestAsync(bool forceDownload = false)
     {
         var cachePath = _configService.ManifestCachePath;
 
-        // 1. If not yet in Documents, check if present in dev mode local data/cache
-        if (!File.Exists(cachePath))
+        // 1. If not forcing download, check if present in dev mode local data/cache
+        if (!forceDownload && !File.Exists(cachePath))
         {
             var fallback = Path.Combine(_configService.RootDir, "data", "cache", "manifest_processed.json");
             if (File.Exists(fallback))
@@ -46,13 +47,13 @@ public class ManifestService : IManifestService
             }
         }
 
-        // 2. If still not present, automatically download from GitHub / CDN into Documents
-        if (!File.Exists(cachePath))
+        // 2. If forceDownload or still not present, automatically download YAML from Ludusavi and process
+        if (forceDownload || !File.Exists(cachePath) || new FileInfo(cachePath).Length < 1000)
         {
-            var downloaded = await DownloadManifestAsync(cachePath);
-            if (!downloaded)
+            var downloaded = await DownloadAndProcessManifestAsync(cachePath);
+            if (!downloaded && !File.Exists(cachePath))
             {
-                Console.WriteLine($"[ManifestService] Manifest could not be downloaded to {cachePath}");
+                Console.WriteLine($"[ManifestService] Không thể tải database manifest từ Ludusavi về {cachePath}");
                 return false;
             }
         }
@@ -254,53 +255,136 @@ public class ManifestService : IManifestService
         _gamesById.Remove(gameId);
     }
 
-    private static async Task<bool> DownloadManifestAsync(string targetPath)
+    private static async Task<bool> DownloadAndProcessManifestAsync(string targetJsonPath)
     {
         var urls = new[]
         {
-            "https://raw.githubusercontent.com/3ky4r0/ludusavo/main/data/cache/manifest_processed.json",
-            "https://cdn.jsdelivr.net/gh/3ky4r0/ludusavo@main/data/cache/manifest_processed.json"
+            "https://raw.githubusercontent.com/mtkennerly/ludusavi-manifest/master/data/manifest.yaml",
+            "https://cdn.jsdelivr.net/gh/mtkennerly/ludusavi-manifest@master/data/manifest.yaml"
         };
 
-        var dir = Path.GetDirectoryName(targetPath);
+        var dir = Path.GetDirectoryName(targetJsonPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
 
-        var tempPath = targetPath + $".{Guid.NewGuid():N}.tmp";
+        var tempYamlPath = Path.Combine(dir ?? Path.GetTempPath(), $"manifest_{Guid.NewGuid():N}.yaml.tmp");
+        var tempJsonPath = targetJsonPath + $".{Guid.NewGuid():N}.tmp";
 
         foreach (var url in urls)
         {
             try
             {
                 using var response = await ManifestHttpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
-                if (response.IsSuccessStatusCode)
+                if (!response.IsSuccessStatusCode) continue;
+
+                await using (var remoteStream = await response.Content.ReadAsStreamAsync())
+                await using (var fileStream = new FileStream(tempYamlPath, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    await using (var remoteStream = await response.Content.ReadAsStreamAsync())
-                    await using (var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None))
+                    await remoteStream.CopyToAsync(fileStream);
+                }
+
+                if (!File.Exists(tempYamlPath) || new FileInfo(tempYamlPath).Length < 1000)
+                    continue;
+
+                // Deserialize YAML into memory using YamlDotNet
+                using (var yamlReader = File.OpenText(tempYamlPath))
+                {
+                    var deserializer = new DeserializerBuilder()
+                        .IgnoreUnmatchedProperties()
+                        .Build();
+
+                    var rawDict = deserializer.Deserialize<Dictionary<string, LudusaviRawGame>>(yamlReader);
+                    if (rawDict == null || rawDict.Count == 0)
+                        continue;
+
+                    var gameEntries = new List<GameEntry>(rawDict.Count);
+                    foreach (var (gameName, rawGame) in rawDict)
                     {
-                        await remoteStream.CopyToAsync(fileStream);
+                        if (rawGame == null) continue;
+
+                        var savePaths = new List<SavePathEntry>();
+                        if (rawGame.files != null)
+                        {
+                            foreach (var (filePath, fileEntry) in rawGame.files)
+                            {
+                                if (string.IsNullOrWhiteSpace(filePath)) continue;
+
+                                var whenList = fileEntry?.when?.Select(w => new WhenCondition
+                                {
+                                    Os = w.os,
+                                    Store = w.store
+                                }).ToList();
+
+                                savePaths.Add(new SavePathEntry
+                                {
+                                    Path = filePath,
+                                    Tags = fileEntry?.tags,
+                                    When = whenList
+                                });
+                            }
+                        }
+
+                        gameEntries.Add(new GameEntry
+                        {
+                            Id = gameName,
+                            Name = gameName,
+                            SteamId = rawGame.steam?.id,
+                            SavePaths = savePaths
+                        });
                     }
 
-                    if (File.Exists(tempPath) && new FileInfo(tempPath).Length > 1000)
+                    // Save processed list as JSON cache
+                    await using (var jsonStream = new FileStream(tempJsonPath, FileMode.Create, FileAccess.Write, FileShare.None))
                     {
-                        if (File.Exists(targetPath)) File.Delete(targetPath);
-                        File.Move(tempPath, targetPath);
+                        await JsonSerializer.SerializeAsync(jsonStream, gameEntries);
+                    }
+
+                    if (File.Exists(tempJsonPath) && new FileInfo(tempJsonPath).Length > 1000)
+                    {
+                        File.Move(tempJsonPath, targetJsonPath, overwrite: true);
                         return true;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ManifestService] Failed downloading manifest from {url}: {ex.Message}");
+                Console.WriteLine($"[ManifestService] Lỗi khi tải hoặc xử lý manifest từ {url}: {ex.Message}");
             }
             finally
             {
-                if (File.Exists(tempPath))
+                if (File.Exists(tempYamlPath))
                 {
-                    try { File.Delete(tempPath); } catch { }
+                    try { File.Delete(tempYamlPath); } catch { }
+                }
+                if (File.Exists(tempJsonPath))
+                {
+                    try { File.Delete(tempJsonPath); } catch { }
                 }
             }
         }
 
         return false;
+    }
+
+    private class LudusaviRawGame
+    {
+        public Dictionary<string, LudusaviRawFileEntry>? files { get; set; }
+        public LudusaviRawSteam? steam { get; set; }
+    }
+
+    private class LudusaviRawSteam
+    {
+        public int? id { get; set; }
+    }
+
+    private class LudusaviRawFileEntry
+    {
+        public List<string>? tags { get; set; }
+        public List<LudusaviRawWhen>? when { get; set; }
+    }
+
+    private class LudusaviRawWhen
+    {
+        public string? os { get; set; }
+        public string? store { get; set; }
     }
 }

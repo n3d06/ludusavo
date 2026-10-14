@@ -35,8 +35,8 @@ public class SamHandler
                 }
                 catch { }
 
-                ctx.Status("Đang tải lại database manifest...");
-                await _manifestService.LoadManifestAsync();
+                ctx.Status("Đang tải lại database manifest từ Ludusavi...");
+                await _manifestService.LoadManifestAsync(forceDownload: true);
             });
 
         // Gọi LsHandler với forceRescan: true
