@@ -2,5 +2,5 @@
 title sav CLI
 cd /d "%~dp0"
 
-dotnet run --project ludusavo\ludusavo.csproj --no-launch-profile -- %*
+dotnet run --project src\sav.csproj --no-launch-profile -- %*
 

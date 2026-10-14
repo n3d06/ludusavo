@@ -2,8 +2,8 @@
 #ifndef MyAppVersion
   #define MyAppVersion "1.0.0"
 #endif
-#define MyAppPublisher "3ky4r0"
-#define MyAppURL "https://github.com/3ky4r0/ludusavo"
+#define MyAppPublisher "n3d06"
+#define MyAppURL "https://github.com/n3d06/sav"
 #define MyAppExeName "sav.exe"
 
 [Setup]

@@ -72,7 +72,7 @@ jobs:
           echo "TITLE=$title" >> $env:GITHUB_OUTPUT
 
       - name: Restore dependencies
-        run: dotnet restore ludusavo/ludusavo.csproj
+        run: dotnet restore src/sav.csproj
 
       - name: Publish sav (Single-File)
         shell: pwsh
@@ -82,7 +82,7 @@ jobs:
         run: |
           $tag = "${{ steps.version.outputs.TAG }}"
           $version = $tag.TrimStart('v')
-          dotnet publish ludusavo/ludusavo.csproj -c Release -r win-x64 --self-contained false `
+          dotnet publish src/sav.csproj -c Release -r win-x64 --self-contained false `
             -p:PublishSingleFile=true `
             -p:Version=$version `
             -p:InformationalVersion=$version `
