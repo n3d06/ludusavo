@@ -97,9 +97,9 @@ public class GoogleDriveService : IGoogleDriveService
     public async Task<(bool success, string? message)> LoginAsync(Action<string>? statusCallback = null)
     {
         var settings = _configService.Settings;
-        if (string.IsNullOrWhiteSpace(settings.EffectiveClientId))
+        if (string.IsNullOrWhiteSpace(settings.EffectiveClientId) || string.IsNullOrWhiteSpace(settings.EffectiveClientSecret))
         {
-            return (false, "Google Client ID is not configured. Please run 'sav config' first.");
+            return (false, "Google Client ID or Client Secret not set. Please run 'sav config' first.");
         }
 
         // Generate PKCE code verifier and code challenge (RFC 7636)

@@ -62,12 +62,12 @@ public class ConfigHandler
         }
         else if (!settings.HasCredentials)
         {
-            AnsiConsole.WriteLine("--- Guide: Create Google OAuth Client ID (1-2 mins) ---");
+            AnsiConsole.WriteLine("--- Guide: Create Google OAuth Client ID & Secret (1-2 mins) ---");
             AnsiConsole.WriteLine("1. Visit: https://console.cloud.google.com/");
             AnsiConsole.WriteLine("2. Create a new Project -> Go to 'APIs & Services' -> Enable 'Google Drive API'");
             AnsiConsole.WriteLine("3. Go to 'OAuth consent screen' -> Choose 'External' -> Add your email to 'Test users'");
             AnsiConsole.WriteLine("4. Go to 'Credentials' -> 'Create Credentials' -> 'OAuth client ID' -> Choose 'Desktop app'");
-            AnsiConsole.WriteLine("5. Copy Client ID and paste below (Client Secret is optional with PKCE).\n");
+            AnsiConsole.WriteLine("5. Copy Client ID and Client Secret and paste below.\n");
         }
 
         var curId = !string.IsNullOrWhiteSpace(settings.GoogleClientId) 
@@ -78,12 +78,12 @@ public class ConfigHandler
         var curSecret = !string.IsNullOrWhiteSpace(settings.GoogleClientSecret)
             ? settings.GoogleClientSecret
             : (DefaultConfig.HasEmbeddedCredentials ? "[Default]" : string.Empty);
-        var newSecret = AnsiConsole.Prompt("Google Client Secret (Optional - press Enter to skip for PKCE):", curSecret, secret: true);
+        var newSecret = AnsiConsole.Prompt("Google Client Secret:", curSecret, secret: true);
 
         if (!string.IsNullOrWhiteSpace(newId) && newId != "[Default]")
             settings.GoogleClientId = newId.Trim();
 
-        if (newSecret != "[Default]")
+        if (!string.IsNullOrWhiteSpace(newSecret) && newSecret != "[Default]")
             settings.GoogleClientSecret = newSecret.Trim();
 
         _configService.SaveSettings(settings);
@@ -104,7 +104,7 @@ public class ConfigHandler
 
         if (!settings.HasCredentials)
         {
-            AnsiConsole.WriteLine("Missing Google Client ID. Please run 'sav config' first.");
+            AnsiConsole.WriteLine("Missing Google Client ID or Client Secret. Please run 'sav config' first.");
             return;
         }
 

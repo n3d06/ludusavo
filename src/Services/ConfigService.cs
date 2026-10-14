@@ -217,30 +217,51 @@ public class ConfigService : IConfigService
         if (!string.IsNullOrEmpty(email) && string.IsNullOrEmpty(_settings.UserEmail)) _settings.UserEmail = email;
 
         // 3. Read fallback values from .env if properties are empty
-        var envPath = Path.Combine(RootDir, ".env");
-        if (File.Exists(envPath))
+        var envCandidates = new[]
         {
-            try
+            Path.Combine(RootDir, ".env"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "sav", ".env"),
+            Path.Combine(ConfigDir, ".env")
+        };
+
+        foreach (var envPath in envCandidates)
+        {
+            if (File.Exists(envPath))
             {
-                var lines = File.ReadAllLines(envPath);
-                foreach (var line in lines)
+                try
                 {
-                    var trimmed = line.Trim();
-                    if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith('#')) continue;
+                    var lines = File.ReadAllLines(envPath);
+                    foreach (var line in lines)
+                    {
+                        var trimmed = line.Trim();
+                        if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith('#')) continue;
 
-                    var parts = trimmed.Split('=', 2);
-                    if (parts.Length != 2) continue;
+                        var parts = trimmed.Split('=', 2);
+                        if (parts.Length != 2) continue;
 
-                    var key = parts[0].Trim();
-                    var val = parts[1].Trim().Trim('"', '\'');
+                        var key = parts[0].Trim();
+                        var val = parts[1].Trim().Trim('"', '\'');
 
-                    if (key == "GOOGLE_CLIENT_ID" && string.IsNullOrEmpty(_settings.GoogleClientId))
-                        _settings.GoogleClientId = val;
+                        if (key == "GOOGLE_CLIENT_ID" && string.IsNullOrEmpty(_settings.GoogleClientId))
+                            _settings.GoogleClientId = val;
+                        else if (key == "GOOGLE_CLIENT_SECRET" && string.IsNullOrEmpty(_settings.GoogleClientSecret))
+                        {
+                            _settings.GoogleClientSecret = val;
+                            _credentialManager.SaveGoogleCredentials(
+                                _settings.GoogleRefreshToken,
+                                _settings.GoogleAccessToken,
+                                _settings.GoogleTokenExpiry,
+                                val,
+                                _settings.UserEmail);
+                        }
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ConfigService] Error reading .env: {ex.Message}");
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[ConfigService] Error reading .env: {ex.Message}");
+                }
+                break;
             }
         }
     }

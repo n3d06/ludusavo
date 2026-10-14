@@ -15,6 +15,7 @@ public static class DefaultConfig
             .FirstOrDefault(a => a.Key == "DefaultGoogleClientSecret")?.Value ?? string.Empty;
 
     public static bool HasEmbeddedCredentials =>
-        !string.IsNullOrWhiteSpace(GoogleClientId);
+        !string.IsNullOrWhiteSpace(GoogleClientId) &&
+        !string.IsNullOrWhiteSpace(GoogleClientSecret);
 }
 

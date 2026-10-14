@@ -40,7 +40,8 @@ public class AppSettings
 
     [JsonIgnore]
     public bool HasCredentials =>
-        !string.IsNullOrWhiteSpace(EffectiveClientId);
+        !string.IsNullOrWhiteSpace(EffectiveClientId) &&
+        !string.IsNullOrWhiteSpace(EffectiveClientSecret);
 
     [JsonIgnore]
     public bool IsGoogleDriveConfigured =>
