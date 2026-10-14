@@ -19,7 +19,7 @@ public class StatusHandler
 
         var accountInfo = !string.IsNullOrWhiteSpace(settings.UserEmail)
             ? settings.UserEmail
-            : "Chưa đăng nhập";
+            : "Not logged in";
 
         string idInfo;
         if (!string.IsNullOrWhiteSpace(settings.GoogleClientId))
@@ -28,22 +28,22 @@ public class StatusHandler
         }
         else if (DefaultConfig.HasEmbeddedCredentials)
         {
-            idInfo = "Mặc định (từ bản build)";
+            idInfo = "Default (embedded)";
         }
         else
         {
-            idInfo = "Chưa cấu hình";
+            idInfo = "Not configured";
         }
 
-        AnsiConsole.WriteLine($"Tài khoản Google: {accountInfo}");
+        AnsiConsole.WriteLine($"Google Account:  {accountInfo}");
         AnsiConsole.WriteLine($"Google Client ID: {idInfo}");
-        AnsiConsole.WriteLine($"Thư mục Cloud:    Google Drive (thư mục 'sav')");
-        AnsiConsole.WriteLine($"Thư mục Cache:    {_configService.CacheDir}");
+        AnsiConsole.WriteLine($"Cloud Storage:    Google Drive ('sav' folder)");
+        AnsiConsole.WriteLine($"Local Cache:      {_configService.CacheDir}");
 
         if (!_driveService.IsConfigured)
         {
-            AnsiConsole.WriteLine("Chưa cấu hình hoặc chưa đăng nhập Google Drive!");
-            AnsiConsole.WriteLine("Gõ 'sav config' hoặc 'sav login' để thiết lập kết nối.");
+            AnsiConsole.WriteLine("Google Drive is not configured or not logged in!");
+            AnsiConsole.WriteLine("Run 'sav config' or 'sav login' to set up connection.");
             return;
         }
 
@@ -52,7 +52,7 @@ public class StatusHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang kiểm tra kết nối tới Google Drive API...", async ctx =>
+            .StartAsync("Testing connection to Google Drive API...", async ctx =>
             {
                 var result = await _driveService.TestConnectionAsync();
                 connected = result.success;
@@ -68,8 +68,8 @@ public class StatusHandler
         }
         else
         {
-            AnsiConsole.WriteLine($"Lỗi kết nối Google Drive: {message ?? "Không xác định"}");
-            AnsiConsole.WriteLine("Vui lòng thử đăng nhập lại bằng lệnh 'sav login'.");
+            AnsiConsole.WriteLine($"Google Drive connection error: {message ?? "Unknown"}");
+            AnsiConsole.WriteLine("Please try logging in again with 'sav login'.");
         }
     }
 }

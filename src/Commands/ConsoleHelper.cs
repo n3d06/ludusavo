@@ -220,7 +220,7 @@ public static class ConsoleHelper
 
     public static string MaskToken(string? token)
     {
-        if (string.IsNullOrWhiteSpace(token)) return "[red]Chưa cấu hình[/]";
+        if (string.IsNullOrWhiteSpace(token)) return "[red]Not configured[/]";
         if (token.Length <= 8) return "********";
         return token.Substring(0, 4) + "..." + token.Substring(token.Length - 4);
     }
@@ -237,7 +237,7 @@ public static class ConsoleHelper
         indices = new List<int>();
         if (string.IsNullOrWhiteSpace(input)) return false;
 
-        // Chỉ chấp nhận định dạng phân cách bằng khoảng trắng, không hỗ trợ dấu phẩy hay gạch ngang
+        // Only accept space-separated format, no commas or hyphens allowed
         if (input.Contains(',') || input.Contains('-')) return false;
 
         var tokens = Regex.Split(input.Trim(), @"\s+");

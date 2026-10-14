@@ -33,7 +33,7 @@ public class GoogleDriveService : IGoogleDriveService
         var settings = _configService.Settings;
         if (!IsConfigured) return false;
 
-        // Nếu token sắp hết hạn hoặc chưa có, tiến hành refresh
+        // Refresh token if expired or nearing expiration
         if (string.IsNullOrEmpty(settings.GoogleAccessToken) ||
             !settings.GoogleTokenExpiry.HasValue ||
             settings.GoogleTokenExpiry.Value <= DateTime.UtcNow.AddMinutes(2))
@@ -92,10 +92,10 @@ public class GoogleDriveService : IGoogleDriveService
         var settings = _configService.Settings;
         if (string.IsNullOrWhiteSpace(settings.EffectiveClientId) || string.IsNullOrWhiteSpace(settings.EffectiveClientSecret))
         {
-            return (false, "Chưa thiết lập Google Client ID hoặc Client Secret. Vui lòng chạy lệnh 'sav config' trước.");
+            return (false, "Google Client ID or Client Secret not set. Please run 'sav config' first.");
         }
 
-        // Tìm cổng mạng còn trống trên máy
+        // Find an available local port
         var tcp = new TcpListener(IPAddress.Loopback, 0);
         tcp.Start();
         int port = ((IPEndPoint)tcp.LocalEndpoint).Port;
@@ -109,7 +109,7 @@ public class GoogleDriveService : IGoogleDriveService
         listener.Prefixes.Add(redirectUri);
         listener.Start();
 
-        statusCallback?.Invoke("Đang mở trình duyệt để bạn đăng nhập Google...");
+        statusCallback?.Invoke("Opening browser for Google login...");
 
         try
         {
@@ -121,10 +121,10 @@ public class GoogleDriveService : IGoogleDriveService
         }
         catch
         {
-            statusCallback?.Invoke($"Không thể tự mở trình duyệt. Vui lòng mở thủ công link sau:\n{authUrl}");
+            statusCallback?.Invoke($"Could not automatically open browser. Please open the following link manually:\n{authUrl}");
         }
 
-        statusCallback?.Invoke("Đang chờ xác thực từ trình duyệt (nhấn Cho phép / Allow)...");
+        statusCallback?.Invoke("Waiting for browser authentication (click Allow)...");
 
         var getContextTask = listener.GetContextAsync();
         var timeoutTask = Task.Delay(TimeSpan.FromMinutes(2));
@@ -133,7 +133,7 @@ public class GoogleDriveService : IGoogleDriveService
         if (completedTask == timeoutTask)
         {
             listener.Stop();
-            return (false, "Hết thời gian chờ đăng nhập (Timeout).");
+            return (false, "Login timed out.");
         }
 
         var context = await getContextTask;
@@ -145,8 +145,8 @@ public class GoogleDriveService : IGoogleDriveService
 <html>
 <head><meta charset='utf-8'><title>sav CLI - Google Drive</title></head>
 <body style='font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;text-align:center;padding-top:60px;background:#0f172a;color:#f8fafc;'>
-  <h2 style='color:#4ade80;'>&#x2713; Đăng nhập Google Drive thành công!</h2>
-  <p style='color:#94a3b8;font-size:16px;'>Bạn có thể đóng tab trình duyệt này và quay lại cửa sổ lệnh sav.</p>
+  <h2 style='color:#4ade80;'>&#x2713; Google Drive login successful!</h2>
+  <p style='color:#94a3b8;font-size:16px;'>You can close this browser tab and return to the sav terminal.</p>
 </body>
 </html>";
 
@@ -159,10 +159,10 @@ public class GoogleDriveService : IGoogleDriveService
 
         if (!string.IsNullOrEmpty(error) || string.IsNullOrEmpty(code))
         {
-            return (false, $"Đăng nhập bị hủy hoặc từ chối: {error ?? "Không nhận được mã xác thực"}");
+            return (false, $"Login cancelled or denied: {error ?? "Authorization code not received"}");
         }
 
-        statusCallback?.Invoke("Đang nhận Token từ Google...");
+        statusCallback?.Invoke("Retrieving token from Google...");
 
         using var tokenReq = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
         {
@@ -180,7 +180,7 @@ public class GoogleDriveService : IGoogleDriveService
         if (!tokenRes.IsSuccessStatusCode)
         {
             var errBody = await tokenRes.Content.ReadAsStringAsync();
-            return (false, $"Lỗi đổi Token Google: {errBody}");
+            return (false, $"Failed to exchange Google token: {errBody}");
         }
 
         var tokenJson = await tokenRes.Content.ReadAsStringAsync();
@@ -197,7 +197,7 @@ public class GoogleDriveService : IGoogleDriveService
 
         _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", settings.GoogleAccessToken);
 
-        // Lấy email người dùng
+        // Retrieve user email
         try
         {
             var userRes = await _httpClient.GetAsync("https://www.googleapis.com/oauth2/v2/userinfo");
@@ -213,35 +213,35 @@ public class GoogleDriveService : IGoogleDriveService
         }
         catch { }
 
-        // Khởi tạo thư mục gốc 'sav' trên Google Drive
-        statusCallback?.Invoke("Đang kiểm tra thư mục 'sav' trên Google Drive...");
+        // Initialize 'sav' root folder on Google Drive
+        statusCallback?.Invoke("Checking 'sav' folder on Google Drive...");
         await GetOrCreateRootFolderIdAsync();
 
         _configService.SaveSettings(settings);
-        return (true, $"Đăng nhập thành công tài khoản Google: {settings.UserEmail}!");
+        return (true, $"Successfully logged in to Google account: {settings.UserEmail}!");
     }
 
     public async Task<(bool success, string? message)> TestConnectionAsync()
     {
         if (!IsConfigured)
-            return (false, "Google Drive chưa được cấu hình! Vui lòng dùng lệnh 'sav config' trước.");
+            return (false, "Google Drive is not configured! Please run 'sav config' first.");
 
         var ok = await EnsureAuthenticatedAsync();
         if (!ok)
-            return (false, "Không thể xác thực với Google Drive (Token không hợp lệ hoặc đã hết hạn). Hãy chạy 'sav login'.");
+            return (false, "Could not authenticate with Google Drive (token invalid or expired). Please run 'sav login'.");
 
         try
         {
             var (used, total, email) = await GetStorageQuotaAsync();
             var usedStr = ConsoleHelper.FormatSize(used);
-            var totalStr = total > 0 ? ConsoleHelper.FormatSize(total) : "Không giới hạn";
+            var totalStr = total > 0 ? ConsoleHelper.FormatSize(total) : "Unlimited";
 
             var rootId = await GetOrCreateRootFolderIdAsync();
-            return (true, $"Kết nối Google Drive thành công! Tài khoản: {email ?? _configService.Settings.UserEmail} (Đã dùng: {usedStr} / {totalStr})");
+            return (true, $"Connected to Google Drive successfully! Account: {email ?? _configService.Settings.UserEmail} (Used: {usedStr} / {totalStr})");
         }
         catch (Exception ex)
         {
-            return (false, $"Lỗi kết nối Google Drive: {ex.Message}");
+            return (false, $"Google Drive connection error: {ex.Message}");
         }
     }
 
@@ -280,7 +280,7 @@ public class GoogleDriveService : IGoogleDriveService
         var settings = _configService.Settings;
         if (!string.IsNullOrEmpty(settings.GoogleRootFolderId))
         {
-            // Kiểm tra folder còn tồn tại không
+            // Check if folder still exists
             var checkRes = await _httpClient.GetAsync($"https://www.googleapis.com/drive/v3/files/{settings.GoogleRootFolderId}?fields=id,trashed");
             if (checkRes.IsSuccessStatusCode)
             {
@@ -293,7 +293,7 @@ public class GoogleDriveService : IGoogleDriveService
             }
         }
 
-        // Tìm folder 'sav' trong thư mục gốc
+        // Find 'sav' folder in root
         string q = "name = 'sav' and 'root' in parents and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
         var res = await _httpClient.GetAsync($"https://www.googleapis.com/drive/v3/files?q={Uri.EscapeDataString(q)}&fields=files(id)");
         if (res.IsSuccessStatusCode)
@@ -310,7 +310,7 @@ public class GoogleDriveService : IGoogleDriveService
             }
         }
 
-        // Tạo folder 'sav'
+        // Create 'sav' folder
         var createPayload = new
         {
             name = "sav",
@@ -400,7 +400,7 @@ public class GoogleDriveService : IGoogleDriveService
 
         if (!string.IsNullOrEmpty(existingId))
         {
-            // Update nội dung file đã có
+            // Update existing file content
             using var request = new HttpRequestMessage(HttpMethod.Patch, $"https://www.googleapis.com/upload/drive/v3/files/{existingId}?uploadType=media")
             {
                 Content = new ByteArrayContent(content)
@@ -411,13 +411,13 @@ public class GoogleDriveService : IGoogleDriveService
             if (!res.IsSuccessStatusCode)
             {
                 var err = await res.Content.ReadAsStringAsync();
-                return (false, null, $"Lỗi cập nhật {fileName}: {err}");
+                return (false, null, $"Failed to update {fileName}: {err}");
             }
             return (true, existingId, null);
         }
         else
         {
-            // Upload file mới bằng Multipart
+            // Upload new file using Multipart
             var boundary = "sav_boundary_" + Guid.NewGuid().ToString("N");
             var multipart = new MultipartContent("related", boundary);
 
@@ -442,7 +442,7 @@ public class GoogleDriveService : IGoogleDriveService
             if (!res.IsSuccessStatusCode)
             {
                 var err = await res.Content.ReadAsStringAsync();
-                return (false, null, $"Lỗi upload {fileName}: {err}");
+                return (false, null, $"Failed to upload {fileName}: {err}");
             }
 
             var resJson = await res.Content.ReadAsStringAsync();
@@ -537,7 +537,7 @@ public class GoogleDriveService : IGoogleDriveService
                 }
             }
 
-            // Fallback nếu chưa có catalog.json: Quét từng folder game
+            // Fallback if catalog.json does not exist: Scan each game folder
             var gameIds = await ListRemoteGameIdsAsync();
             if (gameIds.Count > 0)
             {
@@ -585,17 +585,17 @@ public class GoogleDriveService : IGoogleDriveService
         Action<string>? progressCallback = null)
     {
         if (!IsConfigured)
-            return (false, "Google Drive chưa được cấu hình. Vui lòng chạy 'sav config'.");
+            return (false, "Google Drive is not configured. Please run 'sav config'.");
 
         if (payloads == null || payloads.Count == 0)
             return (true, null);
 
         var ok = await EnsureAuthenticatedAsync();
-        if (!ok) return (false, "Lỗi xác thực Google Drive. Vui lòng chạy 'sav login'.");
+        if (!ok) return (false, "Google Drive authentication error. Please run 'sav login'.");
 
         try
         {
-            progressCallback?.Invoke("Đang chuẩn bị thư mục lưu trên Google Drive...");
+            progressCallback?.Invoke("Preparing storage folder on Google Drive...");
             var rootFolderId = await GetOrCreateRootFolderIdAsync();
             var allMetas = await GetAllRemoteMetasAsync();
 
@@ -633,23 +633,23 @@ public class GoogleDriveService : IGoogleDriveService
 
             int totalFiles = uploadItems.Count;
             int uploadedFiles = 0;
-            progressCallback?.Invoke($"Đang tải song song {totalFiles} file lên Google Drive (0/{totalFiles})...");
+            progressCallback?.Invoke($"Uploading {totalFiles} file(s) in parallel to Google Drive (0/{totalFiles})...");
 
             var tasks = uploadItems.Select(async item =>
             {
                 var res = await UploadOrUpdateFileAsync(item.folderId, item.fileName, item.content, item.mime);
                 if (!res.success)
                 {
-                    throw new Exception(res.error ?? $"Lỗi upload {item.fileName}");
+                    throw new Exception(res.error ?? $"Failed to upload {item.fileName}");
                 }
                 var count = Interlocked.Increment(ref uploadedFiles);
-                progressCallback?.Invoke($"Đang tải song song {totalFiles} file lên Google Drive ({count}/{totalFiles})...");
+                progressCallback?.Invoke($"Uploading {totalFiles} file(s) in parallel to Google Drive ({count}/{totalFiles})...");
             });
 
             await Task.WhenAll(tasks);
 
-            // Cập nhật catalog.json trên root 'sav'
-            progressCallback?.Invoke("Đang cập nhật danh mục catalog trên Google Drive...");
+            // Update catalog.json on root 'sav'
+            progressCallback?.Invoke("Updating catalog index on Google Drive...");
             var catalogJson = JsonSerializer.Serialize(allMetas, new JsonSerializerOptions { WriteIndented = true });
             var catalogBytes = Encoding.UTF8.GetBytes(catalogJson);
             await UploadOrUpdateFileAsync(rootFolderId, "catalog.json", catalogBytes, "application/json");
@@ -666,10 +666,10 @@ public class GoogleDriveService : IGoogleDriveService
     public async Task<(bool success, string? error)> DownloadGameSaveAsync(string gameId, string targetDir)
     {
         if (!IsConfigured)
-            return (false, "Google Drive chưa được cấu hình. Vui lòng chạy 'sav config'.");
+            return (false, "Google Drive is not configured. Please run 'sav config'.");
 
         var ok = await EnsureAuthenticatedAsync();
-        if (!ok) return (false, "Lỗi xác thực Google Drive.");
+        if (!ok) return (false, "Google Drive authentication error.");
 
         try
         {
@@ -677,7 +677,7 @@ public class GoogleDriveService : IGoogleDriveService
             var zipFileId = await FindFileIdInFolderAsync(gameFolderId, "latest.zip");
             if (string.IsNullOrEmpty(zipFileId))
             {
-                return (false, $"Không tìm thấy file save 'latest.zip' của game '{gameId}' trên Google Drive.");
+                return (false, $"Save file 'latest.zip' for game '{gameId}' not found on Google Drive.");
             }
 
             Directory.CreateDirectory(targetDir);
@@ -686,7 +686,7 @@ public class GoogleDriveService : IGoogleDriveService
             var res = await _httpClient.GetAsync($"https://www.googleapis.com/drive/v3/files/{zipFileId}?alt=media", HttpCompletionOption.ResponseHeadersRead);
             if (!res.IsSuccessStatusCode)
             {
-                return (false, $"Lỗi tải file từ Google Drive: {res.StatusCode}");
+                return (false, $"Failed to download file from Google Drive: {res.StatusCode}");
             }
 
             await using (var fs = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None))
@@ -704,9 +704,9 @@ public class GoogleDriveService : IGoogleDriveService
 
     public async Task<(bool success, string? error)> UploadCustomManifestAsync(string localPath)
     {
-        if (!IsConfigured || !File.Exists(localPath)) return (false, "File không tồn tại hoặc chưa cấu hình");
+        if (!IsConfigured || !File.Exists(localPath)) return (false, "File does not exist or Google Drive is not configured");
         var ok = await EnsureAuthenticatedAsync();
-        if (!ok) return (false, "Lỗi xác thực Google Drive");
+        if (!ok) return (false, "Google Drive authentication error");
 
         var rootId = await GetOrCreateRootFolderIdAsync();
         var bytes = await File.ReadAllBytesAsync(localPath);
@@ -716,16 +716,16 @@ public class GoogleDriveService : IGoogleDriveService
 
     public async Task<(bool success, string? error)> DownloadCustomManifestAsync(string localPath)
     {
-        if (!IsConfigured) return (false, "Chưa cấu hình Google Drive");
+        if (!IsConfigured) return (false, "Google Drive not configured");
         var ok = await EnsureAuthenticatedAsync();
-        if (!ok) return (false, "Lỗi xác thực Google Drive");
+        if (!ok) return (false, "Google Drive authentication error");
 
         var rootId = await GetOrCreateRootFolderIdAsync();
         var fileId = await FindFileIdInFolderAsync(rootId, "custom-games.yaml");
-        if (string.IsNullOrEmpty(fileId)) return (false, "Không có file custom-games.yaml trên Google Drive");
+        if (string.IsNullOrEmpty(fileId)) return (false, "File custom-games.yaml not found on Google Drive");
 
         var res = await _httpClient.GetAsync($"https://www.googleapis.com/drive/v3/files/{fileId}?alt=media");
-        if (!res.IsSuccessStatusCode) return (false, "Lỗi tải file");
+        if (!res.IsSuccessStatusCode) return (false, "Failed to download file");
 
         var dir = Path.GetDirectoryName(localPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
@@ -736,9 +736,9 @@ public class GoogleDriveService : IGoogleDriveService
 
     public async Task<(bool success, string? error)> DeleteGameSaveAsync(string gameId)
     {
-        if (!IsConfigured) return (false, "Chưa cấu hình Google Drive");
+        if (!IsConfigured) return (false, "Google Drive not configured");
         var ok = await EnsureAuthenticatedAsync();
-        if (!ok) return (false, "Lỗi xác thực Google Drive");
+        if (!ok) return (false, "Google Drive authentication error");
 
         try
         {

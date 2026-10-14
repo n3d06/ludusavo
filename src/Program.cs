@@ -117,14 +117,14 @@ public static class Program
                     break;
 
                 default:
-                    AnsiConsole.WriteLine($"Lệnh không hợp lệ: '{cmd}'.");
-                    AnsiConsole.WriteLine("Gõ 'sav help' để xem danh sách các lệnh hỗ trợ.");
+                    AnsiConsole.WriteLine($"Unknown command: '{cmd}'.");
+                    AnsiConsole.WriteLine("Type 'sav help' to see the list of supported commands.");
                     break;
             }
         }
         catch (Exception ex)
         {
-            AnsiConsole.WriteLine($"Lỗi khi thực thi lệnh '{cmd}': {ex.Message}");
+            AnsiConsole.WriteLine($"Error executing command '{cmd}': {ex.Message}");
         }
     }
 
@@ -151,23 +151,23 @@ public static class Program
         AnsiConsole.WriteLine("These are common sav commands used in various situations:");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("examine games and save files");
-        AnsiConsole.WriteLine("   ls         Liệt kê các game có save trên máy");
-        AnsiConsole.WriteLine("   scan       Quét lại toàn bộ database và file save");
+        AnsiConsole.WriteLine("   ls         List games with detected saves on this PC");
+        AnsiConsole.WriteLine("   scan       Rescan all save games and manifest database");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("cloud synchronization (Google Drive)");
-        AnsiConsole.WriteLine("   push       Nén và tải save game lên Google Drive");
-        AnsiConsole.WriteLine("   pull       Tải bản save từ Google Drive và khôi phục vào máy");
-        AnsiConsole.WriteLine("   lsc        Liệt kê các bản save hiện có trên Google Drive");
-        AnsiConsole.WriteLine("   status     Kiểm tra kết nối và trạng thái tài khoản");
+        AnsiConsole.WriteLine("   push       Compress and upload save games to Google Drive");
+        AnsiConsole.WriteLine("   pull       Download and restore save games from Google Drive");
+        AnsiConsole.WriteLine("   lsc        List save backups available on Google Drive");
+        AnsiConsole.WriteLine("   status     Check connection and cloud storage status");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("manage custom games");
-        AnsiConsole.WriteLine("   add        Thêm game tùy chỉnh vào danh sách theo dõi");
-        AnsiConsole.WriteLine("   remove     Xóa game tùy chỉnh theo số thứ tự");
+        AnsiConsole.WriteLine("   add        Add a custom game to tracking list");
+        AnsiConsole.WriteLine("   remove     Remove a custom game by index");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("account and configuration");
-        AnsiConsole.WriteLine("   login      Đăng nhập tài khoản Google Drive qua trình duyệt");
-        AnsiConsole.WriteLine("   logout     Đăng xuất tài khoản Google Drive hiện tại");
-        AnsiConsole.WriteLine("   config     Xem hoặc sửa cấu hình Google Client ID & Secret");
+        AnsiConsole.WriteLine("   login      Log in to Google Drive via browser");
+        AnsiConsole.WriteLine("   logout     Log out of current Google Drive account");
+        AnsiConsole.WriteLine("   config     View or configure Google Client ID & Secret");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("See 'sav <command> --help' or 'sav help' to read about a specific subcommand.");
     }

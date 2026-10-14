@@ -27,11 +27,11 @@ public class RemoveHandler
 
         if (customGames.Count == 0)
         {
-            AnsiConsole.MarkupLine("[yellow]Hiện tại chưa có game tùy chỉnh (custom game) nào để xóa.[/]");
+            AnsiConsole.MarkupLine("[yellow]No custom games found to remove.[/]");
             return;
         }
 
-        // Nếu có tham số dòng lệnh
+        // If command-line parameter is supplied
         if (!string.IsNullOrWhiteSpace(target))
         {
             if (int.TryParse(target, out int num) && num >= 1 && num <= customGames.Count)
@@ -47,7 +47,7 @@ public class RemoveHandler
                 return;
             }
 
-            AnsiConsole.MarkupLine($"[red]Không tìm thấy custom game nào khớp với '{target}'.[/]");
+            AnsiConsole.MarkupLine($"[red]No custom game matching '{target}' found.[/]");
             return;
         }
 
@@ -56,15 +56,15 @@ public class RemoveHandler
             var g = customGames[i];
             AnsiConsole.WriteLine($"[{i + 1}] {g.Name} ({g.Id})");
         }
-        AnsiConsole.WriteLine("[0] Hủy bỏ\n");
+        AnsiConsole.WriteLine("[0] Cancel\n");
 
-        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn xóa (hoặc '0'):");
+        var choice = AnsiConsole.Prompt("Enter custom game index to remove (or '0' to cancel):");
 
         choice = choice.Trim();
 
         if (choice == "0")
         {
-            AnsiConsole.MarkupLine("Đã hủy thao tác.");
+            AnsiConsole.MarkupLine("Operation cancelled.");
             return;
         }
 
@@ -74,22 +74,22 @@ public class RemoveHandler
         }
         else
         {
-            AnsiConsole.MarkupLine("[red]Lựa chọn không hợp lệ.[/]");
+            AnsiConsole.MarkupLine("[red]Invalid selection.[/]");
         }
     }
 
     private async Task RemoveGameAsync(GameEntry game)
     {
-        var confirm = AnsiConsole.Confirm($"Bạn có chắc chắn muốn xóa game tùy chỉnh '{game.Name}' không? (Lưu ý: File save trên ổ đĩa sẽ KHÔNG bị xóa)", false);
+        var confirm = AnsiConsole.Confirm($"Are you sure you want to remove custom game '{game.Name}'? (Note: Save files on disk will NOT be deleted)", false);
         if (!confirm)
         {
-            AnsiConsole.WriteLine("Đã hủy bỏ thao tác xóa.");
+            AnsiConsole.WriteLine("Deletion cancelled.");
             return;
         }
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync($"Đang xóa {game.Name} và đồng bộ lên Google Drive...", async ctx =>
+            .StartAsync($"Removing {game.Name} and syncing to Google Drive...", async ctx =>
             {
                 await _manifestService.RemoveCustomGameAsync(game.Id);
                 try
@@ -99,7 +99,7 @@ public class RemoveHandler
                 catch { }
             });
 
-        AnsiConsole.WriteLine($"Đã xóa thành công game tùy chỉnh '{game.Name}'.");
+        AnsiConsole.WriteLine($"Successfully removed custom game '{game.Name}'.");
     }
 }
 

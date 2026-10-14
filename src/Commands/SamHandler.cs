@@ -23,11 +23,11 @@ public class SamHandler
 
     public async Task ExecuteAsync()
     {
-        AnsiConsole.MarkupLine("Đang quét lại toàn bộ save game trên hệ thống...");
+        AnsiConsole.MarkupLine("Rescanning all game saves on system...");
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang đồng bộ custom manifest từ Google Drive (nếu có)...", async ctx =>
+            .StartAsync("Syncing custom manifest from Google Drive (if present)...", async ctx =>
             {
                 try
                 {
@@ -35,11 +35,11 @@ public class SamHandler
                 }
                 catch { }
 
-                ctx.Status("Đang tải lại database manifest từ Ludusavi...");
+                ctx.Status("Reloading manifest database from Ludusavi...");
                 await _manifestService.LoadManifestAsync(forceDownload: true);
             });
 
-        // Gọi LsHandler với forceRescan: true
+        // Call LsHandler with forceRescan: true
         await _lsHandler.ExecuteAsync(forceRescan: true);
     }
 }

@@ -15,7 +15,7 @@ public class LscHandler
     {
         if (!_driveService.IsConfigured)
         {
-            AnsiConsole.WriteLine("Google Drive chưa được cấu hình! Vui lòng dùng lệnh 'sav config' hoặc 'sav login' trước.");
+            AnsiConsole.WriteLine("Google Drive is not configured! Please run 'sav config' or 'sav login' first.");
             return new List<RemoteGameMeta>();
         }
 
@@ -23,7 +23,7 @@ public class LscHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang lấy danh sách bản save từ Google Drive...", async ctx =>
+            .StartAsync("Fetching save backups from Google Drive...", async ctx =>
             {
                 var metasDict = await _driveService.GetAllRemoteMetasAsync(forceRefresh: true);
                 list = metasDict.Values.OrderBy(m => m.GameName, StringComparer.OrdinalIgnoreCase).ToList();
@@ -31,8 +31,8 @@ public class LscHandler
 
         if (list.Count == 0)
         {
-            AnsiConsole.WriteLine("Chưa có bản save nào trong thư mục 'sav' trên Google Drive.");
-            AnsiConsole.WriteLine("Gõ 'sav push' để đẩy bản save đầu tiên lên Google Drive.");
+            AnsiConsole.WriteLine("No save backups found in 'sav' folder on Google Drive.");
+            AnsiConsole.WriteLine("Run 'sav push' to back up your first game save to Google Drive.");
             return list;
         }
 

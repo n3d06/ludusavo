@@ -20,15 +20,15 @@ public class LsHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync(forceRescan ? "Đang quét lại toàn bộ game trên máy..." : "Đang tìm kiếm save game trên máy...", async ctx =>
+            .StartAsync(forceRescan ? "Rescanning all games on this machine..." : "Searching for game saves on this machine...", async ctx =>
             {
                 if (!_manifestService.IsLoaded)
                 {
-                    ctx.Status("Đang tải dữ liệu database game...");
+                    ctx.Status("Loading game database...");
                     await _manifestService.LoadManifestAsync();
                 }
 
-                ctx.Status("Đang quét các đường dẫn save game...");
+                ctx.Status("Scanning save game paths...");
                 var allGames = _manifestService.GetAllGames();
                 games = (await _scannerService.GetDetectedGamesAsync(allGames, forceRescan: forceRescan))
                     .OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase)
@@ -37,8 +37,8 @@ public class LsHandler
 
         if (games.Count == 0)
         {
-            AnsiConsole.MarkupLine("Không tìm thấy game nào có file save trên máy.");
-            AnsiConsole.MarkupLine("Gõ [cyan]sav add[/] để thêm thủ công hoặc [cyan]sav scan[/] để quét lại.");
+            AnsiConsole.MarkupLine("No games with save files found on this machine.");
+            AnsiConsole.MarkupLine("Run [cyan]sav add[/] to add manually or [cyan]sav scan[/] to rescan.");
             return games;
         }
 

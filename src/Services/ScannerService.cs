@@ -172,7 +172,7 @@ public class ScannerService : IScannerService
             return trimmed.Replace('\\', '/');
         }
 
-        // Nếu người dùng nhập C:/<appdata>/... hoặc C:\<appdata>\... thì cắt bỏ tiền tố ổ đĩa
+        // If user enters C:/<appdata>/... or C:\<appdata>\... strip drive prefix
         var placeholderMatch = Regex.Match(trimmed, @"^[a-zA-Z]:[/\\]?(<[^>]+>.*)$");
         if (placeholderMatch.Success)
         {
@@ -182,7 +182,7 @@ public class ScannerService : IScannerService
         try
         {
             var normalized = Path.GetFullPath(trimmed);
-            // Thay thế placeholder khớp dài nhất trước
+            // Replace longest matching placeholder first
             foreach (var kvp in _placeholders.OrderByDescending(p => p.Value.Length))
             {
                 if (normalized.StartsWith(kvp.Value, StringComparison.OrdinalIgnoreCase))

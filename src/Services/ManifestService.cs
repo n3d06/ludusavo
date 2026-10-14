@@ -53,7 +53,7 @@ public class ManifestService : IManifestService
             var downloaded = await DownloadAndProcessManifestAsync(cachePath);
             if (!downloaded && !File.Exists(cachePath))
             {
-                Console.WriteLine($"[ManifestService] Không thể tải database manifest từ Ludusavi về {cachePath}");
+                Console.WriteLine($"[ManifestService] Failed to download manifest database from Ludusavi to {cachePath}");
                 return false;
             }
         }
@@ -347,7 +347,7 @@ public class ManifestService : IManifestService
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ManifestService] Lỗi khi tải hoặc xử lý manifest từ {url}: {ex.Message}");
+                Console.WriteLine($"[ManifestService] Error downloading or processing manifest from {url}: {ex.Message}");
             }
             finally
             {

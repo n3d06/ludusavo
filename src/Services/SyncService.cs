@@ -191,7 +191,7 @@ public class SyncService : ISyncService
     {
         if (games == null || games.Count == 0)
         {
-            return (true, "Không có game nào cần đồng bộ.", 0, 0);
+            return (true, "No games need synchronization.", 0, 0);
         }
 
         var payloads = new List<GameBackupPayload>();
@@ -202,8 +202,8 @@ public class SyncService : ISyncService
         {
             var game = games[i];
             var progressText = games.Count == 1 
-                ? $"Nén bản save: {game.Name}..." 
-                : $"[{i + 1}/{games.Count}] Nén bản save: {game.Name}...";
+                ? $"Compressing save files: {game.Name}..." 
+                : $"[{i + 1}/{games.Count}] Compressing save files: {game.Name}...";
             progressCallback?.Invoke(progressText);
 
             var backupRes = await _backupService.CreateBackupAsync(game);
@@ -226,7 +226,7 @@ public class SyncService : ISyncService
 
         if (payloads.Count == 0)
         {
-            return (false, "Không thể sao lưu file của bất kỳ game nào.", 0, failCount);
+            return (false, "Could not back up save files for any game.", 0, failCount);
         }
 
         if (_driveService.IsConfigured)
@@ -234,7 +234,7 @@ public class SyncService : ISyncService
             var uploadRes = await _driveService.UploadGameSavesBatchAsync(payloads, progressCallback);
             if (!uploadRes.success)
             {
-                return (false, uploadRes.error ?? "Lỗi đẩy lên Google Drive", 0, games.Count);
+                return (false, uploadRes.error ?? "Failed to upload to Google Drive", 0, games.Count);
             }
 
             foreach (var g in backedUpGames)
@@ -252,7 +252,7 @@ public class SyncService : ISyncService
             }
         }
 
-        return (true, $"Đã sao lưu thành công {backedUpGames.Count} game lên Google Drive.", backedUpGames.Count, failCount);
+        return (true, $"Successfully backed up {backedUpGames.Count} game(s) to Google Drive.", backedUpGames.Count, failCount);
     }
 
     public async Task<(bool success, string? message)> RestoreGameFromCloudAsync(DetectedGame game)

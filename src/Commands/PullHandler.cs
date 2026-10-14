@@ -22,7 +22,7 @@ public class PullHandler
     {
         if (!_driveService.IsConfigured)
         {
-            AnsiConsole.WriteLine("Google Drive chưa được cấu hình! Vui lòng dùng lệnh 'sav config' hoặc 'sav login' trước.");
+            AnsiConsole.WriteLine("Google Drive is not configured! Please run 'sav config' or 'sav login' first.");
             return;
         }
 
@@ -30,7 +30,7 @@ public class PullHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang lấy danh sách các bản save từ Google Drive...", async ctx =>
+            .StartAsync("Fetching save backups from Google Drive...", async ctx =>
             {
                 var dict = await _driveService.GetAllRemoteMetasAsync(forceRefresh: true);
                 remoteList = dict.Values.OrderBy(m => m.GameName, StringComparer.OrdinalIgnoreCase).ToList();
@@ -38,13 +38,13 @@ public class PullHandler
 
         if (remoteList.Count == 0)
         {
-            AnsiConsole.WriteLine("Không có bản save nào trên Google Drive để tải về.");
+            AnsiConsole.WriteLine("No save backups found on Google Drive to download.");
             return;
         }
 
         var targetInput = targets != null && targets.Length > 0 ? string.Join(" ", targets).Trim() : null;
 
-        // Nếu có tham số target truyền từ CLI: ví dụ pull 1 3 5 hoặc pull all
+        // If target parameter is provided from CLI: e.g. pull 1 3 5 or pull all
         if (!string.IsNullOrWhiteSpace(targetInput))
         {
             if (targetInput.Equals("all", StringComparison.OrdinalIgnoreCase) || targetInput.Equals("a", StringComparison.OrdinalIgnoreCase))
@@ -74,7 +74,7 @@ public class PullHandler
                 return;
             }
 
-            AnsiConsole.WriteLine($"Không tìm thấy bản save khớp với '{targetInput}'.");
+            AnsiConsole.WriteLine($"No save backup matching '{targetInput}' found.");
             return;
         }
 
@@ -92,16 +92,16 @@ public class PullHandler
 
             AnsiConsole.WriteLine($"{idxStr}  {nameStr}  {sizeStr}  {dateStr}");
         }
-        AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Kéo và khôi phục tất cả game về máy");
-        AnsiConsole.WriteLine($"{"[0]".PadRight(maxIndexWidth)}  Hủy bỏ\n");
+        AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Restore all game saves to this machine");
+        AnsiConsole.WriteLine($"{"[0]".PadRight(maxIndexWidth)}  Cancel\n");
 
-        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn pull (ví dụ: 1 3 5 hoặc 'A' / '0'):");
+        var choice = AnsiConsole.Prompt("Enter game numbers to pull (e.g. 1 3 5 or 'A' / '0'):");
 
         choice = choice.Trim();
 
         if (choice == "0")
         {
-            AnsiConsole.WriteLine("Đã hủy thao tác.");
+            AnsiConsole.WriteLine("Operation cancelled.");
             return;
         }
 
@@ -125,13 +125,13 @@ public class PullHandler
         }
         else
         {
-            AnsiConsole.WriteLine("Lựa chọn không hợp lệ.");
+            AnsiConsole.WriteLine("Invalid selection.");
         }
     }
 
     private async Task PullSingleAsync(RemoteGameMeta meta)
     {
-        AnsiConsole.WriteLine($"Bắt đầu tải và khôi phục game: {meta.GameName}");
+        AnsiConsole.WriteLine($"Starting download and restore: {meta.GameName}");
 
         bool success = false;
         string? error = null;
@@ -139,17 +139,17 @@ public class PullHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Đang tải bản save từ Google Drive...", async ctx =>
+            .StartAsync("Downloading save archive from Google Drive...", async ctx =>
             {
                 var cacheDir = _backupService.GetGameCacheDir(meta.GameId);
                 var dl = await _driveService.DownloadGameSaveAsync(meta.GameId, cacheDir);
                 if (!dl.success)
                 {
-                    error = dl.error ?? "Lỗi tải file từ Google Drive";
+                    error = dl.error ?? "Failed to download file from Google Drive";
                     return;
                 }
 
-                ctx.Status("Đang giải nén và khôi phục vào thư mục save của máy...");
+                ctx.Status("Extracting and restoring into save directory...");
                 var zipPath = Path.Combine(cacheDir, "latest.zip");
                 var restoreRes = await _restoreService.RestoreGameAsync(meta.GameId, zipPath);
                 success = restoreRes.Success;
@@ -159,17 +159,17 @@ public class PullHandler
 
         if (success)
         {
-            AnsiConsole.WriteLine($"Đã khôi phục thành công {restoredCount} file save cho '{meta.GameName}'.");
+            AnsiConsole.WriteLine($"Successfully restored {restoredCount} save file(s) for '{meta.GameName}'.");
         }
         else
         {
-            AnsiConsole.WriteLine($"Khôi phục thất bại: {error ?? "Lỗi không xác định"}");
+            AnsiConsole.WriteLine($"Restore failed: {error ?? "Unknown error"}");
         }
     }
 
     private async Task PullBatchAsync(List<RemoteGameMeta> list)
     {
-        AnsiConsole.WriteLine($"Bắt đầu kéo {list.Count} game từ Google Drive về máy...");
+        AnsiConsole.WriteLine($"Starting pull for {list.Count} game(s) from Google Drive...");
 
         int successCount = 0;
         int failCount = 0;
@@ -177,13 +177,13 @@ public class PullHandler
         for (int i = 0; i < list.Count; i++)
         {
             var meta = list[i];
-            AnsiConsole.Write($"[{i + 1}/{list.Count}] Đang xử lý {meta.GameName}... ");
+            AnsiConsole.Write($"[{i + 1}/{list.Count}] Processing {meta.GameName}... ");
 
             var cacheDir = _backupService.GetGameCacheDir(meta.GameId);
             var dl = await _driveService.DownloadGameSaveAsync(meta.GameId, cacheDir);
             if (!dl.success)
             {
-                AnsiConsole.WriteLine($"Lỗi tải: {dl.error ?? ""}");
+                AnsiConsole.WriteLine($"Download error: {dl.error ?? ""}");
                 failCount++;
                 continue;
             }
@@ -192,16 +192,16 @@ public class PullHandler
             var restoreRes = await _restoreService.RestoreGameAsync(meta.GameId, zipPath);
             if (restoreRes.Success)
             {
-                AnsiConsole.WriteLine($"Khôi phục {restoreRes.RestoredFilesCount} files");
+                AnsiConsole.WriteLine($"Restored {restoreRes.RestoredFilesCount} files");
                 successCount++;
             }
             else
             {
-                AnsiConsole.WriteLine($"Lỗi giải nén: {restoreRes.ErrorMessage ?? ""}");
+                AnsiConsole.WriteLine($"Extraction error: {restoreRes.ErrorMessage ?? ""}");
                 failCount++;
             }
         }
 
-        AnsiConsole.WriteLine($"\nHoàn tất! Thành công: {successCount}, Thất bại: {failCount}.");
+        AnsiConsole.WriteLine($"\nCompleted! Succeeded: {successCount}, Failed: {failCount}.");
     }
 }
