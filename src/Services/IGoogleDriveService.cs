@@ -11,7 +11,6 @@ public class RemoteGameMeta
     public int? SteamId { get; set; }
     public string? CustomBannerUrl { get; set; }
 
-    public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
 
     public string FormattedSize
     {

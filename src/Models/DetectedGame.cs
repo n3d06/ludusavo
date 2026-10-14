@@ -11,7 +11,6 @@ public class DetectedGame
     public bool IsCustomGame => Id.StartsWith("custom_", StringComparison.OrdinalIgnoreCase);
 
     public string? CustomBannerUrl { get; set; }
-    public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
 
     public int FileCount { get; set; }
     public long TotalSizeBytes { get; set; }

@@ -6,3 +6,4 @@ public interface ICredentialManager
     (string? refreshToken, string? accessToken, DateTime? expiry, string? clientSecret, string? userEmail) LoadGoogleCredentials();
     bool DeleteGoogleCredentials();
 }
+
