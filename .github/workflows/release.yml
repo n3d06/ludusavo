@@ -77,11 +77,24 @@ jobs:
       - name: Publish sav (Single-File)
         shell: pwsh
         env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID != '' && secrets.GOOGLE_CLIENT_ID || vars.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET != '' && secrets.GOOGLE_CLIENT_SECRET || vars.GOOGLE_CLIENT_SECRET }}
         run: |
           $tag = "${{ steps.version.outputs.TAG }}"
           $version = $tag.TrimStart('v')
+          
+          if ([string]::IsNullOrWhiteSpace($env:GOOGLE_CLIENT_ID)) {
+              Write-Warning "GOOGLE_CLIENT_ID is EMPTY in GitHub Actions! Please check your GitHub Repository Secrets or Variables."
+          } else {
+              Write-Host "GOOGLE_CLIENT_ID detected: YES (Length: $($env:GOOGLE_CLIENT_ID.Length))"
+          }
+          
+          if ([string]::IsNullOrWhiteSpace($env:GOOGLE_CLIENT_SECRET)) {
+              Write-Warning "GOOGLE_CLIENT_SECRET is EMPTY in GitHub Actions! Please check your GitHub Repository Secrets or Variables."
+          } else {
+              Write-Host "GOOGLE_CLIENT_SECRET detected: YES (Length: $($env:GOOGLE_CLIENT_SECRET.Length))"
+          }
+
           dotnet publish src/sav.csproj -c Release -r win-x64 --self-contained false `
             -p:PublishSingleFile=true `
             -p:Version=$version `
