@@ -231,6 +231,36 @@ public static class ConsoleHelper
             return "-";
         return dt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm");
     }
+
+    public static bool TryParseSelectionIndices(string input, int maxCount, out List<int> indices)
+    {
+        indices = new List<int>();
+        if (string.IsNullOrWhiteSpace(input)) return false;
+
+        // Chỉ chấp nhận định dạng phân cách bằng khoảng trắng, không hỗ trợ dấu phẩy hay gạch ngang
+        if (input.Contains(',') || input.Contains('-')) return false;
+
+        var tokens = Regex.Split(input.Trim(), @"\s+");
+        var result = new HashSet<int>();
+
+        foreach (var token in tokens)
+        {
+            if (int.TryParse(token, out int num))
+            {
+                if (num < 1 || num > maxCount) return false;
+                result.Add(num);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        if (result.Count == 0) return false;
+
+        indices = result.OrderBy(x => x).ToList();
+        return true;
+    }
 }
 
 public static class AnsiConsole

@@ -18,7 +18,7 @@ public class PullHandler
         _backupService = backupService;
     }
 
-    public async Task ExecuteAsync(string? target = null)
+    public async Task ExecuteAsync(params string[]? targets)
     {
         if (!_driveService.IsConfigured)
         {
@@ -42,29 +42,39 @@ public class PullHandler
             return;
         }
 
-        // Nếu có tham số target truyền từ CLI: ví dụ pull 1 hoặc pull all
-        if (!string.IsNullOrWhiteSpace(target))
+        var targetInput = targets != null && targets.Length > 0 ? string.Join(" ", targets).Trim() : null;
+
+        // Nếu có tham số target truyền từ CLI: ví dụ pull 1 3 5 hoặc pull all
+        if (!string.IsNullOrWhiteSpace(targetInput))
         {
-            if (target.Equals("all", StringComparison.OrdinalIgnoreCase) || target.Equals("a", StringComparison.OrdinalIgnoreCase))
+            if (targetInput.Equals("all", StringComparison.OrdinalIgnoreCase) || targetInput.Equals("a", StringComparison.OrdinalIgnoreCase))
             {
-                await PullAllAsync(remoteList);
+                await PullBatchAsync(remoteList);
                 return;
             }
 
-            if (int.TryParse(target, out int num) && num >= 1 && num <= remoteList.Count)
+            if (ConsoleHelper.TryParseSelectionIndices(targetInput, remoteList.Count, out var indices))
             {
-                await PullSingleAsync(remoteList[num - 1]);
+                var selected = indices.Select(i => remoteList[i - 1]).ToList();
+                if (selected.Count == 1)
+                {
+                    await PullSingleAsync(selected[0]);
+                }
+                else
+                {
+                    await PullBatchAsync(selected);
+                }
                 return;
             }
 
-            var matched = remoteList.FirstOrDefault(m => m.GameName.Equals(target, StringComparison.OrdinalIgnoreCase) || m.GameId.Equals(target, StringComparison.OrdinalIgnoreCase));
+            var matched = remoteList.FirstOrDefault(m => m.GameName.Equals(targetInput, StringComparison.OrdinalIgnoreCase) || m.GameId.Equals(targetInput, StringComparison.OrdinalIgnoreCase));
             if (matched != null)
             {
                 await PullSingleAsync(matched);
                 return;
             }
 
-            AnsiConsole.WriteLine($"Không tìm thấy bản save khớp với '{target}'.");
+            AnsiConsole.WriteLine($"Không tìm thấy bản save khớp với '{targetInput}'.");
             return;
         }
 
@@ -85,7 +95,7 @@ public class PullHandler
         AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Kéo và khôi phục tất cả game về máy");
         AnsiConsole.WriteLine($"{"[0]".PadRight(maxIndexWidth)}  Hủy bỏ\n");
 
-        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn pull (hoặc 'A' / '0'):");
+        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn pull (ví dụ: 1 3 5 hoặc 'A' / '0'):");
 
         choice = choice.Trim();
 
@@ -97,13 +107,21 @@ public class PullHandler
 
         if (choice.Equals("A", StringComparison.OrdinalIgnoreCase) || choice.Equals("ALL", StringComparison.OrdinalIgnoreCase))
         {
-            await PullAllAsync(remoteList);
+            await PullBatchAsync(remoteList);
             return;
         }
 
-        if (int.TryParse(choice, out int selectedIdx) && selectedIdx >= 1 && selectedIdx <= remoteList.Count)
+        if (ConsoleHelper.TryParseSelectionIndices(choice, remoteList.Count, out var selectedIndices))
         {
-            await PullSingleAsync(remoteList[selectedIdx - 1]);
+            var selected = selectedIndices.Select(i => remoteList[i - 1]).ToList();
+            if (selected.Count == 1)
+            {
+                await PullSingleAsync(selected[0]);
+            }
+            else
+            {
+                await PullBatchAsync(selected);
+            }
         }
         else
         {
@@ -149,9 +167,9 @@ public class PullHandler
         }
     }
 
-    private async Task PullAllAsync(List<RemoteGameMeta> list)
+    private async Task PullBatchAsync(List<RemoteGameMeta> list)
     {
-        AnsiConsole.WriteLine($"Bắt đầu kéo tất cả {list.Count} game từ Google Drive về máy...");
+        AnsiConsole.WriteLine($"Bắt đầu kéo {list.Count} game từ Google Drive về máy...");
 
         int successCount = 0;
         int failCount = 0;

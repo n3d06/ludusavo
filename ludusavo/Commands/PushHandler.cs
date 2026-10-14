@@ -25,7 +25,7 @@ public class PushHandler
         _driveService = driveService;
     }
 
-    public async Task ExecuteAsync(string? target = null)
+    public async Task ExecuteAsync(params string[]? targets)
     {
         if (!_driveService.IsConfigured)
         {
@@ -55,29 +55,39 @@ public class PushHandler
             return;
         }
 
-        // Nếu có tham số target truyền từ CLI: ví dụ push 1 hoặc push all
-        if (!string.IsNullOrWhiteSpace(target))
+        var targetInput = targets != null && targets.Length > 0 ? string.Join(" ", targets).Trim() : null;
+
+        // Nếu có tham số target truyền từ CLI: ví dụ push 1 3 5 hoặc push all
+        if (!string.IsNullOrWhiteSpace(targetInput))
         {
-            if (target.Equals("all", StringComparison.OrdinalIgnoreCase) || target.Equals("a", StringComparison.OrdinalIgnoreCase))
+            if (targetInput.Equals("all", StringComparison.OrdinalIgnoreCase) || targetInput.Equals("a", StringComparison.OrdinalIgnoreCase))
             {
-                await PushAllAsync(games);
+                await PushBatchAsync(games);
                 return;
             }
 
-            if (int.TryParse(target, out int num) && num >= 1 && num <= games.Count)
+            if (ConsoleHelper.TryParseSelectionIndices(targetInput, games.Count, out var indices))
             {
-                await PushSingleAsync(games[num - 1]);
+                var selected = indices.Select(i => games[i - 1]).ToList();
+                if (selected.Count == 1)
+                {
+                    await PushSingleAsync(selected[0]);
+                }
+                else
+                {
+                    await PushBatchAsync(selected);
+                }
                 return;
             }
 
-            var matched = games.FirstOrDefault(g => g.Name.Equals(target, StringComparison.OrdinalIgnoreCase) || g.Id.Equals(target, StringComparison.OrdinalIgnoreCase));
+            var matched = games.FirstOrDefault(g => g.Name.Equals(targetInput, StringComparison.OrdinalIgnoreCase) || g.Id.Equals(targetInput, StringComparison.OrdinalIgnoreCase));
             if (matched != null)
             {
                 await PushSingleAsync(matched);
                 return;
             }
 
-            AnsiConsole.WriteLine($"Không tìm thấy game khớp với '{target}'.");
+            AnsiConsole.WriteLine($"Không tìm thấy game khớp với '{targetInput}'.");
             return;
         }
 
@@ -99,7 +109,7 @@ public class PushHandler
         AnsiConsole.WriteLine($"{"[A]".PadRight(maxIndexWidth)}  Đẩy tất cả game lên Google Drive");
         AnsiConsole.WriteLine($"{"[0]".PadRight(maxIndexWidth)}  Hủy bỏ\n");
 
-        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn push (hoặc 'A' / '0'):");
+        var choice = AnsiConsole.Prompt("Nhập số thứ tự game muốn push (ví dụ: 1 3 5 hoặc 'A' / '0'):");
 
         choice = choice.Trim();
 
@@ -111,13 +121,21 @@ public class PushHandler
 
         if (choice.Equals("A", StringComparison.OrdinalIgnoreCase) || choice.Equals("ALL", StringComparison.OrdinalIgnoreCase))
         {
-            await PushAllAsync(games);
+            await PushBatchAsync(games);
             return;
         }
 
-        if (int.TryParse(choice, out int selectedIdx) && selectedIdx >= 1 && selectedIdx <= games.Count)
+        if (ConsoleHelper.TryParseSelectionIndices(choice, games.Count, out var selectedIndices))
         {
-            await PushSingleAsync(games[selectedIdx - 1]);
+            var selected = selectedIndices.Select(i => games[i - 1]).ToList();
+            if (selected.Count == 1)
+            {
+                await PushSingleAsync(selected[0]);
+            }
+            else
+            {
+                await PushBatchAsync(selected);
+            }
         }
         else
         {
@@ -154,9 +172,9 @@ public class PushHandler
         }
     }
 
-    private async Task PushAllAsync(List<DetectedGame> games)
+    private async Task PushBatchAsync(List<DetectedGame> games)
     {
-        AnsiConsole.WriteLine($"Bắt đầu sao lưu tất cả {games.Count} game lên Google Drive...");
+        AnsiConsole.WriteLine($"Bắt đầu sao lưu {games.Count} game lên Google Drive...");
 
         bool success = false;
         string? message = null;

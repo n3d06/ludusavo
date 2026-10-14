@@ -23,8 +23,7 @@ public static class Program
             return;
         }
 
-        // Chế độ Interactive khi không truyền tham số
-        await RunInteractiveLoopAsync(serviceProvider);
+        ShowHelp();
     }
 
     private static void ConfigureServices(IServiceCollection services)
@@ -73,11 +72,11 @@ public static class Program
                     break;
 
                 case "push":
-                    await sp.GetRequiredService<PushHandler>().ExecuteAsync(firstArg);
+                    await sp.GetRequiredService<PushHandler>().ExecuteAsync(extraArgs);
                     break;
 
                 case "pull":
-                    await sp.GetRequiredService<PullHandler>().ExecuteAsync(firstArg);
+                    await sp.GetRequiredService<PullHandler>().ExecuteAsync(extraArgs);
                     break;
 
                 case "status":
@@ -129,62 +128,6 @@ public static class Program
         }
     }
 
-    private static async Task RunInteractiveLoopAsync(IServiceProvider sp)
-    {
-        ConsoleHelper.ShowHeader();
-
-        var menuOptions = new (string cmd, string desc)[]
-        {
-            ("ls", "Danh sách game có trên máy"),
-            ("lsc", "Danh sách game trên Google Drive"),
-            ("push", "Nén & đẩy bản save lên Google Drive"),
-            ("pull", "Tải bản save từ Google Drive về máy"),
-            ("scan", "Quét lại toàn bộ save game"),
-            ("status", "Kiểm tra kết nối Google Drive"),
-            ("login", "Đăng nhập Google Drive qua trình duyệt"),
-            ("logout", "Đăng xuất tài khoản Google Drive"),
-            ("config", "Cấu hình Google Client ID & Secret"),
-            ("add", "Thêm game tùy chỉnh (Custom)"),
-            ("remove", "Xóa game tùy chỉnh"),
-            ("help", "Xem trợ giúp lệnh"),
-            ("exit", "Thoát chương trình")
-        };
-
-        while (true)
-        {
-            AnsiConsole.WriteLine();
-            AnsiConsole.WriteLine("Chọn chức năng:");
-            for (int i = 0; i < menuOptions.Length; i++)
-            {
-                var num = (i + 1 == menuOptions.Length) ? "0" : (i + 1).ToString();
-                AnsiConsole.WriteLine($"[{num}] {menuOptions[i].cmd,-7} - {menuOptions[i].desc}");
-            }
-
-            var input = AnsiConsole.Prompt("\nNhập số hoặc lệnh (0-12):");
-            if (string.IsNullOrWhiteSpace(input)) continue;
-
-            string cmd = input.ToLowerInvariant();
-            if (int.TryParse(input, out int choiceNum))
-            {
-                if (choiceNum == 0 || choiceNum == menuOptions.Length)
-                {
-                    break;
-                }
-                if (choiceNum >= 1 && choiceNum < menuOptions.Length)
-                {
-                    cmd = menuOptions[choiceNum - 1].cmd;
-                }
-            }
-
-            if (cmd == "exit" || cmd == "0")
-            {
-                break;
-            }
-
-            AnsiConsole.WriteLine();
-            await RunSingleCommandAsync(sp, new[] { cmd });
-        }
-    }
 
     private static void ShowVersion()
     {
@@ -206,18 +149,18 @@ public static class Program
         AnsiConsole.WriteLine("Sử dụng: sav [lệnh] [tham số]");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("Các lệnh hỗ trợ:");
-        AnsiConsole.WriteLine("ls              Liệt kê các game có save trên máy");
-        AnsiConsole.WriteLine("lsc             Liệt kê các bản save hiện có trên Google Drive");
-        AnsiConsole.WriteLine("scan            Quét lại (rescan) toàn bộ database và file save");
-        AnsiConsole.WriteLine("push [số|all]   Nén backup và đẩy game lên Google Drive");
-        AnsiConsole.WriteLine("pull [số|all]   Tải bản save từ Google Drive và khôi phục vào máy");
-        AnsiConsole.WriteLine("status          Kiểm tra trạng thái kết nối tới Google Drive");
-        AnsiConsole.WriteLine("login           Đăng nhập tài khoản Google Drive qua trình duyệt");
-        AnsiConsole.WriteLine("logout          Đăng xuất tài khoản Google Drive hiện tại");
-        AnsiConsole.WriteLine("config          Xem hoặc sửa cấu hình Google Client ID & Secret");
-        AnsiConsole.WriteLine("version         Hiển thị phiên bản ứng dụng");
-        AnsiConsole.WriteLine("add             Thêm game tùy chỉnh (custom game)");
-        AnsiConsole.WriteLine("remove [số]     Xóa game tùy chỉnh theo số thứ tự");
-        AnsiConsole.WriteLine("help            Hiển thị trợ giúp này");
+        AnsiConsole.WriteLine("ls - Liệt kê các game có save trên máy");
+        AnsiConsole.WriteLine("lsc - Liệt kê các bản save hiện có trên Google Drive");
+        AnsiConsole.WriteLine("scan - Quét lại (rescan) toàn bộ database và file save");
+        AnsiConsole.WriteLine("push - Nén backup và đẩy game lên Google Drive");
+        AnsiConsole.WriteLine("pull - Tải bản save từ Google Drive và khôi phục vào máy");
+        AnsiConsole.WriteLine("status - Kiểm tra trạng thái kết nối tới Google Drive");
+        AnsiConsole.WriteLine("login - Đăng nhập tài khoản Google Drive qua trình duyệt");
+        AnsiConsole.WriteLine("logout - Đăng xuất tài khoản Google Drive hiện tại");
+        AnsiConsole.WriteLine("config - Xem hoặc sửa cấu hình Google Client ID & Secret");
+        AnsiConsole.WriteLine("version - Hiển thị phiên bản ứng dụng");
+        AnsiConsole.WriteLine("add - Thêm game tùy chỉnh (custom game)");
+        AnsiConsole.WriteLine("remove - Xóa game tùy chỉnh theo số thứ tự");
+        AnsiConsole.WriteLine("help - Hiển thị trợ giúp này");
     }
 }
