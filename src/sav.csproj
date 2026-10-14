@@ -21,4 +21,15 @@
     <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(DefaultGoogleClientId)' != ''">
+      <_Parameter1>DefaultGoogleClientId</_Parameter1>
+      <_Parameter2>$(DefaultGoogleClientId)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(DefaultGoogleClientSecret)' != ''">
+      <_Parameter1>DefaultGoogleClientSecret</_Parameter1>
+      <_Parameter2>$(DefaultGoogleClientSecret)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
 </Project>
