@@ -15,7 +15,7 @@ public class RestoreService : IRestoreService
 
     public async Task<RestoreResult> RestoreGameAsync(string gameId, string? specificZipPath = null)
     {
-        var gameCacheDir = Path.Combine(_configService.CacheDir, gameId);
+        var gameCacheDir = Path.Combine(_configService.CacheDir, BackupService.SanitizeFolderName(gameId));
         var zipPath = specificZipPath ?? Path.Combine(gameCacheDir, "latest.zip");
         var mappingPath = Path.Combine(gameCacheDir, "mapping.yaml");
 

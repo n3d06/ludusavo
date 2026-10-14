@@ -300,7 +300,7 @@ public class GoogleDriveService : IGoogleDriveService
         return (used, limit, email);
     }
 
-    private string EscapeQuery(string text) => text.Replace("'", "\\'");
+    private string EscapeQuery(string text) => text.Replace("\\", "\\\\").Replace("'", "\\'");
 
     private async Task<string> GetOrCreateRootFolderIdAsync()
     {

@@ -1,6 +1,7 @@
 using System.IO;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using ludusavo.Models;
 using YamlDotNet.Serialization;
@@ -16,9 +17,22 @@ public class BackupService : IBackupService
         _configService = configService;
     }
 
+    public static string SanitizeFolderName(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) return "unknown";
+        var invalid = Path.GetInvalidFileNameChars();
+        var sb = new System.Text.StringBuilder();
+        foreach (var c in name)
+        {
+            sb.Append(invalid.Contains(c) ? '_' : c);
+        }
+        return sb.ToString().Trim();
+    }
+
     public string GetGameCacheDir(string gameId)
     {
-        var dir = Path.Combine(_configService.CacheDir, gameId);
+        var safeFolder = SanitizeFolderName(gameId);
+        var dir = Path.Combine(_configService.CacheDir, safeFolder);
         Directory.CreateDirectory(dir);
         return dir;
     }
@@ -59,7 +73,8 @@ public class BackupService : IBackupService
             var mappingPath = Path.Combine(gameCacheDir, "mapping.yaml");
 
             // Temporary file to write zip atomically
-            var tempZip = Path.Combine(Path.GetTempPath(), $"savesync_{game.Id}_{Guid.NewGuid():N}.zip");
+            var safeId = SanitizeFolderName(game.Id);
+            var tempZip = Path.Combine(Path.GetTempPath(), $"savesync_{safeId}_{Guid.NewGuid():N}.zip");
 
             await Task.Run(() =>
             {
@@ -109,20 +124,33 @@ public class BackupService : IBackupService
                             modified = file.LastWriteTime.ToString("o")
                         });
                     }
+
+                    // Embed mapping.yaml in archive for portability and Ludusavi compatibility
+                    var serializer = new SerializerBuilder().Build();
+                    var mappingObj = new Dictionary<string, object>
+                    {
+                        { "drives", drives }
+                    };
+                    var yamlContent = serializer.Serialize(mappingObj);
+                    var mappingEntry = archive.CreateEntry("mapping.yaml", CompressionLevel.Optimal);
+                    using (var entryStream = mappingEntry.Open())
+                    using (var writer = new StreamWriter(entryStream, Encoding.UTF8))
+                    {
+                        writer.Write(yamlContent);
+                    }
                 }
 
                 // Replace latest.zip
                 if (File.Exists(zipPath)) File.Delete(zipPath);
                 File.Move(tempZip, zipPath);
 
-                // Write mapping.yaml
-                var serializer = new SerializerBuilder().Build();
-                var mappingObj = new Dictionary<string, object>
+                // Write mapping.yaml to cache directory as well
+                var localSerializer = new SerializerBuilder().Build();
+                var localMappingObj = new Dictionary<string, object>
                 {
                     { "drives", drives }
                 };
-                var yamlContent = serializer.Serialize(mappingObj);
-                File.WriteAllText(mappingPath, yamlContent);
+                File.WriteAllText(mappingPath, localSerializer.Serialize(localMappingObj));
 
                 // Compute overall archive hash
                 var archiveHash = ComputeSha256(zipPath);

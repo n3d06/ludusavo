@@ -198,6 +198,8 @@ public class SyncService : ISyncService
         var backedUpGames = new List<DetectedGame>();
         int failCount = 0;
 
+        string? lastError = null;
+
         for (int i = 0; i < games.Count; i++)
         {
             var game = games[i];
@@ -210,6 +212,7 @@ public class SyncService : ISyncService
             if (!backupRes.Success)
             {
                 failCount++;
+                lastError = backupRes.ErrorMessage;
                 continue;
             }
 
@@ -226,7 +229,10 @@ public class SyncService : ISyncService
 
         if (payloads.Count == 0)
         {
-            return (false, "Could not back up save files for any game.", 0, failCount);
+            var errMsg = !string.IsNullOrEmpty(lastError) 
+                ? lastError 
+                : "Could not back up save files for any game.";
+            return (false, errMsg, 0, failCount);
         }
 
         if (_driveService.IsConfigured)
