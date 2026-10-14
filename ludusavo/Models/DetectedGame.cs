@@ -15,6 +15,18 @@ public partial class DetectedGame : ObservableObject
 
     public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
 
+    public DetectedGame()
+    {
+        BannerCache.BannerResolved += OnBannerResolved;
+    }
+
+    private void OnBannerResolved(int steamId, string? url)
+    {
+        if (SteamId == steamId)
+        {
+            OnPropertyChanged(nameof(BannerUrl));
+        }
+    }
     [ObservableProperty]
     private int _fileCount;
 

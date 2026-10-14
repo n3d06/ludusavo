@@ -23,13 +23,20 @@ public class ManifestService : IManifestService
     {
         var cachePath = _configService.ManifestCachePath;
 
-        // Fallback: check if manifest_processed.json is in parent data/cache or relative
+        // Fallback: check if manifest_processed.json is bundled with app or in dev directory
         if (!File.Exists(cachePath))
         {
-            var fallback = Path.Combine(_configService.RootDir, "data", "cache", "manifest_processed.json");
-            if (File.Exists(fallback))
+            var fallback = FindBundledManifest();
+            if (fallback != null && File.Exists(fallback))
             {
-                cachePath = fallback;
+                try
+                {
+                    File.Copy(fallback, cachePath, true);
+                }
+                catch
+                {
+                    cachePath = fallback;
+                }
             }
         }
 
@@ -217,5 +224,30 @@ public class ManifestService : IManifestService
             _gamesList.RemoveAt(existingListIdx);
         }
         _gamesById.Remove(gameId);
+    }
+
+    private static string? FindBundledManifest()
+    {
+        var candidates = new List<string>
+        {
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "cache", "manifest_processed.json"),
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "manifest_processed.json"),
+            Path.Combine(Directory.GetCurrentDirectory(), "data", "cache", "manifest_processed.json")
+        };
+
+        var dir = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory);
+        while (dir != null)
+        {
+            var p = Path.Combine(dir.FullName, "data", "cache", "manifest_processed.json");
+            if (File.Exists(p)) return p;
+            dir = dir.Parent;
+        }
+
+        foreach (var c in candidates)
+        {
+            if (File.Exists(c)) return c;
+        }
+
+        return null;
     }
 }

@@ -1,6 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Microsoft.Win32;
 using ludusavo.Models;
 using ludusavo.Services;
 using System.ComponentModel.DataAnnotations;
@@ -27,13 +26,6 @@ public partial class SettingsViewModel : ObservableValidator
     [NotifyDataErrorInfo]
     [Required(ErrorMessage = "GitHub Repo không được để trống")]
     private string _gitHubRepo = string.Empty;
-
-
-    [ObservableProperty]
-    private bool _minimizeToTray = false;
-
-    [ObservableProperty]
-    private bool _startWithWindows = false;
 
     [ObservableProperty]
     private string _testStatusMessage = string.Empty;
@@ -62,8 +54,6 @@ public partial class SettingsViewModel : ObservableValidator
         GitHubToken = s.GitHubToken;
         GitHubOwner = s.GitHubOwner;
         GitHubRepo = s.GitHubRepo;
-        MinimizeToTray = s.MinimizeToTray;
-        StartWithWindows = s.StartWithWindows;
     }
 
     [RelayCommand]
@@ -93,37 +83,11 @@ public partial class SettingsViewModel : ObservableValidator
         current.GitHubToken = GitHubToken.Trim();
         current.GitHubOwner = GitHubOwner.Trim();
         current.GitHubRepo = GitHubRepo.Trim();
-        current.MinimizeToTray = MinimizeToTray;
-        current.StartWithWindows = StartWithWindows;
 
         _configService.SaveSettings(current);
         _mainViewModel.UpdateGitHubStatus();
 
-        // Configure startup with Windows registry if requested
-        ConfigureStartup(StartWithWindows);
-
         TestStatusMessage = "Đã lưu cài đặt thành công!";
         TestSuccess = true;
-    }
-
-    private void ConfigureStartup(bool enable)
-    {
-        try
-        {
-            using var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
-            var appPath = Environment.ProcessPath;
-            if (!string.IsNullOrEmpty(appPath))
-            {
-                if (enable)
-                {
-                    key?.SetValue("ludusavo", $"\"{appPath}\" --minimized");
-                }
-                else
-                {
-                    key?.DeleteValue("ludusavo", false);
-                }
-            }
-        }
-        catch { }
     }
 }

@@ -13,18 +13,14 @@ namespace ludusavo;
 public partial class MainWindow : FluentWindow
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IConfigService _configService;
     private readonly MainViewModel _viewModel;
-    private bool _isExplicitExit = false;
 
     public MainWindow(
         MainViewModel viewModel,
-        IServiceProvider serviceProvider,
-        IConfigService configService)
+        IServiceProvider serviceProvider)
     {
         _viewModel = viewModel;
         _serviceProvider = serviceProvider;
-        _configService = configService;
 
         DataContext = viewModel;
         InitializeComponent();
@@ -63,24 +59,5 @@ public partial class MainWindow : FluentWindow
                 DisableInternalScrollViewers(child);
             }
         }
-    }
-
-    protected override void OnClosing(CancelEventArgs e)
-    {
-        if (!_isExplicitExit && _configService.Settings.MinimizeToTray)
-        {
-            e.Cancel = true;
-            Hide();
-        }
-        else
-        {
-            base.OnClosing(e);
-        }
-    }
-
-    public void ForceClose()
-    {
-        _isExplicitExit = true;
-        Close();
     }
 }

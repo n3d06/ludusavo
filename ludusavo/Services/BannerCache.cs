@@ -1,25 +1,17 @@
-using System.IO;
+using System.Collections.Concurrent;
 using System.Net.Http;
+using System.Text.Json;
 
 namespace ludusavo.Services;
 
 public static class BannerCache
 {
-    private static readonly string CacheDir = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ludusavo", "banners");
-
-    private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(15) };
-    private static readonly HashSet<int> DownloadingSteamIds = new();
+    private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private static readonly ConcurrentDictionary<int, string?> UrlCache = new();
+    private static readonly HashSet<int> PendingSteamIds = new();
     private static readonly object LockObj = new();
 
-    static BannerCache()
-    {
-        try
-        {
-            Directory.CreateDirectory(CacheDir);
-        }
-        catch { }
-    }
+    public static event Action<int, string?>? BannerResolved;
 
     public static string? GetBannerUrl(int? steamId, string? customBannerUrl)
     {
@@ -28,46 +20,72 @@ public static class BannerCache
             return customBannerUrl;
         }
 
-        if (!steamId.HasValue)
+        if (!steamId.HasValue || steamId.Value <= 0)
         {
             return null;
         }
 
-        var localFile = Path.Combine(CacheDir, $"{steamId.Value}.jpg");
-        if (File.Exists(localFile))
+        if (UrlCache.TryGetValue(steamId.Value, out var cachedUrl))
         {
-            return localFile;
+            return cachedUrl;
         }
-
-        var remoteUrl = $"https://cdn.cloudflare.steamstatic.com/steam/apps/{steamId.Value}/header.jpg";
 
         lock (LockObj)
         {
-            if (DownloadingSteamIds.Add(steamId.Value))
+            if (PendingSteamIds.Add(steamId.Value))
             {
-                _ = DownloadBannerAsync(steamId.Value, remoteUrl, localFile);
+                _ = FetchBannerFromStoreApiAsync(steamId.Value);
             }
         }
 
-        return remoteUrl;
+        return null;
     }
 
-    private static async Task DownloadBannerAsync(int steamId, string remoteUrl, string localPath)
+    public static async Task<string?> FetchBannerFromStoreApiAsync(int steamId)
     {
         try
         {
-            var bytes = await HttpClient.GetByteArrayAsync(remoteUrl);
-            if (bytes != null && bytes.Length > 1000)
+            var apiUrl = $"https://store.steampowered.com/api/appdetails?appids={steamId}";
+            var jsonString = await HttpClient.GetStringAsync(apiUrl);
+            using var doc = JsonDocument.Parse(jsonString);
+
+            string? headerImage = null;
+            if (doc.RootElement.TryGetProperty(steamId.ToString(), out var appObj) &&
+                appObj.TryGetProperty("success", out var successProp) &&
+                successProp.GetBoolean() &&
+                appObj.TryGetProperty("data", out var dataObj) &&
+                dataObj.TryGetProperty("header_image", out var headerImgProp))
             {
-                await File.WriteAllBytesAsync(localPath, bytes);
+                headerImage = headerImgProp.GetString();
             }
+
+            UrlCache[steamId] = headerImage;
+
+            if (!string.IsNullOrEmpty(headerImage))
+            {
+                if (System.Windows.Application.Current?.Dispatcher is { } dispatcher)
+                {
+                    _ = dispatcher.InvokeAsync(() => BannerResolved?.Invoke(steamId, headerImage));
+                }
+                else
+                {
+                    BannerResolved?.Invoke(steamId, headerImage);
+                }
+            }
+
+            return headerImage;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[BannerCache] Store API error for app {steamId}: {ex.Message}");
+            UrlCache[steamId] = null;
+            return null;
+        }
         finally
         {
             lock (LockObj)
             {
-                DownloadingSteamIds.Remove(steamId);
+                PendingSteamIds.Remove(steamId);
             }
         }
     }

@@ -1,6 +1,8 @@
+using CommunityToolkit.Mvvm.ComponentModel;
+
 namespace ludusavo.Services;
 
-public class RemoteGameMeta
+public class RemoteGameMeta : ObservableObject
 {
     public string GameId { get; set; } = string.Empty;
     public string GameName { get; set; } = string.Empty;
@@ -12,6 +14,19 @@ public class RemoteGameMeta
     public string? CustomBannerUrl { get; set; }
 
     public string? BannerUrl => BannerCache.GetBannerUrl(SteamId, CustomBannerUrl);
+
+    public RemoteGameMeta()
+    {
+        BannerCache.BannerResolved += OnBannerResolved;
+    }
+
+    private void OnBannerResolved(int steamId, string? url)
+    {
+        if (SteamId == steamId)
+        {
+            OnPropertyChanged(nameof(BannerUrl));
+        }
+    }
 
     public string FormattedSize
     {

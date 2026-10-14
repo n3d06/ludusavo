@@ -5,12 +5,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:vm="clr-namespace:ludusavo.ViewModels"
+      xmlns:services="clr-namespace:ludusavo.Services"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance vm:SettingsViewModel}"
       Title="SettingsPage"
       Background="Transparent">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                  services:SmoothScrollHelper.EnableSmoothScroll="True">
         <StackPanel Margin="20,16,0,20" HorizontalAlignment="Stretch">
 
             <!-- GitHub Configuration Card -->
@@ -48,12 +50,18 @@
                         </StackPanel>
                     </Grid>
 
-                    <StackPanel Orientation="Horizontal">
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                         <ui:Button Content="Kiểm tra kết nối"
                                    Command="{Binding TestConnectionCommand}"
                                    IsEnabled="{Binding IsTesting, Converter={StaticResource InverseBooleanConverter}}"
-                                   Appearance="Primary"
+                                   Appearance="Secondary"
                                    Icon="{ui:SymbolIcon PlugConnected24}"/>
+
+                        <ui:Button Content="Lưu cấu hình"
+                                   Appearance="Primary"
+                                   Command="{Binding SaveSettingsCommand}"
+                                   Margin="10,0,0,0"
+                                   Icon="{ui:SymbolIcon Save24}"/>
 
                         <ui:TextBlock Text="{Binding TestStatusMessage}"
                                       VerticalAlignment="Center"
@@ -61,46 +69,6 @@
                     </StackPanel>
                 </StackPanel>
             </ui:Card>
-
-
-            <ui:Card Margin="0,0,20,8" Padding="18">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <ui:TextBlock Text="Thu nhỏ xuống Khay hệ thống (System Tray)" FontTypography="BodyStrong" />
-                        <ui:TextBlock Text="Khi bấm nút X đóng cửa sổ, ứng dụng sẽ chạy ngầm dưới góc phải màn hình." Appearance="Secondary" />
-                    </StackPanel>
-
-                    <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding MinimizeToTray}" VerticalAlignment="Center" />
-                </Grid>
-            </ui:Card>
-
-            <ui:Card Margin="0,0,20,18" Padding="18">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <ui:TextBlock Text="Khởi động cùng Windows" FontTypography="BodyStrong" />
-                        <ui:TextBlock Text="Tự động khởi động ngầm cùng máy tính để bảo vệ file save của bạn liên tục." Appearance="Secondary" />
-                    </StackPanel>
-
-                    <ui:ToggleSwitch Grid.Column="1" IsChecked="{Binding StartWithWindows}" VerticalAlignment="Center" />
-                </Grid>
-            </ui:Card>
-
-            <!-- Save Settings Button -->
-            <ui:Button Content="Lưu cấu hình"
-                       Appearance="Primary"
-                       Command="{Binding SaveSettingsCommand}"
-                       HorizontalAlignment="Left"
-                       Icon="{ui:SymbolIcon Save24}"/>
 
         </StackPanel>
     </ScrollViewer>

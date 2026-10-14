@@ -1,6 +1,8 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
+using System.Windows.Media.Animation;
 using Microsoft.Extensions.DependencyInjection;
 using ludusavo.Services;
 using ludusavo.ViewModels;
@@ -11,8 +13,24 @@ namespace ludusavo;
 public partial class App : System.Windows.Application
 {
     private IServiceProvider? _serviceProvider;
-    private System.Windows.Forms.NotifyIcon? _notifyIcon;
     private static Mutex? _mutex;
+
+    static App()
+    {
+        try
+        {
+            // Dynamically detect monitor's native refresh rate (e.g. 120Hz, 144Hz, 165Hz, 240Hz)
+            var refreshRate = DetectScreenRefreshRate();
+            if (refreshRate > 60)
+            {
+                // Unlock WPF animation and composition clock from default 60 FPS to monitor refresh rate
+                Timeline.DesiredFrameRateProperty.OverrideMetadata(
+                    typeof(Timeline),
+                    new FrameworkPropertyMetadata((int?)refreshRate));
+            }
+        }
+        catch { }
+    }
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -21,12 +39,20 @@ public partial class App : System.Windows.Application
 
         if (!createdNew)
         {
-            System.Windows.MessageBox.Show("Ứng dụng ludusavo đã đang chạy (Vui lòng kiểm tra khay hệ thống / góc phải màn hình).", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
+            System.Windows.MessageBox.Show("Ứng dụng ludusavo đã đang chạy.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Information);
             System.Windows.Application.Current.Shutdown();
             return;
         }
 
         base.OnStartup(e);
+
+        // Remove legacy startup registry key if previously set
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run", true);
+            key?.DeleteValue("ludusavo", false);
+        }
+        catch { }
 
         // Global exception handlers for crash logging
         DispatcherUnhandledException += (s, ex) =>
@@ -47,15 +73,7 @@ public partial class App : System.Windows.Application
         _serviceProvider = services.BuildServiceProvider();
 
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-
-        // Setup System Tray
-        SetupTrayIcon(mainWindow);
-
-        var startMinimized = e.Args.Contains("--minimized");
-        if (!startMinimized)
-        {
-            mainWindow.Show();
-        }
+        mainWindow.Show();
     }
 
     private void ConfigureServices(IServiceCollection services)
@@ -82,89 +100,92 @@ public partial class App : System.Windows.Application
         services.AddSingleton<SettingsPage>();
     }
 
-    private void SetupTrayIcon(MainWindow mainWindow)
-    {
-        try
-        {
-            System.Drawing.Icon? trayIcon = null;
-            var config = _serviceProvider?.GetService<IConfigService>();
-            if (config != null)
-            {
-                var assetIcon = Path.Combine(config.RootDir, "assets", "icon-512.ico");
-                if (File.Exists(assetIcon))
-                {
-                    try { trayIcon = new System.Drawing.Icon(assetIcon); } catch { }
-                }
-            }
-
-            if (trayIcon == null)
-            {
-                var exePath = Environment.ProcessPath;
-                if (!string.IsNullOrEmpty(exePath) && File.Exists(exePath))
-                {
-                    try { trayIcon = System.Drawing.Icon.ExtractAssociatedIcon(exePath); } catch { }
-                }
-            }
-
-            _notifyIcon = new System.Windows.Forms.NotifyIcon
-            {
-                Text = "ludusavo - Game Save Manager",
-                Icon = trayIcon ?? System.Drawing.SystemIcons.Application,
-                Visible = true
-            };
-
-            _notifyIcon.DoubleClick += (s, e) =>
-            {
-                mainWindow.Show();
-                mainWindow.WindowState = WindowState.Normal;
-                mainWindow.Activate();
-            };
-
-            var contextMenu = new System.Windows.Forms.ContextMenuStrip();
-            contextMenu.Items.Add("Mở ludusavo", null, (s, e) =>
-            {
-                mainWindow.Show();
-                mainWindow.WindowState = WindowState.Normal;
-                mainWindow.Activate();
-            });
-
-
-
-            contextMenu.Items.Add("Thoát", null, (s, e) =>
-            {
-                _notifyIcon.Visible = false;
-                _notifyIcon.Dispose();
-                mainWindow.ForceClose();
-                Shutdown();
-            });
-
-            _notifyIcon.ContextMenuStrip = contextMenu;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[Tray] Could not initialize tray icon: {ex.Message}");
-        }
-    }
-
-    protected override void OnExit(ExitEventArgs e)
-    {
-        if (_notifyIcon != null)
-        {
-            _notifyIcon.Visible = false;
-            _notifyIcon.Dispose();
-        }
-
-        base.OnExit(e);
-    }
-
     private static void LogCrash(Exception ex)
     {
         try
         {
-            var logPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "crash_log.txt");
+            var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ludusavo");
+            Directory.CreateDirectory(dir);
+            var logPath = Path.Combine(dir, "crash_log.txt");
             var entry = $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}]\n{ex}\n\n";
             File.AppendAllText(logPath, entry);
         }
         catch { }
+    }
+
+    [DllImport("user32.dll")]
+    private static extern bool EnumDisplaySettings(string? lpszDeviceName, int iModeNum, ref DEVMODE lpDevMode);
+
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetDC(IntPtr hWnd);
+
+    [DllImport("user32.dll")]
+    private static extern int ReleaseDC(IntPtr hWnd, IntPtr hDC);
+
+    [DllImport("gdi32.dll")]
+    private static extern int GetDeviceCaps(IntPtr hdc, int nIndex);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DEVMODE
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string dmDeviceName;
+        public short dmSpecVersion;
+        public short dmDriverVersion;
+        public short dmSize;
+        public short dmDriverExtra;
+        public int dmFields;
+        public int dmPositionX;
+        public int dmPositionY;
+        public int dmDisplayOrientation;
+        public int dmDisplayFixedOutput;
+        public short dmColor;
+        public short dmDuplex;
+        public short dmYResolution;
+        public short dmTTOption;
+        public short dmCollate;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public string dmFormName;
+        public short dmLogPixels;
+        public short dmBitsPerPel;
+        public int dmPelsWidth;
+        public int dmPelsHeight;
+        public int dmDisplayFlags;
+        public int dmDisplayFrequency;
+        public int dmICMMethod;
+        public int dmICMIntent;
+        public int dmMediaType;
+        public int dmDitherType;
+        public int dmReserved1;
+        public int dmReserved2;
+        public int dmPanningWidth;
+        public int dmPanningHeight;
+    }
+
+    private static int DetectScreenRefreshRate()
+    {
+        try
+        {
+            var devMode = new DEVMODE { dmSize = (short)Marshal.SizeOf<DEVMODE>() };
+            if (EnumDisplaySettings(null, -1, ref devMode) && devMode.dmDisplayFrequency > 0)
+            {
+                return devMode.dmDisplayFrequency;
+            }
+        }
+        catch { }
+
+        try
+        {
+            var hdc = GetDC(IntPtr.Zero);
+            if (hdc != IntPtr.Zero)
+            {
+                var rate = GetDeviceCaps(hdc, 116); // 116 = VREFRESH
+                ReleaseDC(IntPtr.Zero, hdc);
+                if (rate > 0) return rate;
+            }
+        }
+        catch { }
+
+        return 60;
     }
 }

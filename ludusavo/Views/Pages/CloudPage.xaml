@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:vm="clr-namespace:ludusavo.ViewModels"
+      xmlns:services="clr-namespace:ludusavo.Services"
       mc:Ignorable="d"
       d:DataContext="{d:DesignInstance vm:CloudViewModel}"
       Title="CloudPage"
@@ -49,12 +50,11 @@
             </Grid>
         </ui:Card>
 
-        <!-- Remote Saves List -->
         <ScrollViewer Grid.Row="2"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
                       CanContentScroll="True"
-                      PreviewMouseWheel="ScrollViewer_PreviewMouseWheel">
+                      services:SmoothScrollHelper.EnableSmoothScroll="True">
             <ItemsControl ItemsSource="{Binding RemoteSaves}" Margin="0,0,0,0"
                           VirtualizingPanel.IsVirtualizing="True"
                           VirtualizingPanel.VirtualizationMode="Recycling"
