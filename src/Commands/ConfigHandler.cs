@@ -6,11 +6,16 @@ public class ConfigHandler
 {
     private readonly IConfigService _configService;
     private readonly IGoogleDriveService _driveService;
+    private readonly ICredentialManager _credentialManager;
 
-    public ConfigHandler(IConfigService configService, IGoogleDriveService driveService)
+    public ConfigHandler(
+        IConfigService configService,
+        IGoogleDriveService driveService,
+        ICredentialManager credentialManager)
     {
         _configService = configService;
         _driveService = driveService;
+        _credentialManager = credentialManager;
     }
 
     public async Task ExecuteAsync(string[]? args = null)
@@ -52,17 +57,17 @@ public class ConfigHandler
 
         if (DefaultConfig.HasEmbeddedCredentials && string.IsNullOrWhiteSpace(settings.GoogleClientId))
         {
-            AnsiConsole.WriteLine("(*) Application includes default Google Client ID & Secret.");
+            AnsiConsole.WriteLine("(*) Application includes default Google Client ID.");
             AnsiConsole.WriteLine("    You can run 'sav login' directly, or enter your custom developer credentials below.\n");
         }
         else if (!settings.HasCredentials)
         {
-            AnsiConsole.WriteLine("--- Guide: Create Google OAuth Client ID & Secret (1-2 mins) ---");
+            AnsiConsole.WriteLine("--- Guide: Create Google OAuth Client ID (1-2 mins) ---");
             AnsiConsole.WriteLine("1. Visit: https://console.cloud.google.com/");
             AnsiConsole.WriteLine("2. Create a new Project -> Go to 'APIs & Services' -> Enable 'Google Drive API'");
             AnsiConsole.WriteLine("3. Go to 'OAuth consent screen' -> Choose 'External' -> Add your email to 'Test users'");
             AnsiConsole.WriteLine("4. Go to 'Credentials' -> 'Create Credentials' -> 'OAuth client ID' -> Choose 'Desktop app'");
-            AnsiConsole.WriteLine("5. Copy Client ID and Client Secret and paste below.\n");
+            AnsiConsole.WriteLine("5. Copy Client ID and paste below (Client Secret is optional with PKCE).\n");
         }
 
         var curId = !string.IsNullOrWhiteSpace(settings.GoogleClientId) 
@@ -73,12 +78,12 @@ public class ConfigHandler
         var curSecret = !string.IsNullOrWhiteSpace(settings.GoogleClientSecret)
             ? settings.GoogleClientSecret
             : (DefaultConfig.HasEmbeddedCredentials ? "[Default]" : string.Empty);
-        var newSecret = AnsiConsole.Prompt("Google Client Secret:", curSecret, secret: true);
+        var newSecret = AnsiConsole.Prompt("Google Client Secret (Optional - press Enter to skip for PKCE):", curSecret, secret: true);
 
         if (!string.IsNullOrWhiteSpace(newId) && newId != "[Default]")
             settings.GoogleClientId = newId.Trim();
 
-        if (!string.IsNullOrWhiteSpace(newSecret) && newSecret != "[Default]")
+        if (newSecret != "[Default]")
             settings.GoogleClientSecret = newSecret.Trim();
 
         _configService.SaveSettings(settings);
@@ -99,7 +104,7 @@ public class ConfigHandler
 
         if (!settings.HasCredentials)
         {
-            AnsiConsole.WriteLine("Missing Client ID or Client Secret. Please run 'sav config' first.");
+            AnsiConsole.WriteLine("Missing Google Client ID. Please run 'sav config' first.");
             return;
         }
 
@@ -108,7 +113,7 @@ public class ConfigHandler
 
         await AnsiConsole.Status()
             .Spinner(Spinner.Known.Dots)
-            .StartAsync("Preparing Google OAuth 2.0 authentication...", async ctx =>
+            .StartAsync("Preparing Google OAuth 2.0 (PKCE) authentication...", async ctx =>
             {
                 var res = await _driveService.LoginAsync(status => ctx.Status(status));
                 success = res.success;
@@ -137,6 +142,9 @@ public class ConfigHandler
 
         var prevEmail = !string.IsNullOrEmpty(settings.UserEmail) ? $" ({settings.UserEmail})" : "";
 
+        // Remove from Windows Credential Manager
+        _credentialManager.DeleteGoogleCredentials();
+
         settings.GoogleAccessToken = string.Empty;
         settings.GoogleRefreshToken = string.Empty;
         settings.GoogleTokenExpiry = null;
@@ -146,7 +154,7 @@ public class ConfigHandler
         _configService.SaveSettings(settings);
         _driveService.InvalidateCatalogCache();
 
-        AnsiConsole.WriteLine($"Logged out of Google Drive account{prevEmail}.");
+        AnsiConsole.WriteLine($"Logged out of Google Drive account{prevEmail}. Credentials cleared from Windows Credential Manager.");
         return Task.CompletedTask;
     }
 }

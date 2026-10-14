@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using ludusavo.Commands;
@@ -54,15 +55,21 @@ public class GoogleDriveService : IGoogleDriveService
 
         try
         {
+            var formParams = new Dictionary<string, string>
+            {
+                ["client_id"] = settings.EffectiveClientId,
+                ["refresh_token"] = settings.GoogleRefreshToken,
+                ["grant_type"] = "refresh_token"
+            };
+
+            if (!string.IsNullOrWhiteSpace(settings.EffectiveClientSecret))
+            {
+                formParams["client_secret"] = settings.EffectiveClientSecret;
+            }
+
             using var request = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
             {
-                Content = new FormUrlEncodedContent(new Dictionary<string, string>
-                {
-                    ["client_id"] = settings.EffectiveClientId,
-                    ["client_secret"] = settings.EffectiveClientSecret,
-                    ["refresh_token"] = settings.GoogleRefreshToken,
-                    ["grant_type"] = "refresh_token"
-                })
+                Content = new FormUrlEncodedContent(formParams)
             };
 
             var response = await _httpClient.SendAsync(request);
@@ -90,10 +97,23 @@ public class GoogleDriveService : IGoogleDriveService
     public async Task<(bool success, string? message)> LoginAsync(Action<string>? statusCallback = null)
     {
         var settings = _configService.Settings;
-        if (string.IsNullOrWhiteSpace(settings.EffectiveClientId) || string.IsNullOrWhiteSpace(settings.EffectiveClientSecret))
+        if (string.IsNullOrWhiteSpace(settings.EffectiveClientId))
         {
-            return (false, "Google Client ID or Client Secret not set. Please run 'sav config' first.");
+            return (false, "Google Client ID is not configured. Please run 'sav config' first.");
         }
+
+        // Generate PKCE code verifier and code challenge (RFC 7636)
+        byte[] randomBytes = RandomNumberGenerator.GetBytes(32);
+        string codeVerifier = Convert.ToBase64String(randomBytes)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
+
+        byte[] challengeHash = SHA256.HashData(Encoding.ASCII.GetBytes(codeVerifier));
+        string codeChallenge = Convert.ToBase64String(challengeHash)
+            .TrimEnd('=')
+            .Replace('+', '-')
+            .Replace('/', '_');
 
         // Find an available local port
         var tcp = new TcpListener(IPAddress.Loopback, 0);
@@ -103,7 +123,7 @@ public class GoogleDriveService : IGoogleDriveService
 
         string redirectUri = $"http://127.0.0.1:{port}/";
         string scope = "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.email";
-        string authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={Uri.EscapeDataString(settings.EffectiveClientId)}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code&scope={Uri.EscapeDataString(scope)}&access_type=offline&prompt=consent";
+        string authUrl = $"https://accounts.google.com/o/oauth2/v2/auth?client_id={Uri.EscapeDataString(settings.EffectiveClientId)}&redirect_uri={Uri.EscapeDataString(redirectUri)}&response_type=code&scope={Uri.EscapeDataString(scope)}&access_type=offline&prompt=consent&code_challenge={Uri.EscapeDataString(codeChallenge)}&code_challenge_method=S256";
 
         using var listener = new HttpListener();
         listener.Prefixes.Add(redirectUri);
@@ -164,16 +184,23 @@ public class GoogleDriveService : IGoogleDriveService
 
         statusCallback?.Invoke("Retrieving token from Google...");
 
+        var tokenParams = new Dictionary<string, string>
+        {
+            ["code"] = code,
+            ["client_id"] = settings.EffectiveClientId,
+            ["redirect_uri"] = redirectUri,
+            ["grant_type"] = "authorization_code",
+            ["code_verifier"] = codeVerifier
+        };
+
+        if (!string.IsNullOrWhiteSpace(settings.EffectiveClientSecret))
+        {
+            tokenParams["client_secret"] = settings.EffectiveClientSecret;
+        }
+
         using var tokenReq = new HttpRequestMessage(HttpMethod.Post, "https://oauth2.googleapis.com/token")
         {
-            Content = new FormUrlEncodedContent(new Dictionary<string, string>
-            {
-                ["code"] = code,
-                ["client_id"] = settings.EffectiveClientId,
-                ["client_secret"] = settings.EffectiveClientSecret,
-                ["redirect_uri"] = redirectUri,
-                ["grant_type"] = "authorization_code"
-            })
+            Content = new FormUrlEncodedContent(tokenParams)
         };
 
         var tokenRes = await _httpClient.SendAsync(tokenReq);

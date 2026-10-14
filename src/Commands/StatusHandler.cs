@@ -35,10 +35,13 @@ public class StatusHandler
             idInfo = "Not configured";
         }
 
-        AnsiConsole.WriteLine($"Google Account:  {accountInfo}");
-        AnsiConsole.WriteLine($"Google Client ID: {idInfo}");
-        AnsiConsole.WriteLine($"Cloud Storage:    Google Drive ('sav' folder)");
-        AnsiConsole.WriteLine($"Local Cache:      {_configService.CacheDir}");
+        AnsiConsole.WriteLine($"Google Account:      {accountInfo}");
+        AnsiConsole.WriteLine($"Google Client ID:    {idInfo}");
+        AnsiConsole.WriteLine($"Authentication:      OAuth 2.0 (PKCE)");
+        AnsiConsole.WriteLine($"Credential Storage:  Windows Credential Manager");
+        AnsiConsole.WriteLine($"Cloud Storage:       Google Drive ('sav' folder)");
+        AnsiConsole.WriteLine($"Config Directory:    {_configService.ConfigDir}");
+        AnsiConsole.WriteLine($"Local Cache:         {_configService.CacheDir}");
 
         if (!_driveService.IsConfigured)
         {

@@ -7,23 +7,24 @@ public class AppSettings
     [JsonPropertyName("googleClientId")]
     public string GoogleClientId { get; set; } = string.Empty;
 
-    [JsonPropertyName("googleClientSecret")]
-    public string GoogleClientSecret { get; set; } = string.Empty;
-
-    [JsonPropertyName("googleRefreshToken")]
-    public string GoogleRefreshToken { get; set; } = string.Empty;
-
-    [JsonPropertyName("googleAccessToken")]
-    public string GoogleAccessToken { get; set; } = string.Empty;
-
-    [JsonPropertyName("googleTokenExpiry")]
-    public DateTime? GoogleTokenExpiry { get; set; }
-
     [JsonPropertyName("googleRootFolderId")]
     public string GoogleRootFolderId { get; set; } = string.Empty;
 
     [JsonPropertyName("userEmail")]
     public string UserEmail { get; set; } = string.Empty;
+
+    // Secure credentials - stored in Windows Credential Manager, NEVER written to appsettings.json
+    [JsonIgnore]
+    public string GoogleClientSecret { get; set; } = string.Empty;
+
+    [JsonIgnore]
+    public string GoogleRefreshToken { get; set; } = string.Empty;
+
+    [JsonIgnore]
+    public string GoogleAccessToken { get; set; } = string.Empty;
+
+    [JsonIgnore]
+    public DateTime? GoogleTokenExpiry { get; set; }
 
     [JsonIgnore]
     public string EffectiveClientId =>
@@ -39,8 +40,7 @@ public class AppSettings
 
     [JsonIgnore]
     public bool HasCredentials =>
-        !string.IsNullOrWhiteSpace(EffectiveClientId) &&
-        !string.IsNullOrWhiteSpace(EffectiveClientSecret);
+        !string.IsNullOrWhiteSpace(EffectiveClientId);
 
     [JsonIgnore]
     public bool IsGoogleDriveConfigured =>

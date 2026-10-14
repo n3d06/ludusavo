@@ -6,9 +6,11 @@ public interface IConfigService
 {
     AppSettings Settings { get; }
     string RootDir { get; }
+    string ConfigDir { get; }
     string DataDir { get; }
     string CacheDir { get; }
     string ManifestCachePath { get; }
+    string SettingsFilePath { get; }
     void SaveSettings(AppSettings newSettings);
     void ReloadSettings();
 }

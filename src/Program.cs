@@ -28,6 +28,7 @@ public static class Program
 
     private static void ConfigureServices(IServiceCollection services)
     {
+        services.AddSingleton<ICredentialManager, WindowsCredentialManager>();
         services.AddSingleton<IConfigService, ConfigService>();
         services.AddSingleton<IManifestService, ManifestService>();
         services.AddSingleton<IScannerService, ScannerService>();
