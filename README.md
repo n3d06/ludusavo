@@ -1,5 +1,3 @@
-# sav (Game Save CLI)
-
 [![.NET 8.0](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
 [![Platform](https://img.shields.io/badge/Platform-Windows-0078D6?logo=windows)](https://www.microsoft.com/windows)
 [![Storage](https://img.shields.io/badge/Storage-Google_Drive-4285F4?logo=googledrive)](https://drive.google.com/)

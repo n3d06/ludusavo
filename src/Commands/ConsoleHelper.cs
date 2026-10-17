@@ -39,9 +39,9 @@ public static class ConsoleHelper
     {
         if (string.IsNullOrEmpty(text)) return;
 
-        // Parse tags like [red], [green], [yellow], [cyan], [bold], [dim], [grey], [/]
-        var pattern = @"(\[[a-zA-Z]+\]|\[\/\])";
-        var parts = Regex.Split(text, pattern);
+        // Parse tags like [red], [green], [yellow], [cyan], [blue], [magenta], [dim], [grey], [/]
+        var pattern = @"(\[(?:red|green|yellow|cyan|blue|magenta|grey|gray|dim|\/)\])";
+        var parts = Regex.Split(text, pattern, RegexOptions.IgnoreCase);
 
         foreach (var part in parts)
         {

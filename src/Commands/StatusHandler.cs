@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text.Json;
 using ludusavo.Services;
 
 namespace ludusavo.Commands;
@@ -17,14 +19,13 @@ public class StatusHandler
     {
         var settings = _configService.Settings;
 
-        var accountInfo = !string.IsNullOrWhiteSpace(settings.UserEmail)
-            ? settings.UserEmail
-            : "Not logged in";
-
+        // 1. Client ID info
         string idInfo;
         if (!string.IsNullOrWhiteSpace(settings.GoogleClientId))
         {
-            idInfo = settings.GoogleClientId.Length > 12 ? settings.GoogleClientId.Substring(0, 8) + "..." : settings.GoogleClientId;
+            idInfo = settings.GoogleClientId.Length > 12
+                ? settings.GoogleClientId.Substring(0, 8) + "..."
+                : settings.GoogleClientId;
         }
         else if (DefaultConfig.HasEmbeddedCredentials)
         {
@@ -32,47 +33,102 @@ public class StatusHandler
         }
         else
         {
-            idInfo = "Not configured";
+            idInfo = "[red]Not configured[/]";
         }
 
-        AnsiConsole.WriteLine($"Google Account:      {accountInfo}");
-        AnsiConsole.WriteLine($"Google Client ID:    {idInfo}");
-        AnsiConsole.WriteLine($"Authentication:      OAuth 2.0 (PKCE)");
-        AnsiConsole.WriteLine($"Credential Storage:  Windows Credential Manager");
-        AnsiConsole.WriteLine($"Cloud Storage:       Google Drive ('sav' folder)");
-        AnsiConsole.WriteLine($"Config Directory:    {_configService.ConfigDir}");
-        AnsiConsole.WriteLine($"Local Cache:         {_configService.CacheDir}");
+        // 2. Account info
+        var accountInfo = !string.IsNullOrWhiteSpace(settings.UserEmail)
+            ? settings.UserEmail
+            : "[dim]Not logged in[/]";
 
-        if (!_driveService.IsConfigured)
+        // 3. Connection state
+        string connectionStatus;
+        string? hint = null;
+
+        if (!settings.HasCredentials)
         {
-            AnsiConsole.WriteLine("Google Drive is not configured or not logged in!");
-            AnsiConsole.WriteLine("Run 'sav config' or 'sav login' to set up connection.");
-            return;
+            connectionStatus = "[yellow]Action required[/] [dim](OAuth Client ID is missing)[/]";
+            hint = "Run 'sav config' to enter Google Client ID & Secret, then 'sav login'.";
         }
-
-        bool connected = false;
-        string? message = null;
-
-        await AnsiConsole.Status()
-            .Spinner(Spinner.Known.Dots)
-            .StartAsync("Testing connection to Google Drive API...", async ctx =>
-            {
-                var result = await _driveService.TestConnectionAsync();
-                connected = result.success;
-                message = result.message;
-            });
-
-        if (connected)
+        else if (string.IsNullOrWhiteSpace(settings.GoogleRefreshToken))
         {
-            if (!string.IsNullOrEmpty(message))
-            {
-                AnsiConsole.WriteLine(message);
-            }
+            connectionStatus = "[red]Not logged in[/]";
+            hint = "Run 'sav login' to log in with your Google account via browser.";
         }
         else
         {
-            AnsiConsole.WriteLine($"Google Drive connection error: {message ?? "Unknown"}");
-            AnsiConsole.WriteLine("Please try logging in again with 'sav login'.");
+            bool connected = false;
+            string? message = null;
+            long used = 0, limit = 0;
+
+            await AnsiConsole.Status()
+                .Spinner(Spinner.Known.Dots)
+                .StartAsync("Testing connection to Google Drive API...", async ctx =>
+                {
+                    try
+                    {
+                        var quota = await _driveService.GetStorageQuotaAsync();
+                        used = quota.usedBytes;
+                        limit = quota.totalBytes;
+                        connected = limit > 0 || !string.IsNullOrEmpty(quota.userEmail);
+                    }
+                    catch (Exception ex)
+                    {
+                        connected = false;
+                        message = ex.Message;
+                    }
+                });
+
+            if (connected)
+            {
+                var storageInfo = limit > 0
+                    ? $" [dim](Storage: {ConsoleHelper.FormatSize(used)} / {ConsoleHelper.FormatSize(limit)})[/]"
+                    : "";
+                connectionStatus = $"[green]Connected[/]{storageInfo}";
+                hint = "Run 'sav ls' to check save sync status, or 'sav push' to backup.";
+            }
+            else
+            {
+                connectionStatus = $"[red]Connection failed[/] [dim]({message ?? "Token expired"})[/]";
+                hint = "Run 'sav login' to re-authenticate with Google Drive.";
+            }
+        }
+
+        // 4. Local machine info
+        int detectedCount = 0;
+        var cachePath = Path.Combine(_configService.CacheDir, "detected_games.json");
+        if (File.Exists(cachePath))
+        {
+            try
+            {
+                var json = File.ReadAllText(cachePath);
+                var ids = JsonSerializer.Deserialize<List<string>>(json);
+                detectedCount = ids?.Count ?? 0;
+            }
+            catch { }
+        }
+
+        var gamesInfo = detectedCount > 0
+            ? $"{detectedCount} game{(detectedCount > 1 ? "s" : "")} detected"
+            : "[dim]No games scanned yet (run 'sav scan')[/]";
+
+        // 5. Render output
+        AnsiConsole.WriteLine("Google Drive");
+        AnsiConsole.MarkupLine($"  Account:       {accountInfo}");
+        AnsiConsole.MarkupLine($"  Status:        {connectionStatus}");
+        AnsiConsole.WriteLine("  Cloud Storage: Google Drive ('sav' folder)");
+        AnsiConsole.MarkupLine($"  Client ID:     {idInfo}");
+        AnsiConsole.WriteLine();
+
+        AnsiConsole.WriteLine("Local Machine");
+        AnsiConsole.MarkupLine($"  Games:         {gamesInfo}");
+        AnsiConsole.MarkupLine($"  Config:        [dim]{_configService.ConfigDir}[/]");
+        AnsiConsole.MarkupLine($"  Cache:         [dim]{_configService.CacheDir}[/]");
+
+        if (!string.IsNullOrEmpty(hint))
+        {
+            AnsiConsole.WriteLine();
+            AnsiConsole.MarkupLine($"[dim]hint: {hint}[/]");
         }
     }
 }

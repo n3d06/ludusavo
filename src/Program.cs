@@ -60,11 +60,13 @@ public static class Program
             switch (cmd)
             {
                 case "ls":
-                    await sp.GetRequiredService<LsHandler>().ExecuteAsync();
+                    var showAllLs = extraArgs.Any(a => a.Equals("-a", StringComparison.OrdinalIgnoreCase) || a.Equals("--all", StringComparison.OrdinalIgnoreCase));
+                    await sp.GetRequiredService<LsHandler>().ExecuteAsync(showAll: showAllLs);
                     break;
 
                 case "lsc":
-                    await sp.GetRequiredService<LscHandler>().ExecuteAsync();
+                    var showAllLsc = extraArgs.Any(a => a.Equals("-a", StringComparison.OrdinalIgnoreCase) || a.Equals("--all", StringComparison.OrdinalIgnoreCase));
+                    await sp.GetRequiredService<LscHandler>().ExecuteAsync(showAll: showAllLsc);
                     break;
 
                 case "scan":
@@ -152,13 +154,13 @@ public static class Program
         AnsiConsole.WriteLine("These are common sav commands used in various situations:");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("examine games and save files");
-        AnsiConsole.WriteLine("   ls         List games with detected saves on this PC");
+        AnsiConsole.WriteLine("   ls         List game save status (use 'ls -a' for all)");
         AnsiConsole.WriteLine("   scan       Rescan all save games and manifest database");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("cloud synchronization (Google Drive)");
         AnsiConsole.WriteLine("   push       Compress and upload save games to Google Drive");
         AnsiConsole.WriteLine("   pull       Download and restore save games from Google Drive");
-        AnsiConsole.WriteLine("   lsc        List save backups available on Google Drive");
+        AnsiConsole.WriteLine("   lsc        List cloud backups status (use 'lsc -a' for all)");
         AnsiConsole.WriteLine("   status     Check connection and cloud storage status");
         AnsiConsole.WriteLine();
         AnsiConsole.WriteLine("manage custom games");
