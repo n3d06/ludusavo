@@ -19,7 +19,6 @@ DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=artifacts
 OutputBaseFilename=sav-{#MyAppVersion}-setup
-SetupIconFile=assets\icon.ico
 Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
