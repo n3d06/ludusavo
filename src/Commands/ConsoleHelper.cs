@@ -108,6 +108,7 @@ public static class ConsoleHelper
         var currentMsg = initialStatus;
         var cts = new CancellationTokenSource();
         int frameIdx = 0;
+        int maxPrintedLength = 0;
 
         var spinnerTask = Task.Run(async () =>
         {
@@ -117,7 +118,27 @@ public static class ConsoleHelper
                 frameIdx++;
                 try
                 {
-                    Console.Write($"\r{frame} {currentMsg}   ");
+                    int winWidth = 80;
+                    try
+                    {
+                        if (Console.WindowWidth > 1) winWidth = Console.WindowWidth - 1;
+                    }
+                    catch { }
+
+                    var line = $"{frame} {currentMsg}";
+                    if (line.Length > winWidth)
+                    {
+                        line = line.Substring(0, Math.Max(0, winWidth - 3)) + "...";
+                    }
+
+                    int padding = Math.Max(0, maxPrintedLength - line.Length);
+                    if (line.Length + padding > winWidth)
+                    {
+                        padding = Math.Max(0, winWidth - line.Length);
+                    }
+
+                    Console.Write("\r" + line + new string(' ', padding + 2));
+                    maxPrintedLength = Math.Max(maxPrintedLength, line.Length);
                 }
                 catch { }
 
@@ -147,7 +168,14 @@ public static class ConsoleHelper
 
             try
             {
-                var clearWidth = Math.Max(Console.WindowWidth > 0 ? Console.WindowWidth - 1 : 80, currentMsg.Length + 15);
+                int winWidth = 80;
+                try
+                {
+                    if (Console.WindowWidth > 1) winWidth = Console.WindowWidth - 1;
+                }
+                catch { }
+
+                var clearWidth = Math.Min(winWidth, Math.Max(maxPrintedLength + 5, 80));
                 Console.Write("\r" + new string(' ', clearWidth) + "\r");
             }
             catch
